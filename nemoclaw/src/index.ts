@@ -237,5 +237,14 @@ export default function register(api: OpenClawPluginApi): void {
     ],
   });
 
-  api.logger.info("NemoClaw registered.");
+  api.logger.info("");
+  api.logger.info("  ┌─────────────────────────────────────────────────────┐");
+  api.logger.info("  │  NemoClaw registered                               │");
+  api.logger.info("  │                                                     │");
+  api.logger.info("  │  Provider:  nvidia-nim (build.nvidia.com)           │");
+  api.logger.info("  │  Model:     nvidia/nemotron-3-super-120b-a12b       │");
+  api.logger.info("  │             Nemotron 3 Super 120B                   │");
+  api.logger.info("  │  Commands:  openclaw nemoclaw <command>             │");
+  api.logger.info("  └─────────────────────────────────────────────────────┘");
+  api.logger.info("");
 }
