@@ -75,9 +75,9 @@ Install the CLI and launch a sandboxed OpenClaw instance in a few commands.
     <span class="nc-term-dot nc-term-dot-g"></span>
   </div>
   <div class="nc-term-body">
-    <div><span class="nc-ps">$ </span>npm install -g nemoclaw</div>
-    <div><span class="nc-ps">$ </span>nemoclaw setup</div>
-    <div><span class="nc-ps">$ </span>nemoclaw my-assistant connect<span class="nc-cursor"></span></div>
+    <div><span class="nc-ps">$ </span>git clone https://github.com/NVIDIA/openshell-openclaw-plugin.git</div>
+    <div><span class="nc-ps">$ </span>cd openshell-openclaw-plugin</div>
+    <div><span class="nc-ps">$ </span>./install.sh<span class="nc-cursor"></span></div>
   </div>
 </div>
 ```
