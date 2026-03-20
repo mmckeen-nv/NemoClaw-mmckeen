@@ -137,8 +137,11 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     logger.info(
       `  Drift:     ${localModelWorkflow.activeModelMatchesDefault ? "none" : "active route differs from saved default"}`,
     );
+    logger.info(
+      `  Catalog:   ${localModelWorkflow.activeModelInCatalog ? "active route is in saved catalog" : "active route is outside saved catalog"}`,
+    );
     if (localModelWorkflow.catalog.length > 0) {
-      logger.info(`  Catalog:   ${localModelWorkflow.catalog.join(", ")}`);
+      logger.info(`            ${localModelWorkflow.catalog.join(", ")}`);
     }
     logger.info("");
   }
@@ -219,6 +222,7 @@ interface LocalModelWorkflowStatus {
   activeModel: string | null;
   activeModelSource: "inference" | "onboarding" | null;
   activeModelMatchesDefault: boolean;
+  activeModelInCatalog: boolean;
   catalog: string[];
 }
 
@@ -245,6 +249,7 @@ function getLocalModelWorkflowStatus(
     activeModel,
     activeModelSource: inferenceModel ? "inference" : "onboarding",
     activeModelMatchesDefault: activeModel === defaultModel,
+    activeModelInCatalog: catalog.includes(activeModel),
     catalog,
   };
 }

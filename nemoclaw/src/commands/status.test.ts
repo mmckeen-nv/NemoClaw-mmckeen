@@ -247,6 +247,7 @@ describe("cliStatus", () => {
         activeModel: "nemotron-3-super-120b",
         activeModelSource: "inference",
         activeModelMatchesDefault: false,
+        activeModelInCatalog: false,
         catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
       });
     });
@@ -275,7 +276,31 @@ describe("cliStatus", () => {
       expect(output).toContain("Active:    nemotron-3-super-120b");
       expect(output).toContain("Source:    inference");
       expect(output).toContain("Drift:     active route differs from saved default");
-      expect(output).toContain("Catalog:   qwen3:32b, nemotron-3-nano:30b");
+      expect(output).toContain("Catalog:   active route is outside saved catalog");
+      expect(output).toContain("            qwen3:32b, nemotron-3-nano:30b");
+    });
+
+    it("shows active route membership in saved catalog when inference matches onboarding catalog", async () => {
+      vi.mocked(loadOnboardConfig).mockReturnValue({
+        endpointType: "ollama",
+        endpointUrl: "http://host.openshell.internal:11434/v1",
+        ncpPartner: null,
+        model: "qwen3:32b",
+        profile: "ollama",
+        credentialEnv: "OPENAI_API_KEY",
+        provider: "ollama-local",
+        providerLabel: "Local Ollama",
+        availableModels: ["nemotron-3-super-120b", "qwen3:32b"],
+        onboardedAt: "2026-03-20T22:00:00.000Z",
+      });
+
+      const { lines, logger } = captureLogger();
+
+      await cliStatus({ json: false, logger, pluginConfig: defaultConfig });
+
+      const output = lines.join("\n");
+      expect(output).toContain("Catalog:   active route is in saved catalog");
+      expect(output).toContain("            qwen3:32b, nemotron-3-super-120b");
     });
 
     it("shows running sandbox with uptime in text output", async () => {
