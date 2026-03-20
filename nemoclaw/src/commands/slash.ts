@@ -15,6 +15,7 @@ import { loadState } from "../blueprint/state.js";
 import {
   describeOnboardEndpoint,
   describeOnboardProvider,
+  getConfiguredModelCatalog,
   loadOnboardConfig,
 } from "../onboard/config.js";
 
@@ -87,6 +88,7 @@ function slashStatus(): PluginCommandResult {
 function slashOnboard(): PluginCommandResult {
   const config = loadOnboardConfig();
   if (config) {
+    const catalog = getConfiguredModelCatalog(config);
     return {
       text: [
         "**NemoClaw Onboard Status**",
@@ -95,6 +97,7 @@ function slashOnboard(): PluginCommandResult {
         `Provider: ${describeOnboardProvider(config)}`,
         config.ncpPartner ? `NCP Partner: ${config.ncpPartner}` : null,
         `Model: ${config.model}`,
+        catalog.length > 1 ? `Catalog: ${catalog.join(", ")}` : null,
         `Credential: $${config.credentialEnv}`,
         `Profile: ${config.profile}`,
         `Onboarded: ${config.onboardedAt}`,

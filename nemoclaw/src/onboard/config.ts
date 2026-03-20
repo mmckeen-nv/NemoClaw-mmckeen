@@ -17,7 +17,19 @@ export interface NemoClawOnboardConfig {
   credentialEnv: string;
   provider?: string;
   providerLabel?: string;
+  availableModels?: string[];
   onboardedAt: string;
+}
+
+export function isLocalEndpointType(endpointType: EndpointType): boolean {
+  return endpointType === "ollama" || endpointType === "vllm" || endpointType === "nim-local";
+}
+
+export function getConfiguredModelCatalog(config: NemoClawOnboardConfig): string[] {
+  const catalog = [config.model, ...(config.availableModels ?? [])]
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  return [...new Set(catalog)];
 }
 
 export function describeOnboardEndpoint(config: NemoClawOnboardConfig): string {

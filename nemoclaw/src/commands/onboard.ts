@@ -6,6 +6,8 @@ import type { PluginLogger, NemoClawConfig } from "../index.js";
 import {
   describeOnboardEndpoint,
   describeOnboardProvider,
+  getConfiguredModelCatalog,
+  isLocalEndpointType,
   loadOnboardConfig,
   saveOnboardConfig,
   type EndpointType,
@@ -167,14 +169,19 @@ function showConfig(config: NemoClawOnboardConfig, logger: PluginLogger): void {
     logger.info(`  NCP Partner: ${config.ncpPartner}`);
   }
   logger.info(`  Model:       ${config.model}`);
+  const catalog = getConfiguredModelCatalog(config);
+  if (catalog.length > 1) {
+    logger.info(`  Catalog:     ${catalog.join(", ")}`);
+  }
   logger.info(`  Credential:  $${config.credentialEnv}`);
   logger.info(`  Profile:     ${config.profile}`);
   logger.info(`  Onboarded:   ${config.onboardedAt}`);
 }
 
-async function promptEndpoint(
-  ollama: { installed: boolean; running: boolean },
-): Promise<EndpointType> {
+async function promptEndpoint(ollama: {
+  installed: boolean;
+  running: boolean;
+}): Promise<EndpointType> {
   const options = [
     {
       label: "NVIDIA Build (build.nvidia.com)",
@@ -258,9 +265,7 @@ export async function cliOnboard(opts: OnboardOptions): Promise<void> {
     }
     const ep = opts.endpoint as EndpointType;
     if (!SUPPORTED_ENDPOINT_TYPES.includes(ep)) {
-      logger.warn(
-        `Note: '${ep}' is experimental and may not work reliably.`,
-      );
+      logger.warn(`Note: '${ep}' is experimental and may not work reliably.`);
     }
     endpointType = ep;
   } else {
@@ -364,19 +369,19 @@ export async function cliOnboard(opts: OnboardOptions): Promise<void> {
 
   // Step 5: Model Selection
   let model: string;
+  const discoveredModels = endpointType === "ollama" ? getOllamaModelOptions() : validation.models;
   if (opts.model) {
     model = opts.model;
   } else {
-    const discoveredModelOptions =
-      endpointType === "ollama"
-        ? getOllamaModelOptions().map((id) => ({ label: id, value: id }))
-        : validation.models.map((id) => ({ label: id, value: id }));
+    const discoveredModelOptions = discoveredModels.map((id) => ({ label: id, value: id }));
     const curatedCloudOptions =
       endpointType === "build" || endpointType === "ncp"
-        ? DEFAULT_MODELS.filter((option) => validation.models.includes(option.id)).map((option) => ({
-            label: `${option.label} (${option.id})`,
-            value: option.id,
-          }))
+        ? DEFAULT_MODELS.filter((option) => validation.models.includes(option.id)).map(
+            (option) => ({
+              label: `${option.label} (${option.id})`,
+              value: option.id,
+            }),
+          )
         : [];
     const defaultIndex =
       endpointType === "ollama"
@@ -398,6 +403,9 @@ export async function cliOnboard(opts: OnboardOptions): Promise<void> {
   // Step 6: Resolve profile
   const profile = resolveProfile(endpointType);
   const providerName = resolveProviderName(endpointType);
+  const availableModels = isLocalEndpointType(endpointType)
+    ? [...new Set([model, ...discoveredModels].map((entry) => entry.trim()).filter(Boolean))]
+    : undefined;
   const summaryConfig: NemoClawOnboardConfig = {
     endpointType,
     endpointUrl,
@@ -407,6 +415,7 @@ export async function cliOnboard(opts: OnboardOptions): Promise<void> {
     credentialEnv,
     provider: providerName,
     providerLabel: undefined,
+    availableModels,
     onboardedAt: "",
   };
   summaryConfig.providerLabel = describeOnboardProvider(summaryConfig);
@@ -420,6 +429,9 @@ export async function cliOnboard(opts: OnboardOptions): Promise<void> {
     logger.info(`  NCP Partner: ${ncpPartner}`);
   }
   logger.info(`  Model:       ${model}`);
+  if (availableModels && availableModels.length > 1) {
+    logger.info(`  Catalog:     ${availableModels.join(", ")}`);
+  }
   logger.info(
     `  API Key:     ${requiresApiKey ? maskApiKey(apiKey) : "not required (local provider)"}`,
   );
@@ -505,6 +517,7 @@ export async function cliOnboard(opts: OnboardOptions): Promise<void> {
     credentialEnv,
     provider: providerName,
     providerLabel: summaryConfig.providerLabel,
+    availableModels,
     onboardedAt: new Date().toISOString(),
   });
 
@@ -515,6 +528,9 @@ export async function cliOnboard(opts: OnboardOptions): Promise<void> {
   logger.info(`  Endpoint:   ${describeOnboardEndpoint(summaryConfig)}`);
   logger.info(`  Provider:   ${summaryConfig.providerLabel}`);
   logger.info(`  Model:      ${model}`);
+  if (availableModels && availableModels.length > 1) {
+    logger.info(`  Catalog:    ${availableModels.join(", ")}`);
+  }
   logger.info(`  Credential: $${credentialEnv}`);
   logger.info("");
   logger.info("Next steps:");

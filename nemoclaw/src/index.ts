@@ -17,6 +17,8 @@ import { handleSlashCommand } from "./commands/slash.js";
 import {
   describeOnboardEndpoint,
   describeOnboardProvider,
+  getConfiguredModelCatalog,
+  isLocalEndpointType,
   loadOnboardConfig,
 } from "./onboard/config.js";
 
@@ -147,7 +149,9 @@ export interface NemoClawConfig {
   inferenceProvider: string;
 }
 
-function activeModelEntries(onboardCfg: ReturnType<typeof loadOnboardConfig>): ModelProviderEntry[] {
+function activeModelEntries(
+  onboardCfg: ReturnType<typeof loadOnboardConfig>,
+): ModelProviderEntry[] {
   if (!onboardCfg?.model) {
     return [
       {
@@ -177,14 +181,16 @@ function activeModelEntries(onboardCfg: ReturnType<typeof loadOnboardConfig>): M
     ];
   }
 
-  return [
-    {
-      id: `inference/${onboardCfg.model}`,
-      label: onboardCfg.model,
-      contextWindow: 131072,
-      maxOutput: 8192,
-    },
-  ];
+  const catalog = getConfiguredModelCatalog(onboardCfg);
+  return catalog.map((modelId) => ({
+    id: `inference/${modelId}`,
+    label:
+      isLocalEndpointType(onboardCfg.endpointType) && modelId === onboardCfg.model
+        ? `${modelId} (default)`
+        : modelId,
+    contextWindow: 131072,
+    maxOutput: 8192,
+  }));
 }
 
 function registeredProviderForConfig(
@@ -202,7 +208,14 @@ function registeredProviderForConfig(
     aliases: ["inference-local", "nemoclaw"],
     envVars: [providerCredentialEnv],
     models: { chat: activeModelEntries(onboardCfg) },
-    auth: [{ type: "bearer", envVar: providerCredentialEnv, headerName: "Authorization", label: authLabel }],
+    auth: [
+      {
+        type: "bearer",
+        envVar: providerCredentialEnv,
+        headerName: "Authorization",
+        label: authLabel,
+      },
+    ],
   };
 }
 
