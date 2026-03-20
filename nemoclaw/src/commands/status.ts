@@ -47,6 +47,7 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
   const localModelCatalog = onboard && isLocalEndpointType(onboard.endpointType)
     ? getConfiguredModelCatalog(onboard)
     : [];
+  const localModelWorkflow = getLocalModelWorkflowStatus(onboard, inference);
 
   const statusData = {
     nemoclaw: {
@@ -70,6 +71,7 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
           onboardedAt: onboard.onboardedAt,
         }
       : null,
+    localModelWorkflow,
     insideSandbox,
   };
 
@@ -124,6 +126,20 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
       logger.info("  Note:      Saved as the local default/catalog for future dashboard control-plane reads.");
     }
     logger.info(`  Onboarded: ${onboard.onboardedAt}`);
+    logger.info("");
+  }
+
+  if (localModelWorkflow) {
+    logger.info("Local Model Workflow:");
+    logger.info(`  Default:   ${localModelWorkflow.defaultModel ?? "unknown"}`);
+    logger.info(`  Active:    ${localModelWorkflow.activeModel ?? "unknown"}`);
+    logger.info(`  Source:    ${localModelWorkflow.activeModelSource ?? "unknown"}`);
+    logger.info(
+      `  Drift:     ${localModelWorkflow.activeModelMatchesDefault ? "none" : "active route differs from saved default"}`,
+    );
+    if (localModelWorkflow.catalog.length > 0) {
+      logger.info(`  Catalog:   ${localModelWorkflow.catalog.join(", ")}`);
+    }
     logger.info("");
   }
 
@@ -191,6 +207,46 @@ interface InferenceStatusResponse {
   provider?: string;
   model?: string;
   endpoint?: string;
+}
+
+interface LocalModelWorkflowStatus {
+  enabled: boolean;
+  provider: string | null;
+  providerLabel: string | null;
+  endpointType: string | null;
+  endpoint: string | null;
+  defaultModel: string | null;
+  activeModel: string | null;
+  activeModelSource: "inference" | "onboarding" | null;
+  activeModelMatchesDefault: boolean;
+  catalog: string[];
+}
+
+function getLocalModelWorkflowStatus(
+  onboard: ReturnType<typeof loadOnboardConfig>,
+  inference: InferenceStatus,
+): LocalModelWorkflowStatus | null {
+  if (!onboard || !isLocalEndpointType(onboard.endpointType)) {
+    return null;
+  }
+
+  const catalog = getConfiguredModelCatalog(onboard);
+  const inferenceModel = inference.configured ? inference.model?.trim() ?? null : null;
+  const defaultModel = onboard.model.trim();
+  const activeModel = inferenceModel || defaultModel;
+
+  return {
+    enabled: true,
+    provider: onboard.provider ?? null,
+    providerLabel: describeOnboardProvider(onboard),
+    endpointType: onboard.endpointType,
+    endpoint: onboard.endpointUrl,
+    defaultModel,
+    activeModel,
+    activeModelSource: inferenceModel ? "inference" : "onboarding",
+    activeModelMatchesDefault: activeModel === defaultModel,
+    catalog,
+  };
 }
 
 async function getInferenceStatus(insideSandbox: boolean): Promise<InferenceStatus> {

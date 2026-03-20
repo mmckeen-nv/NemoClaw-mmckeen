@@ -237,6 +237,45 @@ describe("cliStatus", () => {
         isLocalEndpoint: true,
         onboardedAt: "2026-03-20T22:00:00.000Z",
       });
+      expect(data.localModelWorkflow).toEqual({
+        enabled: true,
+        provider: "ollama-local",
+        providerLabel: "Local Ollama",
+        endpointType: "ollama",
+        endpoint: "http://host.openshell.internal:11434/v1",
+        defaultModel: "qwen3:32b",
+        activeModel: "nemotron-3-super-120b",
+        activeModelSource: "inference",
+        activeModelMatchesDefault: false,
+        catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
+      });
+    });
+
+    it("shows local model workflow drift in text output for dashboard control-plane consumers", async () => {
+      vi.mocked(loadOnboardConfig).mockReturnValue({
+        endpointType: "ollama",
+        endpointUrl: "http://host.openshell.internal:11434/v1",
+        ncpPartner: null,
+        model: "qwen3:32b",
+        profile: "ollama",
+        credentialEnv: "OPENAI_API_KEY",
+        provider: "ollama-local",
+        providerLabel: "Local Ollama",
+        availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+        onboardedAt: "2026-03-20T22:00:00.000Z",
+      });
+
+      const { lines, logger } = captureLogger();
+
+      await cliStatus({ json: false, logger, pluginConfig: defaultConfig });
+
+      const output = lines.join("\n");
+      expect(output).toContain("Local Model Workflow:");
+      expect(output).toContain("Default:   qwen3:32b");
+      expect(output).toContain("Active:    nemotron-3-super-120b");
+      expect(output).toContain("Source:    inference");
+      expect(output).toContain("Drift:     active route differs from saved default");
+      expect(output).toContain("Catalog:   qwen3:32b, nemotron-3-nano:30b");
     });
 
     it("shows running sandbox with uptime in text output", async () => {
