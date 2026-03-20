@@ -24,10 +24,19 @@ vi.mock("../blueprint/state.js", () => ({
   loadState: vi.fn(),
 }));
 
+vi.mock("../onboard/config.js", async () => {
+  const actual = await vi.importActual<typeof import("../onboard/config.js")>("../onboard/config.js");
+  return {
+    ...actual,
+    loadOnboardConfig: vi.fn(() => null),
+  };
+});
+
 // Import after mocks are set up
 const { existsSync } = await import("node:fs");
 const { exec } = await import("node:child_process");
 const { loadState } = await import("../blueprint/state.js");
+const { loadOnboardConfig } = await import("../onboard/config.js");
 const { cliStatus } = await import("./status.js");
 
 // ---------------------------------------------------------------------------
@@ -115,6 +124,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(existsSync).mockReturnValue(false);
   vi.mocked(loadState).mockReturnValue(blankState());
+  vi.mocked(loadOnboardConfig).mockReturnValue(null);
   mockExec({});
 });
 
@@ -169,6 +179,63 @@ describe("cliStatus", () => {
           model: "nemotron-3-super-120b",
           endpoint: "https://integrate.api.nvidia.com",
         }),
+      });
+    });
+
+    it("shows saved local model catalog from onboarding when present", async () => {
+      vi.mocked(loadOnboardConfig).mockReturnValue({
+        endpointType: "ollama",
+        endpointUrl: "http://host.openshell.internal:11434/v1",
+        ncpPartner: null,
+        model: "qwen3:32b",
+        profile: "ollama",
+        credentialEnv: "OPENAI_API_KEY",
+        provider: "ollama-local",
+        providerLabel: "Local Ollama",
+        availableModels: ["qwen3:32b", "nemotron-3-nano:30b"],
+        onboardedAt: "2026-03-20T22:00:00.000Z",
+      });
+
+      const { lines, logger } = captureLogger();
+
+      await cliStatus({ json: false, logger, pluginConfig: defaultConfig });
+
+      const output = lines.join("\n");
+      expect(output).toContain("Onboarding:");
+      expect(output).toContain("Endpoint:  ollama (http://host.openshell.internal:11434/v1)");
+      expect(output).toContain("Provider:  Local Ollama");
+      expect(output).toContain("Model:     qwen3:32b");
+      expect(output).toContain("Catalog:   qwen3:32b, nemotron-3-nano:30b");
+      expect(output).toContain("Saved as the local default/catalog for future dashboard control-plane reads.");
+    });
+
+    it("includes onboarding local catalog metadata in JSON output", async () => {
+      vi.mocked(loadOnboardConfig).mockReturnValue({
+        endpointType: "ollama",
+        endpointUrl: "http://host.openshell.internal:11434/v1",
+        ncpPartner: null,
+        model: "qwen3:32b",
+        profile: "ollama",
+        credentialEnv: "OPENAI_API_KEY",
+        provider: "ollama-local",
+        providerLabel: "Local Ollama",
+        availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+        onboardedAt: "2026-03-20T22:00:00.000Z",
+      });
+
+      const { lines, logger } = captureLogger();
+
+      await cliStatus({ json: true, logger, pluginConfig: defaultConfig });
+
+      const data = JSON.parse(lines.join(""));
+      expect(data.onboarding).toEqual({
+        endpoint: "ollama (http://host.openshell.internal:11434/v1)",
+        provider: "Local Ollama",
+        endpointType: "ollama",
+        model: "qwen3:32b",
+        localModelCatalog: ["qwen3:32b", "nemotron-3-nano:30b"],
+        isLocalEndpoint: true,
+        onboardedAt: "2026-03-20T22:00:00.000Z",
       });
     });
 

@@ -6,6 +6,13 @@ import { existsSync } from "node:fs";
 import { promisify } from "node:util";
 import type { PluginLogger, NemoClawConfig } from "../index.js";
 import { loadState } from "../blueprint/state.js";
+import {
+  describeOnboardEndpoint,
+  describeOnboardProvider,
+  getConfiguredModelCatalog,
+  isLocalEndpointType,
+  loadOnboardConfig,
+} from "../onboard/config.js";
 
 const execAsync = promisify(exec);
 
@@ -28,6 +35,7 @@ export interface StatusOptions {
 export async function cliStatus(opts: StatusOptions): Promise<void> {
   const { json: jsonOutput, logger } = opts;
   const state = loadState();
+  const onboard = loadOnboardConfig();
   const sandboxName = state.sandboxName ?? "openclaw";
   const insideSandbox = isInsideSandbox();
 
@@ -35,6 +43,10 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     getSandboxStatus(sandboxName, insideSandbox),
     getInferenceStatus(insideSandbox),
   ]);
+
+  const localModelCatalog = onboard && isLocalEndpointType(onboard.endpointType)
+    ? getConfiguredModelCatalog(onboard)
+    : [];
 
   const statusData = {
     nemoclaw: {
@@ -47,6 +59,17 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     },
     sandbox,
     inference,
+    onboarding: onboard
+      ? {
+          endpoint: describeOnboardEndpoint(onboard),
+          provider: describeOnboardProvider(onboard),
+          endpointType: onboard.endpointType,
+          model: onboard.model,
+          localModelCatalog,
+          isLocalEndpoint: isLocalEndpointType(onboard.endpointType),
+          onboardedAt: onboard.onboardedAt,
+        }
+      : null,
     insideSandbox,
   };
 
@@ -90,6 +113,19 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     logger.info("  Status:  not running");
   }
   logger.info("");
+
+  if (onboard) {
+    logger.info("Onboarding:");
+    logger.info(`  Endpoint:  ${describeOnboardEndpoint(onboard)}`);
+    logger.info(`  Provider:  ${describeOnboardProvider(onboard)}`);
+    logger.info(`  Model:     ${onboard.model}`);
+    if (localModelCatalog.length > 0) {
+      logger.info(`  Catalog:   ${localModelCatalog.join(", ")}`);
+      logger.info("  Note:      Saved as the local default/catalog for future dashboard control-plane reads.");
+    }
+    logger.info(`  Onboarded: ${onboard.onboardedAt}`);
+    logger.info("");
+  }
 
   logger.info("Inference:");
   if (inference.configured) {
