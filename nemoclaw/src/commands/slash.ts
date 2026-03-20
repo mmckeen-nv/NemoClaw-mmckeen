@@ -16,7 +16,9 @@ import {
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
+  isLocalEndpointType,
   loadOnboardConfig,
+  type NemoClawOnboardConfig,
 } from "../onboard/config.js";
 
 export function handleSlashCommand(
@@ -61,6 +63,7 @@ function slashHelp(): PluginCommandResult {
 
 function slashStatus(): PluginCommandResult {
   const state = loadState();
+  const config = loadOnboardConfig();
 
   if (!state.lastAction) {
     return {
@@ -80,6 +83,26 @@ function slashStatus(): PluginCommandResult {
 
   if (state.migrationSnapshot) {
     lines.push("", `Rollback snapshot: ${state.migrationSnapshot}`);
+  }
+
+  if (config) {
+    lines.push(
+      "",
+      "**Onboarding**",
+      `Endpoint: ${describeOnboardEndpoint(config)}`,
+      `Provider: ${describeOnboardProvider(config)}`,
+      `Model: ${config.model}`,
+    );
+
+    const catalog = getConfiguredModelCatalog(config);
+    if (catalog.length > 1) {
+      lines.push(`Catalog: ${catalog.join(", ")}`);
+    }
+
+    const localWorkflow = formatLocalModelWorkflow(config);
+    if (localWorkflow.length > 0) {
+      lines.push("", "**Local Model Workflow**", ...localWorkflow);
+    }
   }
 
   return { text: lines.join("\n") };
@@ -124,6 +147,21 @@ function slashOnboard(): PluginCommandResult {
       "```",
     ].join("\n"),
   };
+}
+
+function formatLocalModelWorkflow(config: NemoClawOnboardConfig): string[] {
+  if (!isLocalEndpointType(config.endpointType)) {
+    return [];
+  }
+
+  const catalog = getConfiguredModelCatalog(config);
+  return [
+    `Default: ${config.model}`,
+    `Active: ${config.model} (saved default)`,
+    "Source: onboarding",
+    "Drift: none",
+    ...(catalog.length > 0 ? [`Catalog: ${catalog.join(", ")}`] : []),
+  ];
 }
 
 function slashEject(): PluginCommandResult {
