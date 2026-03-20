@@ -4,6 +4,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getConfiguredModelCatalog,
+  getSavedLocalModelWorkflow,
   isLocalEndpointType,
   type NemoClawOnboardConfig,
 } from "./config.js";
@@ -46,5 +47,31 @@ describe("onboard config helpers", () => {
     expect(getConfiguredModelCatalog(config({ availableModels: undefined }))).toEqual([
       "nemotron-3-nano:30b",
     ]);
+  });
+
+  it("builds saved local workflow metadata for dashboard consumers", () => {
+    expect(
+      getSavedLocalModelWorkflow(
+        config({
+          availableModels: ["llama3.3:70b", "nemotron-3-nano:30b", "qwen2.5:32b"],
+        }),
+      ),
+    ).toEqual({
+      enabled: true,
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      endpointType: "ollama",
+      endpoint: "http://host.openshell.internal:11434/v1",
+      defaultModel: "nemotron-3-nano:30b",
+      activeModel: "nemotron-3-nano:30b",
+      activeModelSource: "onboarding",
+      activeModelMatchesDefault: true,
+      activeModelInCatalog: true,
+      catalog: ["nemotron-3-nano:30b", "llama3.3:70b", "qwen2.5:32b"],
+    });
+  });
+
+  it("returns null saved workflow metadata for non-local endpoints", () => {
+    expect(getSavedLocalModelWorkflow(config({ endpointType: "build" }))).toBeNull();
   });
 });

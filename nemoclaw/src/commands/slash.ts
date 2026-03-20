@@ -16,6 +16,7 @@ import {
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
+  getSavedLocalModelWorkflow,
   isLocalEndpointType,
   loadOnboardConfig,
   type NemoClawOnboardConfig,
@@ -112,6 +113,7 @@ function slashOnboard(): PluginCommandResult {
   const config = loadOnboardConfig();
   if (config) {
     const catalog = getConfiguredModelCatalog(config);
+    const localWorkflow = formatLocalModelWorkflow(config);
     return {
       text: [
         "**NemoClaw Onboard Status**",
@@ -124,6 +126,7 @@ function slashOnboard(): PluginCommandResult {
         `Credential: $${config.credentialEnv}`,
         `Profile: ${config.profile}`,
         `Onboarded: ${config.onboardedAt}`,
+        ...(localWorkflow.length > 0 ? ["", "**Local Model Workflow**", ...localWorkflow] : []),
         "",
         "To reconfigure, run: `openclaw nemoclaw onboard`",
       ]
@@ -154,13 +157,18 @@ function formatLocalModelWorkflow(config: NemoClawOnboardConfig): string[] {
     return [];
   }
 
-  const catalog = getConfiguredModelCatalog(config);
+  const workflow = getSavedLocalModelWorkflow(config);
+  if (!workflow) {
+    return [];
+  }
+
   return [
-    `Default: ${config.model}`,
-    `Active: ${config.model} (saved default)`,
-    "Source: onboarding",
-    "Drift: none",
-    ...(catalog.length > 0 ? [`Catalog: ${catalog.join(", ")}`] : []),
+    `Default: ${workflow.defaultModel}`,
+    `Active: ${workflow.activeModel} (saved default)`,
+    `Source: ${workflow.activeModelSource}`,
+    `Drift: ${workflow.activeModelMatchesDefault ? "none" : "active route differs from saved default"}`,
+    `Catalog: ${workflow.activeModelInCatalog ? "active route is in saved catalog" : "active route is outside saved catalog"}`,
+    ...(workflow.catalog.length > 0 ? [`Saved Models: ${workflow.catalog.join(", ")}`] : []),
   ];
 }
 

@@ -58,6 +58,8 @@ describe("/nemoclaw slash command", () => {
     expect(result.text).toContain("Active: qwen3:32b (saved default)");
     expect(result.text).toContain("Source: onboarding");
     expect(result.text).toContain("Drift: none");
+    expect(result.text).toContain("Catalog: active route is in saved catalog");
+    expect(result.text).toContain("Saved Models: qwen3:32b, nemotron-3-nano:30b");
   });
 
   it("keeps cloud onboarding free of local workflow lines", () => {
@@ -78,5 +80,28 @@ describe("/nemoclaw slash command", () => {
     expect(result.text).toContain("**Onboarding**");
     expect(result.text).not.toContain("**Local Model Workflow**");
     expect(result.text).not.toContain("Drift:");
+  });
+
+  it("includes local workflow metadata in onboard status for local onboarding", () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+
+    const result = handleSlashCommand({ args: "onboard" }, {} as never);
+
+    expect(result.text).toContain("**NemoClaw Onboard Status**");
+    expect(result.text).toContain("**Local Model Workflow**");
+    expect(result.text).toContain("Default: qwen3:32b");
+    expect(result.text).toContain("Catalog: active route is in saved catalog");
+    expect(result.text).toContain("Saved Models: qwen3:32b, nemotron-3-nano:30b");
   });
 });

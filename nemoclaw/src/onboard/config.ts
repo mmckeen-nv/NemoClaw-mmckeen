@@ -32,6 +32,43 @@ export function getConfiguredModelCatalog(config: NemoClawOnboardConfig): string
   return [...new Set(catalog)];
 }
 
+export interface SavedLocalModelWorkflow {
+  enabled: true;
+  provider: string | null;
+  providerLabel: string;
+  endpointType: EndpointType;
+  endpoint: string;
+  defaultModel: string;
+  activeModel: string;
+  activeModelSource: "onboarding";
+  activeModelMatchesDefault: true;
+  activeModelInCatalog: boolean;
+  catalog: string[];
+}
+
+export function getSavedLocalModelWorkflow(config: NemoClawOnboardConfig): SavedLocalModelWorkflow | null {
+  if (!isLocalEndpointType(config.endpointType)) {
+    return null;
+  }
+
+  const catalog = getConfiguredModelCatalog(config);
+  const defaultModel = config.model.trim();
+
+  return {
+    enabled: true,
+    provider: config.provider ?? null,
+    providerLabel: describeOnboardProvider(config),
+    endpointType: config.endpointType,
+    endpoint: config.endpointUrl,
+    defaultModel,
+    activeModel: defaultModel,
+    activeModelSource: "onboarding",
+    activeModelMatchesDefault: true,
+    activeModelInCatalog: catalog.includes(defaultModel),
+    catalog,
+  };
+}
+
 export function describeOnboardEndpoint(config: NemoClawOnboardConfig): string {
   if (config.endpointUrl === "https://inference.local/v1") {
     return "Managed Inference Route (inference.local)";
