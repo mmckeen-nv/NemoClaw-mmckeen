@@ -175,6 +175,13 @@ describe("cliSetLocalModel", () => {
       providerLabel: "Local Ollama",
       defaultModel: "qwen3:32b",
       catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
+      choiceCounts: {
+        total: 2,
+        selectable: 1,
+        nonSelectable: 1,
+        inCatalog: 2,
+        outsideCatalog: 0,
+      },
       choices: [
         {
           model: "qwen3:32b",
@@ -532,6 +539,13 @@ describe("cliSetLocalModel", () => {
         endpointDiffersFromOnboarding: false,
       },
       catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
+      choiceCounts: {
+        total: 3,
+        selectable: 2,
+        nonSelectable: 1,
+        inCatalog: 2,
+        outsideCatalog: 1,
+      },
       choices: [
         {
           model: "qwen3:32b",

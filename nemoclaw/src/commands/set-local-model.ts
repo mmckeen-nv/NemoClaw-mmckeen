@@ -23,6 +23,14 @@ export interface SetLocalModelOptions {
   logger: PluginLogger;
 }
 
+interface ChoiceCounts {
+  total: number;
+  selectable: number;
+  nonSelectable: number;
+  inCatalog: number;
+  outsideCatalog: number;
+}
+
 interface SetLocalModelResult {
   ok: true;
   generatedAt: string;
@@ -47,6 +55,7 @@ interface SetLocalModelResult {
   activeModelInCatalog: boolean;
   drift: LocalModelWorkflowDrift;
   catalog: string[];
+  choiceCounts: ChoiceCounts;
   choices: ReturnType<typeof buildLocalModelChoices>;
   defaultChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
   activeChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
@@ -71,6 +80,7 @@ interface SetLocalModelErrorResult {
   providerLabel?: string;
   defaultModel?: string;
   catalog?: string[];
+  choiceCounts?: ChoiceCounts;
   choices?: ReturnType<typeof buildLocalModelChoices>;
   actions?: ReturnType<typeof getLocalModelWorkflowActions>;
   recommendedActions?: LocalModelWorkflowRecommendedAction[];
@@ -137,6 +147,16 @@ function setInferenceRoute(provider: string, model: string): void {
   });
 }
 
+function getChoiceCounts(choices: ReturnType<typeof buildLocalModelChoices>): ChoiceCounts {
+  return {
+    total: choices.length,
+    selectable: choices.filter((choice) => choice.isSelectable).length,
+    nonSelectable: choices.filter((choice) => !choice.isSelectable).length,
+    inCatalog: choices.filter((choice) => choice.inCatalog).length,
+    outsideCatalog: choices.filter((choice) => !choice.inCatalog).length,
+  };
+}
+
 function getRecommendedActionsForChoices(
   defaultModel: string,
   activeModel: string,
@@ -168,13 +188,7 @@ function getRecommendedActionsForChoices(
     liveRouteStatus: "live-openshell",
     selectionScope: "sandbox-global",
     selectionMode: "single-active-route",
-    choiceCounts: {
-      total: choices.length,
-      selectable: choices.filter((choice) => choice.isSelectable).length,
-      nonSelectable: choices.filter((choice) => !choice.isSelectable).length,
-      inCatalog: choices.filter((choice) => choice.inCatalog).length,
-      outsideCatalog: choices.filter((choice) => !choice.inCatalog).length,
-    },
+    choiceCounts: getChoiceCounts(choices),
     provider,
     providerLabel,
     savedProvider: provider,
@@ -253,6 +267,15 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
   const providerLabel = describeOnboardProvider(onboard);
   const inCatalog = catalog.includes(trimmedModel);
   if (!inCatalog && !allowOutsideCatalog) {
+    const fallbackChoices = buildLocalModelChoices(
+      defaultModel,
+      defaultModel,
+      catalog,
+      provider,
+      providerLabel,
+      onboard.endpointUrl,
+      onboard.endpointType,
+    );
     emitError(logger, json, `Model '${trimmedModel}' is outside the saved local catalog.`, {
       code: "MODEL_OUTSIDE_CATALOG",
       model: trimmedModel,
@@ -262,15 +285,8 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       providerLabel,
       defaultModel,
       catalog,
-      choices: buildLocalModelChoices(
-        defaultModel,
-        defaultModel,
-        catalog,
-        provider,
-        providerLabel,
-        onboard.endpointUrl,
-        onboard.endpointType,
-      ),
+      choiceCounts: getChoiceCounts(fallbackChoices),
+      choices: fallbackChoices,
       actions: getLocalModelWorkflowActions(
         defaultModel,
         defaultModel,
@@ -301,6 +317,15 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
   } catch (err) {
     const stderr =
       err instanceof Error && "stderr" in err ? String((err as { stderr: unknown }).stderr) : "";
+    const fallbackChoices = buildLocalModelChoices(
+      defaultModel,
+      defaultModel,
+      catalog,
+      provider,
+      providerLabel,
+      onboard.endpointUrl,
+      onboard.endpointType,
+    );
     emitError(logger, json, `Failed to set inference route: ${stderr || String(err)}`, {
       code: "INFERENCE_SET_FAILED",
       model: trimmedModel,
@@ -310,15 +335,8 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       providerLabel,
       defaultModel,
       catalog,
-      choices: buildLocalModelChoices(
-        defaultModel,
-        defaultModel,
-        catalog,
-        provider,
-        providerLabel,
-        onboard.endpointUrl,
-        onboard.endpointType,
-      ),
+      choiceCounts: getChoiceCounts(fallbackChoices),
+      choices: fallbackChoices,
       actions: getLocalModelWorkflowActions(
         defaultModel,
         defaultModel,
@@ -381,6 +399,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     activeModelInCatalog: inCatalog,
     drift,
     catalog,
+    choiceCounts: getChoiceCounts(choices),
     choices,
     defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
     activeChoice: choices.find((choice) => choice.isActive) ?? null,

@@ -22,6 +22,14 @@ export interface RestoreLocalModelOptions {
   logger: PluginLogger;
 }
 
+interface ChoiceCounts {
+  total: number;
+  selectable: number;
+  nonSelectable: number;
+  inCatalog: number;
+  outsideCatalog: number;
+}
+
 interface RestoreLocalModelResult {
   ok: true;
   generatedAt: string;
@@ -47,6 +55,7 @@ interface RestoreLocalModelResult {
   activeModelInCatalog: boolean;
   drift: LocalModelWorkflowDrift;
   catalog: string[];
+  choiceCounts: ChoiceCounts;
   choices: ReturnType<typeof buildLocalModelChoices>;
   defaultChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
   activeChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
@@ -137,6 +146,16 @@ function getCurrentInferenceRoute(): { provider: string | null; model: string | 
   }
 }
 
+function getChoiceCounts(choices: ReturnType<typeof buildLocalModelChoices>): ChoiceCounts {
+  return {
+    total: choices.length,
+    selectable: choices.filter((choice) => choice.isSelectable).length,
+    nonSelectable: choices.filter((choice) => !choice.isSelectable).length,
+    inCatalog: choices.filter((choice) => choice.inCatalog).length,
+    outsideCatalog: choices.filter((choice) => !choice.inCatalog).length,
+  };
+}
+
 function getRecommendedActionsForRestoreState(
   defaultModel: string,
   activeModel: string,
@@ -168,13 +187,7 @@ function getRecommendedActionsForRestoreState(
     liveRouteStatus: "live-openshell",
     selectionScope: "sandbox-global",
     selectionMode: "single-active-route",
-    choiceCounts: {
-      total: choices.length,
-      selectable: choices.filter((choice) => choice.isSelectable).length,
-      nonSelectable: choices.filter((choice) => !choice.isSelectable).length,
-      inCatalog: choices.filter((choice) => choice.inCatalog).length,
-      outsideCatalog: choices.filter((choice) => !choice.inCatalog).length,
-    },
+    choiceCounts: getChoiceCounts(choices),
     provider,
     providerLabel,
     savedProvider: provider,
@@ -301,6 +314,7 @@ export function cliRestoreLocalModel(opts: RestoreLocalModelOptions): void {
         endpointDiffersFromOnboarding: false,
       },
       catalog,
+      choiceCounts: getChoiceCounts(choices),
       choices,
       defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
       activeChoice: choices.find((choice) => choice.isActive) ?? null,

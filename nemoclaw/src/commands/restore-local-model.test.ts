@@ -122,6 +122,13 @@ describe("cliRestoreLocalModel", () => {
         providerDiffersFromOnboarding: false,
         endpointDiffersFromOnboarding: false,
       },
+      choiceCounts: {
+        total: 2,
+        selectable: 1,
+        nonSelectable: 1,
+        inCatalog: 2,
+        outsideCatalog: 0,
+      },
       actions: {
         restoreDefaultModel: {
           enabled: false,
