@@ -40,6 +40,7 @@ export interface LocalModelChoice {
   isDefault: boolean;
   isActive: boolean;
   isSelectable: boolean;
+  selectableReason: "already-active-on-target-route" | "would-change-target-route";
   inCatalog: boolean;
   source: "default" | "catalog" | "active-route";
   command: string;
@@ -214,6 +215,9 @@ export function buildLocalModelChoices(
         isDefault,
         isActive,
         isSelectable: wouldChangeActiveRoute,
+        selectableReason: wouldChangeActiveRoute
+          ? "would-change-target-route"
+          : "already-active-on-target-route",
         inCatalog,
         source: isActive && !inCatalog
           ? "active-route"
