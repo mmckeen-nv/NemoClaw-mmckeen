@@ -352,8 +352,8 @@ describe("cliStatus", () => {
           {
             model: "nemotron-3-super-120b",
             label: "nemotron-3-super-120b",
-            badges: ["active", "outside-catalog"],
-            summary: "active, outside-catalog",
+            badges: ["active", "outside-catalog", "provider-drift", "endpoint-drift"],
+            summary: "active, outside-catalog, provider-drift, endpoint-drift",
             isDefault: false,
             isActive: true,
           isSelectable: true,
@@ -393,8 +393,8 @@ describe("cliStatus", () => {
         activeChoice: {
           model: "nemotron-3-super-120b",
           label: "nemotron-3-super-120b",
-          badges: ["active", "outside-catalog"],
-          summary: "active, outside-catalog",
+          badges: ["active", "outside-catalog", "provider-drift", "endpoint-drift"],
+          summary: "active, outside-catalog, provider-drift, endpoint-drift",
           isDefault: false,
           isActive: true,
           isSelectable: true,

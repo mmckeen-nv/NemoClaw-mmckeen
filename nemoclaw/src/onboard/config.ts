@@ -35,7 +35,9 @@ export function getConfiguredModelCatalog(config: NemoClawOnboardConfig): string
 export interface LocalModelChoice {
   model: string;
   label: string;
-  badges: Array<"default" | "active" | "outside-catalog">;
+  badges: Array<
+    "default" | "active" | "outside-catalog" | "provider-drift" | "endpoint-drift"
+  >;
   summary: string;
   isDefault: boolean;
   isActive: boolean;
@@ -236,7 +238,9 @@ export function buildLocalModelChoices(
       if (requiresAllowOutsideCatalog) {
         argv.push("--allow-outside-catalog");
       }
-      const badges: Array<"default" | "active" | "outside-catalog"> = [];
+      const badges: Array<
+        "default" | "active" | "outside-catalog" | "provider-drift" | "endpoint-drift"
+      > = [];
       if (isDefault) {
         badges.push("default");
       }
@@ -245,6 +249,12 @@ export function buildLocalModelChoices(
       }
       if (!inCatalog) {
         badges.push("outside-catalog");
+      }
+      if (isActive && activeProvider !== targetProvider) {
+        badges.push("provider-drift");
+      }
+      if (isActive && activeEndpoint !== targetEndpoint) {
+        badges.push("endpoint-drift");
       }
       return {
         model,

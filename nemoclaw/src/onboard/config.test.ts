@@ -409,6 +409,8 @@ describe("onboard config helpers", () => {
       isSelectable: true,
       selectableReason: "would-change-target-route",
       routeChange: { any: true, model: false, provider: true, endpoint: true },
+      badges: ["default", "active", "provider-drift", "endpoint-drift"],
+      summary: "default, active, provider-drift, endpoint-drift",
     });
   });
 
