@@ -39,6 +39,15 @@ $ openshell inference set --provider nvidia-nim --model nvidia/nemotron-3-super-
 This requires the `NVIDIA_API_KEY` environment variable.
 The `nemoclaw onboard` command stores this key in `~/.nemoclaw/credentials.json` on first run.
 
+For local-model workflows onboarded through NemoClaw, use the higher-level command instead:
+
+```console
+$ openclaw nemoclaw set-local-model qwen3:32b
+```
+
+This switches the active OpenShell route without mutating the saved onboarding default model.
+By default it only accepts models from the saved local catalog. Add `--allow-outside-catalog` for a one-off route change.
+
 ## Verify the Active Model
 
 Run the status command to confirm the change:

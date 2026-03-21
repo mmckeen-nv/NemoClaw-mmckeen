@@ -17,6 +17,7 @@ import { cliEject } from "./commands/eject.js";
 import { cliLogs } from "./commands/logs.js";
 import { cliOnboard } from "./commands/onboard.js";
 import { cliOnboardStatus } from "./commands/onboard-status.js";
+import { cliSetLocalModel } from "./commands/set-local-model.js";
 
 export function registerCliCommands(ctx: PluginCliContext, api: OpenClawPluginApi): void {
   const { program, logger } = ctx;
@@ -111,7 +112,10 @@ export function registerCliCommands(ctx: PluginCliContext, api: OpenClawPluginAp
     .command("onboard")
     .description("Interactive setup: configure inference endpoint, credential, and model")
     .option("--api-key <key>", "API key for endpoints that require one (skips prompt)")
-    .option("--endpoint <type>", "Endpoint type: build, ncp, ollama, nim-local, vllm, custom (nim-local and vllm are experimental)")
+    .option(
+      "--endpoint <type>",
+      "Endpoint type: build, ncp, ollama, nim-local, vllm, custom (nim-local and vllm are experimental)",
+    )
     .option("--ncp-partner <name>", "NCP partner name (when endpoint is ncp)")
     .option("--endpoint-url <url>", "Endpoint URL (for ncp, nim-local, ollama, or custom)")
     .option("--model <model>", "Model ID to use")
@@ -138,9 +142,33 @@ export function registerCliCommands(ctx: PluginCliContext, api: OpenClawPluginAp
   // openclaw nemoclaw onboard-status
   nemoclaw
     .command("onboard-status")
-    .description("Show saved onboarding and local model workflow state for dashboard/control-plane consumers")
+    .description(
+      "Show saved onboarding and local model workflow state for dashboard/control-plane consumers",
+    )
     .option("--json", "Output as JSON", false)
     .action(async (opts: { json: boolean }) => {
       await cliOnboardStatus({ json: opts.json, logger });
+    });
+
+  // openclaw nemoclaw set-local-model
+  nemoclaw
+    .command("set-local-model")
+    .description(
+      "Switch the active OpenShell local-model route without changing the saved onboarding default",
+    )
+    .argument("<model>", "Model ID to activate")
+    .option(
+      "--allow-outside-catalog",
+      "Allow models not present in the saved onboarding catalog",
+      false,
+    )
+    .option("--json", "Output as JSON", false)
+    .action(async (model: string, opts: { allowOutsideCatalog: boolean; json: boolean }) => {
+      await cliSetLocalModel({
+        model,
+        allowOutsideCatalog: opts.allowOutsideCatalog,
+        json: opts.json,
+        logger,
+      });
     });
 }

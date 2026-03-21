@@ -90,6 +90,23 @@ $ openclaw nemoclaw onboard-status [--json]
 For local inference onboarding, the output includes the saved local model catalog, default model, and dashboard-friendly `localModelWorkflow` metadata.
 Unlike `status`, this command does not depend on OpenShell sandbox introspection.
 
+### `openclaw nemoclaw set-local-model`
+
+Switch the active OpenShell inference route for a local-model workflow without changing the saved onboarding default.
+This is intended for single-user local dashboards or operators who want a safe write path backed by the saved onboarding catalog.
+
+```console
+$ openclaw nemoclaw set-local-model <model> [--json] [--allow-outside-catalog]
+```
+
+`--json`
+: Output the resulting active-route summary as JSON.
+
+`--allow-outside-catalog`
+: Permit a one-off route change to a model that is not in the saved onboarding catalog.
+
+By default, the command only accepts models from the saved local catalog to reduce accidental route drift.
+
 ### `openclaw nemoclaw logs`
 
 Stream blueprint execution and sandbox logs.
