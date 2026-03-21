@@ -62,6 +62,14 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
 
   const statusData = {
     generatedAt: new Date().toISOString(),
+    executionContext: {
+      insideSandbox,
+      openshellCliAvailable:
+        sandbox.query.code !== "openshell-unavailable" || inference.query.code !== "openshell-unavailable",
+      canQueryLiveSandbox: sandbox.query.ok,
+      canQueryLiveInference: inference.query.ok,
+      canMutateLiveInferenceRoute: !insideSandbox && inference.query.code !== "openshell-unavailable",
+    },
     nemoclaw: {
       lastAction: state.lastAction,
       lastRunId: state.lastRunId,

@@ -502,6 +502,13 @@ describe("cliStatus", () => {
 
       const data = JSON.parse(lines.join(""));
       expect(data.generatedAt).toEqual(expect.any(String));
+      expect(data.executionContext).toMatchObject({
+        insideSandbox: false,
+        openshellCliAvailable: true,
+        canQueryLiveSandbox: true,
+        canQueryLiveInference: true,
+        canMutateLiveInferenceRoute: true,
+      });
       expect(data.onboarding).toMatchObject({
         provider: "Local Ollama",
         providerName: null,

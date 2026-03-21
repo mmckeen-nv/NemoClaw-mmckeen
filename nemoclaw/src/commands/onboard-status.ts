@@ -109,6 +109,12 @@ export async function getInferenceStatus(): Promise<InferenceStatus> {
 export async function getOnboardStatusData(inferenceOverride?: InferenceStatus): Promise<{
   generatedAt: string;
   configured: boolean;
+  executionContext: {
+    insideSandbox: boolean;
+    openshellCliAvailable: boolean;
+    canQueryLiveInference: boolean;
+    canMutateLiveInferenceRoute: boolean;
+  };
   setup: {
     configure: {
       command: string;
@@ -192,6 +198,7 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
   const localModelCatalog =
     onboard && isLocalEndpointType(onboard.endpointType) ? getConfiguredModelCatalog(onboard) : [];
   const inference = inferenceOverride ?? (await getInferenceStatus());
+  const insideSandbox = inference.query.code === "inside-sandbox";
   const configureAction = getSetupConfigureAction(!!onboard);
   const generatedAt = new Date().toISOString();
   const localModelWorkflow = onboard
@@ -206,6 +213,13 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
   return {
     generatedAt,
     configured: !!onboard,
+    executionContext: {
+      insideSandbox,
+      openshellCliAvailable: !insideSandbox && inference.query.code !== "openshell-unavailable",
+      canQueryLiveInference: inference.query.ok,
+      canMutateLiveInferenceRoute:
+        !insideSandbox && inference.query.code !== "openshell-unavailable",
+    },
     setup: {
       configure: configureAction,
     },

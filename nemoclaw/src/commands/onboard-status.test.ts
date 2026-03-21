@@ -56,6 +56,12 @@ describe("cliOnboardStatus", () => {
     ).resolves.toMatchObject({
       generatedAt: expect.any(String),
       configured: false,
+      executionContext: {
+        insideSandbox: false,
+        openshellCliAvailable: true,
+        canQueryLiveInference: false,
+        canMutateLiveInferenceRoute: true,
+      },
       setup: {
         configure: {
           command: "openclaw nemoclaw onboard",
@@ -154,6 +160,12 @@ describe("cliOnboardStatus", () => {
     ).resolves.toMatchObject({
       generatedAt: expect.any(String),
       configured: true,
+      executionContext: {
+        insideSandbox: false,
+        openshellCliAvailable: true,
+        canQueryLiveInference: true,
+        canMutateLiveInferenceRoute: true,
+      },
       setup: {
         configure: {
           command: "openclaw nemoclaw onboard",
@@ -539,6 +551,12 @@ describe("cliOnboardStatus", () => {
 
     const data = JSON.parse(lines.join(""));
     expect(data.configured).toBe(true);
+    expect(data.executionContext).toMatchObject({
+      insideSandbox: false,
+      openshellCliAvailable: true,
+      canQueryLiveInference: false,
+      canMutateLiveInferenceRoute: true,
+    });
     expect(data.inference).toMatchObject({
       configured: false,
       provider: null,
