@@ -276,6 +276,7 @@ function getLocalModelWorkflowStatus(
     configured: inference.configured,
     provider: inference.provider,
     model: inference.model,
+    endpoint: inference.endpoint,
   });
 }
 

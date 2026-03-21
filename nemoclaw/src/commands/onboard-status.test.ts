@@ -208,19 +208,22 @@ describe("cliOnboardStatus", () => {
     });
     vi.spyOn(onboardStatus, "getInferenceStatus").mockResolvedValue({
       configured: true,
-      provider: "ollama-local",
+      provider: "vllm-local",
       model: "nemotron-3-nano:30b",
-      endpoint: "http://host.openshell.internal:11434/v1",
+      endpoint: "http://host.openshell.internal:8000/v1",
     });
 
     const data = await onboardStatus.getOnboardStatusData({
       configured: true,
-      provider: "ollama-local",
+      provider: "vllm-local",
       model: "nemotron-3-nano:30b",
-      endpoint: "http://host.openshell.internal:11434/v1",
+      endpoint: "http://host.openshell.internal:8000/v1",
     });
 
     expect(data.localModelWorkflow).toMatchObject({
+      provider: "vllm-local",
+      providerLabel: "Local vLLM",
+      endpoint: "http://host.openshell.internal:8000/v1",
       defaultModel: "qwen3:32b",
       activeModel: "nemotron-3-nano:30b",
       activeModelSource: "inference",

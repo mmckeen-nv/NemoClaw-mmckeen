@@ -169,6 +169,7 @@ export function getLocalModelWorkflow(
     configured: boolean;
     provider: string | null;
     model: string | null;
+    endpoint?: string | null;
   },
 ): LocalModelWorkflow | null {
   if (!isLocalEndpointType(config.endpointType)) {
@@ -181,12 +182,24 @@ export function getLocalModelWorkflow(
   const activeModel = inferenceModel || defaultModel;
   const choices = buildLocalModelChoices(defaultModel, activeModel, catalog);
 
+  const activeProvider = inference?.configured ? inference.provider ?? config.provider ?? null : config.provider ?? null;
+  const activeEndpoint = inference?.configured ? inference.endpoint?.trim() || config.endpointUrl : config.endpointUrl;
+  const providerLabelOverride = inference?.configured
+    ? activeProvider === "ollama-local"
+      ? "Local Ollama"
+      : activeProvider === "vllm-local"
+        ? "Local vLLM"
+        : activeProvider === "nim-local"
+          ? "Local NIM"
+          : activeProvider
+    : null;
+
   return {
     enabled: true,
-    provider: config.provider ?? inference?.provider ?? null,
-    providerLabel: describeOnboardProvider(config),
+    provider: activeProvider,
+    providerLabel: providerLabelOverride ?? describeOnboardProvider(config),
     endpointType: config.endpointType,
-    endpoint: config.endpointUrl,
+    endpoint: activeEndpoint,
     defaultModel,
     activeModel,
     activeModelSource: inferenceModel ? "inference" : "onboarding",

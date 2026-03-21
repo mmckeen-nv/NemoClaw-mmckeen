@@ -243,10 +243,10 @@ describe("cliStatus", () => {
       });
       expect(data.localModelWorkflow).toEqual({
         enabled: true,
-        provider: "ollama-local",
-        providerLabel: "Local Ollama",
+        provider: "nvidia",
+        providerLabel: "nvidia",
         endpointType: "ollama",
-        endpoint: "http://host.openshell.internal:11434/v1",
+        endpoint: "https://integrate.api.nvidia.com",
         defaultModel: "qwen3:32b",
         activeModel: "nemotron-3-super-120b",
         activeModelSource: "inference",

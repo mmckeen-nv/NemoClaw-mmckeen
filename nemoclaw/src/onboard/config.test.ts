@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildLocalModelChoices,
   getConfiguredModelCatalog,
+  getLocalModelWorkflow,
   getSavedLocalModelWorkflow,
   isLocalEndpointType,
   type NemoClawOnboardConfig,
@@ -182,6 +183,32 @@ describe("onboard config helpers", () => {
           requiresAllowOutsideCatalog: true,
         },
       ]);
+  });
+
+  it("prefers the live OpenShell provider and endpoint when the active route drifts", () => {
+    expect(
+      getLocalModelWorkflow(
+        config({
+          endpointType: "ollama",
+          endpointUrl: "http://host.openshell.internal:11434/v1",
+          provider: "ollama-local",
+          providerLabel: "Local Ollama",
+          availableModels: ["qwen3:32b", "nemotron-3-nano:30b"],
+        }),
+        {
+          configured: true,
+          provider: "vllm-local",
+          model: "qwen3:32b",
+          endpoint: "http://host.openshell.internal:8000/v1",
+        },
+      ),
+    ).toMatchObject({
+      provider: "vllm-local",
+      providerLabel: "Local vLLM",
+      endpoint: "http://host.openshell.internal:8000/v1",
+      activeModel: "qwen3:32b",
+      activeModelSource: "inference",
+    });
   });
 
   it("returns null saved workflow metadata for non-local endpoints", () => {
