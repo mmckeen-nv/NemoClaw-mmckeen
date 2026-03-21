@@ -95,7 +95,9 @@ describe("cliOnboardStatus", () => {
       },
       onboarding: {
         endpoint: "ollama (http://host.openshell.internal:11434/v1)",
+        endpointUrl: "http://host.openshell.internal:11434/v1",
         provider: "Local Ollama",
+        providerName: "ollama-local",
         endpointType: "ollama",
         model: "qwen3:32b",
         credentialEnv: "OPENAI_API_KEY",
@@ -319,6 +321,8 @@ describe("cliOnboardStatus", () => {
     const data = JSON.parse(lines.join(""));
     expect(data.configured).toBe(true);
     expect(data.onboarding.provider).toBe("NVIDIA Cloud API");
+    expect(data.onboarding.providerName).toBe("nvidia");
+    expect(data.onboarding.endpointUrl).toBe("https://integrate.api.nvidia.com/v1");
     expect(data.localModelWorkflow).toBeNull();
   });
 });

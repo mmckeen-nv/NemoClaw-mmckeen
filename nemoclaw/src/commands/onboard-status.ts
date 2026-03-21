@@ -65,7 +65,9 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
   };
   onboarding: {
     endpoint: string;
+    endpointUrl: string;
     provider: string;
+    providerName: string | null;
     endpointType: string;
     model: string;
     credentialEnv: string;
@@ -116,7 +118,9 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
     onboarding: onboard
       ? {
           endpoint: describeOnboardEndpoint(onboard),
+          endpointUrl: onboard.endpointUrl,
           provider: describeOnboardProvider(onboard),
+          providerName: onboard.provider ?? null,
           endpointType: onboard.endpointType,
           model: onboard.model,
           credentialEnv: onboard.credentialEnv,
