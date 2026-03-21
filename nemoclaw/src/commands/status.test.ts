@@ -231,8 +231,12 @@ describe("cliStatus", () => {
       expect(data.onboarding).toEqual({
         endpoint: "ollama (http://host.openshell.internal:11434/v1)",
         provider: "Local Ollama",
+        providerName: "ollama-local",
         endpointType: "ollama",
         model: "qwen3:32b",
+        credentialEnv: "OPENAI_API_KEY",
+        profile: "ollama",
+        ncpPartner: null,
         localModelCatalog: ["qwen3:32b", "nemotron-3-nano:30b"],
         isLocalEndpoint: true,
         onboardedAt: "2026-03-20T22:00:00.000Z",
@@ -275,6 +279,45 @@ describe("cliStatus", () => {
             source: "active-route",
           },
         ],
+      });
+    });
+
+    it("falls back to the active inference provider in local workflow JSON when onboarding omitted a provider name", async () => {
+      mockExec({
+        "sandbox status": JSON.stringify({ state: "running", uptime: "2h 14m" }),
+        "inference get": JSON.stringify({
+          provider: "ollama-local",
+          model: "nemotron-3-super-120b",
+          endpoint: "http://host.openshell.internal:11434/v1",
+        }),
+      });
+
+      vi.mocked(loadOnboardConfig).mockReturnValue({
+        endpointType: "ollama",
+        endpointUrl: "http://host.openshell.internal:11434/v1",
+        ncpPartner: null,
+        model: "qwen3:32b",
+        profile: "ollama",
+        credentialEnv: "OPENAI_API_KEY",
+        providerLabel: "Local Ollama",
+        availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+        onboardedAt: "2026-03-20T22:00:00.000Z",
+      });
+
+      const { lines, logger } = captureLogger();
+
+      await cliStatus({ json: true, logger, pluginConfig: defaultConfig });
+
+      const data = JSON.parse(lines.join(""));
+      expect(data.onboarding).toMatchObject({
+        provider: "Local Ollama",
+        providerName: null,
+        credentialEnv: "OPENAI_API_KEY",
+        profile: "ollama",
+      });
+      expect(data.localModelWorkflow).toMatchObject({
+        provider: "ollama-local",
+        providerLabel: "Local Ollama",
       });
     });
 

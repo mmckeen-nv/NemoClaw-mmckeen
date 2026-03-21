@@ -65,8 +65,12 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
       ? {
           endpoint: describeOnboardEndpoint(onboard),
           provider: describeOnboardProvider(onboard),
+          providerName: onboard.provider ?? null,
           endpointType: onboard.endpointType,
           model: onboard.model,
+          credentialEnv: onboard.credentialEnv,
+          profile: onboard.profile,
+          ncpPartner: onboard.ncpPartner,
           localModelCatalog,
           isLocalEndpoint: isLocalEndpointType(onboard.endpointType),
           onboardedAt: onboard.onboardedAt,
@@ -250,7 +254,7 @@ function getLocalModelWorkflowStatus(
 
   return {
     enabled: true,
-    provider: onboard.provider ?? null,
+    provider: onboard.provider ?? inference.provider,
     providerLabel: describeOnboardProvider(onboard),
     endpointType: onboard.endpointType,
     endpoint: onboard.endpointUrl,
