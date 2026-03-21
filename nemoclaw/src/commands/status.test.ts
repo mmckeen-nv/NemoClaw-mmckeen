@@ -240,6 +240,14 @@ describe("cliStatus", () => {
         localModelCatalog: ["qwen3:32b", "nemotron-3-nano:30b"],
         isLocalEndpoint: true,
         onboardedAt: "2026-03-20T22:00:00.000Z",
+        actions: {
+          configure: {
+            command: "openclaw nemoclaw onboard",
+            argv: ["openclaw", "nemoclaw", "onboard"],
+            description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+            mode: "reconfigure",
+          },
+        },
       });
       expect(data.localModelWorkflow).toEqual({
         enabled: true,

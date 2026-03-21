@@ -76,6 +76,14 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
           localModelCatalog,
           isLocalEndpoint: isLocalEndpointType(onboard.endpointType),
           onboardedAt: onboard.onboardedAt,
+          actions: {
+            configure: {
+              command: "openclaw nemoclaw onboard",
+              argv: ["openclaw", "nemoclaw", "onboard"],
+              description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+              mode: "reconfigure",
+            },
+          },
         }
       : null,
     localModelWorkflow,
