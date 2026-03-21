@@ -187,8 +187,8 @@ describe("onboard config helpers", () => {
           targetProviderLabel: "Local Ollama",
         },
         restoreDefaultModel: {
-          command: "openclaw nemoclaw set-local-model \"nemotron-3-nano:30b\" --json",
-          argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
+          command: "openclaw nemoclaw restore-local-model --json",
+          argv: ["openclaw", "nemoclaw", "restore-local-model", "--json"],
           description: "Restore the active OpenShell local-model route to the saved onboarding default.",
           enabled: false,
           reason: "active route already matches the saved onboarding default.",

@@ -82,8 +82,8 @@ export interface LocalModelWorkflowActions {
     targetProviderLabel: string;
   };
   restoreDefaultModel: {
-    command: string;
-    argv: ["openclaw", "nemoclaw", "set-local-model", string, "--json"];
+    command: "openclaw nemoclaw restore-local-model --json";
+    argv: ["openclaw", "nemoclaw", "restore-local-model", "--json"];
     description: string;
     enabled: boolean;
     reason: string | null;
@@ -254,8 +254,8 @@ export function getLocalModelWorkflowActions(
       targetProviderLabel: providerLabel,
     },
     restoreDefaultModel: {
-      command: `openclaw nemoclaw set-local-model ${JSON.stringify(defaultModel)} --json`,
-      argv: ["openclaw", "nemoclaw", "set-local-model", defaultModel, "--json"],
+      command: "openclaw nemoclaw restore-local-model --json",
+      argv: ["openclaw", "nemoclaw", "restore-local-model", "--json"],
       description: "Restore the active OpenShell local-model route to the saved onboarding default.",
       enabled: restoreEnabled,
       reason: restoreEnabled

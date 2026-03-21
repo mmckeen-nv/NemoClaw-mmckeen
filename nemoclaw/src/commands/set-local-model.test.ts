@@ -230,8 +230,8 @@ describe("cliSetLocalModel", () => {
           targetProviderLabel: "Local Ollama",
         },
         restoreDefaultModel: {
-          command: "openclaw nemoclaw set-local-model \"qwen3:32b\" --json",
-          argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
+          command: "openclaw nemoclaw restore-local-model --json",
+          argv: ["openclaw", "nemoclaw", "restore-local-model", "--json"],
           description: "Restore the active OpenShell local-model route to the saved onboarding default.",
           enabled: false,
           reason: "active route already matches the saved onboarding default.",
@@ -429,8 +429,8 @@ describe("cliSetLocalModel", () => {
           targetProviderLabel: "Local Ollama",
         },
         restoreDefaultModel: {
-          command: "openclaw nemoclaw set-local-model \"qwen3:32b\" --json",
-          argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
+          command: "openclaw nemoclaw restore-local-model --json",
+          argv: ["openclaw", "nemoclaw", "restore-local-model", "--json"],
           description: "Restore the active OpenShell local-model route to the saved onboarding default.",
           enabled: true,
           reason: null,
