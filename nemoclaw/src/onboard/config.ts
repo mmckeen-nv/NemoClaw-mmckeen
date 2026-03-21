@@ -162,6 +162,8 @@ export function buildLocalModelChoices(
   targetProviderLabel = "Saved local provider",
   targetEndpoint: string | null = null,
   targetEndpointType: EndpointType | null = null,
+  activeProvider: string | null = targetProvider,
+  activeEndpoint: string | null = targetEndpoint,
 ): LocalModelChoice[] {
   const ordered = [defaultModel, ...catalog];
   if (!catalog.includes(activeModel)) {
@@ -184,6 +186,8 @@ export function buildLocalModelChoices(
       const requiresAllowOutsideCatalog = !inCatalog;
       const isDefault = model === defaultModel;
       const isActive = model === activeModel;
+      const wouldChangeActiveRoute =
+        model !== activeModel || activeProvider !== targetProvider || activeEndpoint !== targetEndpoint;
       const argv = ["openclaw", "nemoclaw", "set-local-model", model, "--json"];
       if (requiresAllowOutsideCatalog) {
         argv.push("--allow-outside-catalog");
@@ -205,7 +209,7 @@ export function buildLocalModelChoices(
         summary: badges.length > 0 ? badges.join(", ") : "catalog",
         isDefault,
         isActive,
-        isSelectable: !isActive,
+        isSelectable: wouldChangeActiveRoute,
         inCatalog,
         source: isActive && !inCatalog
           ? "active-route"
@@ -315,6 +319,8 @@ export function getLocalModelWorkflow(
   const targetProviderLabel = describeOnboardProvider(config);
   const targetEndpoint = config.endpointUrl;
   const targetEndpointType = config.endpointType;
+  const activeProvider = inference?.configured ? inference.provider ?? onboardingProvider : onboardingProvider;
+  const activeEndpoint = inference?.configured ? inference.endpoint?.trim() || config.endpointUrl : config.endpointUrl;
   const choices = buildLocalModelChoices(
     defaultModel,
     activeModel,
@@ -323,10 +329,9 @@ export function getLocalModelWorkflow(
     targetProviderLabel,
     targetEndpoint,
     targetEndpointType,
+    activeProvider,
+    activeEndpoint,
   );
-
-  const activeProvider = inference?.configured ? inference.provider ?? onboardingProvider : onboardingProvider;
-  const activeEndpoint = inference?.configured ? inference.endpoint?.trim() || config.endpointUrl : config.endpointUrl;
   const providerLabelOverride = inference?.configured
     ? activeProvider === "ollama-local"
       ? "Local Ollama"
