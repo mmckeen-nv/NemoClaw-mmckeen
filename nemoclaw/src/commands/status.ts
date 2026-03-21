@@ -72,6 +72,7 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     onboarding: onboard
       ? {
           endpoint: describeOnboardEndpoint(onboard),
+          endpointUrl: onboard.endpointUrl,
           provider: describeOnboardProvider(onboard),
           providerName: onboard.provider ?? null,
           endpointType: onboard.endpointType,

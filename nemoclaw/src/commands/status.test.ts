@@ -246,6 +246,7 @@ describe("cliStatus", () => {
       });
       expect(data.onboarding).toEqual({
         endpoint: "ollama (http://host.openshell.internal:11434/v1)",
+        endpointUrl: "http://host.openshell.internal:11434/v1",
         provider: "Local Ollama",
         providerName: "ollama-local",
         endpointType: "ollama",
