@@ -62,6 +62,8 @@ describe("cliOnboardStatus", () => {
           description:
             "Launch NemoClaw onboarding to create the first saved inference configuration.",
           mode: "initial-setup",
+          stateScope: "saved-onboarding-config",
+          mutatesSavedDefault: true,
         },
       },
       inference: {
@@ -157,6 +159,8 @@ describe("cliOnboardStatus", () => {
           description:
             "Launch NemoClaw onboarding to create or update the saved inference configuration.",
           mode: "reconfigure",
+          stateScope: "saved-onboarding-config",
+          mutatesSavedDefault: true,
         },
       },
       inference: {
@@ -186,6 +190,8 @@ describe("cliOnboardStatus", () => {
             description:
               "Launch NemoClaw onboarding to create or update the saved inference configuration.",
             mode: "reconfigure",
+            stateScope: "saved-onboarding-config",
+            mutatesSavedDefault: true,
           },
         },
       },

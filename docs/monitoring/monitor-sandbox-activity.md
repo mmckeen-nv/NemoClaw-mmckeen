@@ -46,7 +46,7 @@ Key fields in the output include the following:
 - Sandbox state, which indicates whether the sandbox is running, stopped, or in an error state.
 - Blueprint run ID, which is the identifier for the most recent blueprint execution.
 - Inference provider, which shows the active provider, model, and endpoint.
-- `setup.configure`, which always exposes the dashboard-safe onboarding entrypoint, including whether the operator should treat it as `initial-setup` or `reconfigure`.
+- `setup.configure`, which always exposes the dashboard-safe onboarding entrypoint, including whether the operator should treat it as `initial-setup` or `reconfigure`, plus `stateScope` / `mutatesSavedDefault` metadata so the UI can classify it as a saved-config write.
 - `localModelWorkflow.choices`, which exposes a dashboard-friendly list of saved local models plus the currently active route when local inference is onboarded, including per-choice badges/summary metadata for direct button rendering.
 - `localModelWorkflow.actions.restoreDefaultModel`, which gives a single-user dashboard a ready-to-run reset action back to the saved default local model, including explicit target model/provider metadata for confirm dialogs and audit trails.
 

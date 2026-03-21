@@ -101,6 +101,8 @@ describe("cliSetLocalModel", () => {
           argv: ["openclaw", "nemoclaw", "onboard"],
           description: "Launch NemoClaw onboarding to create the first saved inference configuration.",
           mode: "initial-setup",
+          stateScope: "saved-onboarding-config",
+          mutatesSavedDefault: true,
         },
       },
     });
@@ -219,6 +221,8 @@ describe("cliSetLocalModel", () => {
           argv: ["openclaw", "nemoclaw", "onboard"],
           description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
           mode: "reconfigure",
+          stateScope: "saved-onboarding-config",
+          mutatesSavedDefault: true,
         },
       },
       actions: {
@@ -333,6 +337,8 @@ describe("cliSetLocalModel", () => {
           argv: ["openclaw", "nemoclaw", "onboard"],
           description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
           mode: "reconfigure",
+          stateScope: "saved-onboarding-config",
+          mutatesSavedDefault: true,
         },
       },
       provider: "ollama-local",
