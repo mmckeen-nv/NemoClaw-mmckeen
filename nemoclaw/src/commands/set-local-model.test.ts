@@ -95,6 +95,14 @@ describe("cliSetLocalModel", () => {
       message: "No onboarding configuration found. Run 'openclaw nemoclaw onboard' first.",
       model: "qwen3:32b",
       hint: "Run 'openclaw nemoclaw onboard' first.",
+      setup: {
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create the first saved inference configuration.",
+          mode: "initial-setup",
+        },
+      },
     });
     expect(execFileSync).not.toHaveBeenCalled();
   });
@@ -193,6 +201,14 @@ describe("cliSetLocalModel", () => {
           requiresAllowOutsideCatalog: false,
         },
       ],
+      setup: {
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+          mode: "reconfigure",
+        },
+      },
       actions: {
         read: {
           command: "openclaw nemoclaw onboard-status --json",
@@ -290,6 +306,14 @@ describe("cliSetLocalModel", () => {
     const data = JSON.parse(lines.join(""));
     expect(data).toEqual({
       ok: true,
+      setup: {
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+          mode: "reconfigure",
+        },
+      },
       provider: "ollama-local",
       providerLabel: "Local Ollama",
       endpointType: "ollama",

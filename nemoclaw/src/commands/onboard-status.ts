@@ -11,6 +11,7 @@ import {
   getConfiguredModelCatalog,
   getLocalModelWorkflow,
   getLocalModelWorkflowActions,
+  getSetupConfigureAction,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
@@ -105,18 +106,12 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
     ? getConfiguredModelCatalog(onboard)
     : [];
   const inference = inferenceOverride ?? await getInferenceStatus();
+  const configureAction = getSetupConfigureAction(!!onboard);
 
   return {
     configured: !!onboard,
     setup: {
-      configure: {
-        command: "openclaw nemoclaw onboard",
-        argv: ["openclaw", "nemoclaw", "onboard"],
-        description: onboard
-          ? "Launch NemoClaw onboarding to create or update the saved inference configuration."
-          : "Launch NemoClaw onboarding to create the first saved inference configuration.",
-        mode: onboard ? "reconfigure" : "initial-setup",
-      },
+      configure: configureAction,
     },
     onboarding: onboard
       ? {
@@ -131,12 +126,7 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
           isLocalEndpoint: isLocalEndpointType(onboard.endpointType),
           onboardedAt: onboard.onboardedAt,
           actions: {
-            configure: {
-              command: "openclaw nemoclaw onboard",
-              argv: ["openclaw", "nemoclaw", "onboard"],
-              description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
-              mode: "reconfigure",
-            },
+            configure: getSetupConfigureAction(true),
           },
         }
       : null,

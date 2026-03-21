@@ -47,6 +47,13 @@ export interface LocalModelChoice {
   requiresAllowOutsideCatalog: boolean;
 }
 
+export interface SetupConfigureAction {
+  command: "openclaw nemoclaw onboard";
+  argv: ["openclaw", "nemoclaw", "onboard"];
+  description: string;
+  mode: "initial-setup" | "reconfigure";
+}
+
 export interface LocalModelWorkflowActions {
   read: {
     command: "openclaw nemoclaw onboard-status --json";
@@ -165,6 +172,17 @@ export function buildLocalModelChoices(
         requiresAllowOutsideCatalog,
       };
     });
+}
+
+export function getSetupConfigureAction(hasOnboardConfig: boolean): SetupConfigureAction {
+  return {
+    command: "openclaw nemoclaw onboard",
+    argv: ["openclaw", "nemoclaw", "onboard"],
+    description: hasOnboardConfig
+      ? "Launch NemoClaw onboarding to create or update the saved inference configuration."
+      : "Launch NemoClaw onboarding to create the first saved inference configuration.",
+    mode: hasOnboardConfig ? "reconfigure" : "initial-setup",
+  };
 }
 
 export function getLocalModelWorkflowActions(

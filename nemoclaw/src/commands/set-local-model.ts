@@ -8,6 +8,7 @@ import {
   describeOnboardProvider,
   getConfiguredModelCatalog,
   getLocalModelWorkflowActions,
+  getSetupConfigureAction,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
@@ -21,6 +22,9 @@ export interface SetLocalModelOptions {
 
 interface SetLocalModelResult {
   ok: true;
+  setup: {
+    configure: ReturnType<typeof getSetupConfigureAction>;
+  };
   provider: string;
   providerLabel: string;
   endpointType: string;
@@ -57,6 +61,9 @@ interface SetLocalModelErrorResult {
   actions?: ReturnType<typeof getLocalModelWorkflowActions>;
   hint?: string;
   details?: string;
+  setup?: {
+    configure: ReturnType<typeof getSetupConfigureAction>;
+  };
 }
 
 function emitError(
@@ -117,20 +124,25 @@ function setInferenceRoute(provider: string, model: string): void {
 export function cliSetLocalModel(opts: SetLocalModelOptions): void {
   const { model, allowOutsideCatalog, json, logger } = opts;
   const trimmedModel = model.trim();
+  const onboard = loadOnboardConfig();
+  const setup = {
+    configure: getSetupConfigureAction(!!onboard),
+  };
 
   if (!trimmedModel) {
     emitError(logger, json, "Model is required.", {
       code: "MODEL_REQUIRED",
+      setup,
     });
     return;
   }
 
-  const onboard = loadOnboardConfig();
   if (!onboard) {
     emitError(logger, json, "No onboarding configuration found. Run 'openclaw nemoclaw onboard' first.", {
       code: "ONBOARDING_REQUIRED",
       model: trimmedModel,
       hint: "Run 'openclaw nemoclaw onboard' first.",
+      setup,
     });
     return;
   }
@@ -147,6 +159,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
         endpoint: onboard.endpointUrl,
         provider: onboard.provider,
         providerLabel: describeOnboardProvider(onboard),
+        setup,
       },
     );
     return;
@@ -169,6 +182,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       catalog,
       choices: buildLocalModelChoices(defaultModel, defaultModel, catalog),
       actions: getLocalModelWorkflowActions(defaultModel, defaultModel, provider, providerLabel),
+      setup,
       hint: catalog.length > 0
         ? `Saved catalog: ${catalog.join(", ")}\nUse --allow-outside-catalog to force a one-off route change.`
         : "Use --allow-outside-catalog to force a one-off route change.",
@@ -193,6 +207,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       choices: buildLocalModelChoices(defaultModel, trimmedModel, catalog),
       actions: getLocalModelWorkflowActions(defaultModel, trimmedModel, provider, providerLabel),
       details: stderr || String(err),
+      setup,
     });
     return;
   }
@@ -200,6 +215,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
   const choices = buildLocalModelChoices(defaultModel, trimmedModel, catalog);
   const result: SetLocalModelResult = {
     ok: true,
+    setup,
     provider,
     providerLabel,
     endpointType: onboard.endpointType,
