@@ -56,6 +56,7 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
   const configureAction = getSetupConfigureAction(!!onboard);
 
   const statusData = {
+    generatedAt: new Date().toISOString(),
     nemoclaw: {
       lastAction: state.lastAction,
       lastRunId: state.lastRunId,
