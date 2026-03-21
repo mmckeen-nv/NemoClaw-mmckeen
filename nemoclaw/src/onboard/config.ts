@@ -204,8 +204,9 @@ export function getLocalModelWorkflowActions(
   activeModel: string = defaultModel,
   provider: string | null = null,
   providerLabel = "Saved local provider",
+  restoreReasonOverride?: string | null,
 ): LocalModelWorkflowActions {
-  const restoreEnabled = activeModel !== defaultModel;
+  const restoreEnabled = restoreReasonOverride ? true : activeModel !== defaultModel;
   return {
     read: {
       command: "openclaw nemoclaw onboard-status --json",
@@ -238,7 +239,9 @@ export function getLocalModelWorkflowActions(
       argv: ["openclaw", "nemoclaw", "set-local-model", defaultModel, "--json"],
       description: "Restore the active OpenShell local-model route to the saved onboarding default.",
       enabled: restoreEnabled,
-      reason: restoreEnabled ? null : "active route already matches the saved onboarding default.",
+      reason: restoreEnabled
+        ? restoreReasonOverride
+        : "active route already matches the saved onboarding default.",
       stateScope: "openshell-active-route",
       mutatesSavedDefault: false,
       targetModel: defaultModel,
@@ -285,6 +288,14 @@ export function getLocalModelWorkflow(
     endpointDiffersFromOnboarding: activeEndpoint !== config.endpointUrl,
   };
 
+  const restoreReason = activeModel !== defaultModel
+    ? null
+    : drift.providerDiffersFromOnboarding
+      ? "active route provider differs from the saved onboarding provider."
+      : drift.endpointDiffersFromOnboarding
+        ? "active route endpoint differs from the saved onboarding endpoint."
+        : null;
+
   return {
     enabled: true,
     provider: activeProvider,
@@ -304,7 +315,13 @@ export function getLocalModelWorkflow(
     choices,
     defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
     activeChoice: choices.find((choice) => choice.isActive) ?? null,
-    actions: getLocalModelWorkflowActions(defaultModel, activeModel, activeProvider, providerLabelOverride ?? describeOnboardProvider(config)),
+    actions: getLocalModelWorkflowActions(
+      defaultModel,
+      activeModel,
+      activeProvider,
+      providerLabelOverride ?? describeOnboardProvider(config),
+      restoreReason,
+    ),
   };
 }
 

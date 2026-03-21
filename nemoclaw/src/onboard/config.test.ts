@@ -266,6 +266,45 @@ describe("onboard config helpers", () => {
     });
   });
 
+  it("keeps restore-default enabled when provider drift exists without model drift", () => {
+    expect(
+      getLocalModelWorkflow(
+        config({
+          endpointType: "ollama",
+          endpointUrl: "http://host.openshell.internal:11434/v1",
+          provider: "ollama-local",
+          providerLabel: "Local Ollama",
+          model: "qwen3:32b",
+          availableModels: ["qwen3:32b", "nemotron-3-nano:30b"],
+        }),
+        {
+          configured: true,
+          provider: "vllm-local",
+          model: "qwen3:32b",
+          endpoint: "http://host.openshell.internal:8000/v1",
+        },
+      ),
+    ).toMatchObject({
+      activeModel: "qwen3:32b",
+      activeModelMatchesDefault: true,
+      drift: {
+        any: true,
+        activeModelDiffersFromDefault: false,
+        providerDiffersFromOnboarding: true,
+        endpointDiffersFromOnboarding: true,
+      },
+      actions: {
+        restoreDefaultModel: {
+          enabled: true,
+          reason: "active route provider differs from the saved onboarding provider.",
+          targetModel: "qwen3:32b",
+          targetProvider: "vllm-local",
+          targetProviderLabel: "Local vLLM",
+        },
+      },
+    });
+  });
+
   it("returns null saved workflow metadata for non-local endpoints", () => {
     expect(getSavedLocalModelWorkflow(config({ endpointType: "build" }))).toBeNull();
   });
