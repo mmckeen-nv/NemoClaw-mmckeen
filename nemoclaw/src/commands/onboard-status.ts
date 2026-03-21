@@ -1,22 +1,56 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
 import type { PluginLogger } from "../index.js";
 import {
+  buildLocalModelChoices,
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
-  getSavedLocalModelWorkflow,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
+
+const execAsync = promisify(exec);
 
 export interface OnboardStatusOptions {
   json: boolean;
   logger: PluginLogger;
 }
 
-export function getOnboardStatusData(): {
+interface InferenceStatus {
+  configured: boolean;
+  provider: string | null;
+  model: string | null;
+  endpoint: string | null;
+}
+
+interface InferenceStatusResponse {
+  provider?: string;
+  model?: string;
+  endpoint?: string;
+}
+
+export async function getInferenceStatus(): Promise<InferenceStatus> {
+  try {
+    const { stdout } = await execAsync("openshell inference get --json", {
+      timeout: 5000,
+    });
+    const parsed = JSON.parse(stdout) as InferenceStatusResponse;
+    return {
+      configured: true,
+      provider: parsed.provider ?? null,
+      model: parsed.model ?? null,
+      endpoint: parsed.endpoint ?? null,
+    };
+  } catch {
+    return { configured: false, provider: null, model: null, endpoint: null };
+  }
+}
+
+export async function getOnboardStatusData(inferenceOverride?: InferenceStatus): Promise<{
   configured: boolean;
   onboarding: {
     endpoint: string;
@@ -30,12 +64,26 @@ export function getOnboardStatusData(): {
     isLocalEndpoint: boolean;
     onboardedAt: string;
   } | null;
-  localModelWorkflow: ReturnType<typeof getSavedLocalModelWorkflow>;
-} {
+  localModelWorkflow: {
+    enabled: boolean;
+    provider: string | null;
+    providerLabel: string;
+    endpointType: string;
+    endpoint: string;
+    defaultModel: string;
+    activeModel: string;
+    activeModelSource: "inference" | "onboarding";
+    activeModelMatchesDefault: boolean;
+    activeModelInCatalog: boolean;
+    catalog: string[];
+    choices: ReturnType<typeof buildLocalModelChoices>;
+  } | null;
+}> {
   const onboard = loadOnboardConfig();
   const localModelCatalog = onboard && isLocalEndpointType(onboard.endpointType)
     ? getConfiguredModelCatalog(onboard)
     : [];
+  const inference = inferenceOverride ?? await getInferenceStatus();
 
   return {
     configured: !!onboard,
@@ -53,13 +101,33 @@ export function getOnboardStatusData(): {
           onboardedAt: onboard.onboardedAt,
         }
       : null,
-    localModelWorkflow: onboard ? getSavedLocalModelWorkflow(onboard) : null,
+    localModelWorkflow: onboard && isLocalEndpointType(onboard.endpointType)
+      ? (() => {
+          const catalog = getConfiguredModelCatalog(onboard);
+          const defaultModel = onboard.model.trim();
+          const activeModel = inference.configured ? inference.model?.trim() || defaultModel : defaultModel;
+          return {
+            enabled: true,
+            provider: onboard.provider ?? inference.provider,
+            providerLabel: describeOnboardProvider(onboard),
+            endpointType: onboard.endpointType,
+            endpoint: onboard.endpointUrl,
+            defaultModel,
+            activeModel,
+            activeModelSource: inference.configured && inference.model ? "inference" : "onboarding",
+            activeModelMatchesDefault: activeModel === defaultModel,
+            activeModelInCatalog: catalog.includes(activeModel),
+            catalog,
+            choices: buildLocalModelChoices(defaultModel, activeModel, catalog),
+          };
+        })()
+      : null,
   };
 }
 
 export async function cliOnboardStatus(opts: OnboardStatusOptions): Promise<void> {
   const { json, logger } = opts;
-  const data = getOnboardStatusData();
+  const data = await getOnboardStatusData();
 
   if (json) {
     logger.info(JSON.stringify(data, null, 2));

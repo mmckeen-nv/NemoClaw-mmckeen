@@ -3,7 +3,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { loadOnboardConfig } from "../onboard/config.js";
-import { cliOnboardStatus, getOnboardStatusData } from "./onboard-status.js";
+import * as onboardStatus from "./onboard-status.js";
 import type { PluginLogger } from "../index.js";
 
 vi.mock("../onboard/config.js", async () => {
@@ -33,8 +33,13 @@ describe("cliOnboardStatus", () => {
     vi.mocked(loadOnboardConfig).mockReturnValue(null);
   });
 
-  it("returns not-configured JSON when no onboarding config exists", () => {
-    expect(getOnboardStatusData()).toEqual({
+  it("returns not-configured JSON when no onboarding config exists", async () => {
+    await expect(onboardStatus.getOnboardStatusData({
+      configured: false,
+      provider: null,
+      model: null,
+      endpoint: null,
+    })).resolves.toEqual({
       configured: false,
       onboarding: null,
       localModelWorkflow: null,
@@ -44,14 +49,14 @@ describe("cliOnboardStatus", () => {
   it("prints a setup hint when no onboarding config exists", async () => {
     const { lines, logger } = captureLogger();
 
-    await cliOnboardStatus({ json: false, logger });
+    await onboardStatus.cliOnboardStatus({ json: false, logger });
 
     const output = lines.join("\n");
     expect(output).toContain("No onboarding configuration found.");
     expect(output).toContain("openclaw nemoclaw onboard");
   });
 
-  it("returns dashboard-friendly onboarding JSON for local workflows", () => {
+  it("returns dashboard-friendly onboarding JSON for local workflows", async () => {
     vi.mocked(loadOnboardConfig).mockReturnValue({
       endpointType: "ollama",
       endpointUrl: "http://host.openshell.internal:11434/v1",
@@ -65,7 +70,12 @@ describe("cliOnboardStatus", () => {
       onboardedAt: "2026-03-20T22:00:00.000Z",
     });
 
-    expect(getOnboardStatusData()).toEqual({
+    await expect(onboardStatus.getOnboardStatusData({
+      configured: true,
+      provider: "ollama-local",
+      model: "qwen3:32b",
+      endpoint: "http://host.openshell.internal:11434/v1",
+    })).resolves.toEqual({
       configured: true,
       onboarding: {
         endpoint: "ollama (http://host.openshell.internal:11434/v1)",
@@ -87,7 +97,7 @@ describe("cliOnboardStatus", () => {
         endpoint: "http://host.openshell.internal:11434/v1",
         defaultModel: "qwen3:32b",
         activeModel: "qwen3:32b",
-        activeModelSource: "onboarding",
+        activeModelSource: "inference",
         activeModelMatchesDefault: true,
         activeModelInCatalog: true,
         catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
@@ -129,7 +139,7 @@ describe("cliOnboardStatus", () => {
 
     const { lines, logger } = captureLogger();
 
-    await cliOnboardStatus({ json: false, logger });
+    await onboardStatus.cliOnboardStatus({ json: false, logger });
 
     const output = lines.join("\n");
     expect(output).toContain("Catalog:    qwen3:32b, nemotron-3-nano:30b");
@@ -137,6 +147,42 @@ describe("cliOnboardStatus", () => {
     expect(output).toContain("Local Model Workflow:");
     expect(output).toContain("Default:    qwen3:32b");
     expect(output).toContain("Active:     qwen3:32b");
+  });
+
+  it("surfaces live local route drift when inference differs from onboarding default", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+    vi.spyOn(onboardStatus, "getInferenceStatus").mockResolvedValue({
+      configured: true,
+      provider: "ollama-local",
+      model: "nemotron-3-nano:30b",
+      endpoint: "http://host.openshell.internal:11434/v1",
+    });
+
+    const data = await onboardStatus.getOnboardStatusData({
+      configured: true,
+      provider: "ollama-local",
+      model: "nemotron-3-nano:30b",
+      endpoint: "http://host.openshell.internal:11434/v1",
+    });
+
+    expect(data.localModelWorkflow).toMatchObject({
+      defaultModel: "qwen3:32b",
+      activeModel: "nemotron-3-nano:30b",
+      activeModelSource: "inference",
+      activeModelMatchesDefault: false,
+      activeModelInCatalog: true,
+    });
   });
 
   it("prints JSON when requested", async () => {
@@ -154,7 +200,7 @@ describe("cliOnboardStatus", () => {
 
     const { lines, logger } = captureLogger();
 
-    await cliOnboardStatus({ json: true, logger });
+    await onboardStatus.cliOnboardStatus({ json: true, logger });
 
     const data = JSON.parse(lines.join(""));
     expect(data.configured).toBe(true);
