@@ -160,6 +160,9 @@ describe("/nemoclaw slash command", () => {
     expect(result.text).toContain(
       "Drift: active model differs from saved default; provider differs from saved onboarding provider; endpoint differs from saved onboarding endpoint",
     );
+    expect(result.text).toContain(
+      "Saved Route: Local Ollama (ollama-local) -> http://host.openshell.internal:11434/v1",
+    );
   });
 
   it("routes slash set-local-model through the local model command", async () => {

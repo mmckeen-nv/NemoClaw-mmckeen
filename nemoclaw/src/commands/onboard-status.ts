@@ -137,8 +137,12 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
     enabled: boolean;
     provider: string | null;
     providerLabel: string;
+    savedProvider: string | null;
+    savedProviderLabel: string;
     endpointType: string;
     endpoint: string;
+    savedEndpointType: string;
+    savedEndpoint: string;
     defaultModel: string;
     activeModel: string;
     activeModelSource: "inference" | "onboarding";

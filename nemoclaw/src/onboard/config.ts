@@ -115,8 +115,12 @@ export interface LocalModelWorkflow {
   enabled: true;
   provider: string | null;
   providerLabel: string;
+  savedProvider: string | null;
+  savedProviderLabel: string;
   endpointType: EndpointType;
   endpoint: string;
+  savedEndpointType: EndpointType;
+  savedEndpoint: string;
   defaultModel: string;
   activeModel: string;
   activeModelSource: "inference" | "onboarding";
@@ -360,8 +364,12 @@ export function getLocalModelWorkflow(
     enabled: true,
     provider: activeProvider,
     providerLabel: providerLabelOverride ?? targetProviderLabel,
+    savedProvider: targetProvider,
+    savedProviderLabel: targetProviderLabel,
     endpointType: config.endpointType,
     endpoint: activeEndpoint,
+    savedEndpointType: targetEndpointType,
+    savedEndpoint: targetEndpoint,
     defaultModel,
     activeModel,
     activeModelSource: inferenceModel ? "inference" : "onboarding",

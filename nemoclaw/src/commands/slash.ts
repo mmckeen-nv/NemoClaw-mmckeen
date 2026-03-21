@@ -265,7 +265,7 @@ async function formatLocalModelWorkflow(
     return [];
   }
 
-  return [
+  const lines = [
     `Default: ${workflow.defaultModel}`,
     `Active: ${workflow.activeModel}${workflow.activeModelSource === "onboarding" ? " (saved default)" : ""}`,
     `Provider: ${workflow.providerLabel}${workflow.provider ? ` (${workflow.provider})` : ""}`,
@@ -275,6 +275,14 @@ async function formatLocalModelWorkflow(
     `Catalog: ${workflow.activeModelInCatalog ? "active route is in saved catalog" : "active route is outside saved catalog"}`,
     ...(workflow.catalog.length > 0 ? [`Saved Models: ${workflow.catalog.join(", ")}`] : []),
   ];
+
+  if (workflow.drift.providerDiffersFromOnboarding || workflow.drift.endpointDiffersFromOnboarding) {
+    lines.push(
+      `Saved Route: ${workflow.savedProviderLabel}${workflow.savedProvider ? ` (${workflow.savedProvider})` : ""} -> ${workflow.savedEndpoint}`,
+    );
+  }
+
+  return lines;
 }
 
 async function getInferenceAwareLocalModelWorkflow(config: NemoClawOnboardConfig) {
