@@ -136,6 +136,13 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
   localModelWorkflow: {
     enabled: boolean;
     liveRouteStatus: "live-openshell" | "saved-onboarding-fallback";
+    choiceCounts: {
+      total: number;
+      selectable: number;
+      nonSelectable: number;
+      inCatalog: number;
+      outsideCatalog: number;
+    };
     provider: string | null;
     providerLabel: string;
     savedProvider: string | null;

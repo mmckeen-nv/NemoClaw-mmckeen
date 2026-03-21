@@ -130,6 +130,13 @@ export interface LocalModelWorkflow {
   liveRouteStatus: "live-openshell" | "saved-onboarding-fallback";
   selectionScope: "sandbox-global";
   selectionMode: "single-active-route";
+  choiceCounts: {
+    total: number;
+    selectable: number;
+    nonSelectable: number;
+    inCatalog: number;
+    outsideCatalog: number;
+  };
   provider: string | null;
   providerLabel: string;
   savedProvider: string | null;
@@ -408,6 +415,13 @@ export function getLocalModelWorkflow(
     liveRouteStatus: inferenceModel ? "live-openshell" : "saved-onboarding-fallback",
     selectionScope: "sandbox-global",
     selectionMode: "single-active-route",
+    choiceCounts: {
+      total: choices.length,
+      selectable: choices.filter((choice) => choice.isSelectable).length,
+      nonSelectable: choices.filter((choice) => !choice.isSelectable).length,
+      inCatalog: choices.filter((choice) => choice.inCatalog).length,
+      outsideCatalog: choices.filter((choice) => !choice.inCatalog).length,
+    },
     provider: activeProvider,
     providerLabel: providerLabelOverride ?? targetProviderLabel,
     savedProvider: targetProvider,

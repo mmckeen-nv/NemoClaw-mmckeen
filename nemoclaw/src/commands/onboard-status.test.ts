@@ -200,6 +200,13 @@ describe("cliOnboardStatus", () => {
         liveRouteStatus: "live-openshell",
         selectionScope: "sandbox-global",
         selectionMode: "single-active-route",
+        choiceCounts: {
+          total: 2,
+          selectable: 1,
+          nonSelectable: 1,
+          inCatalog: 2,
+          outsideCatalog: 0,
+        },
         provider: "ollama-local",
         providerLabel: "Local Ollama",
         savedProvider: "ollama-local",

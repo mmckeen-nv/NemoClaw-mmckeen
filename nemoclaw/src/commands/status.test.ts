@@ -280,6 +280,13 @@ describe("cliStatus", () => {
         liveRouteStatus: "live-openshell",
         selectionScope: "sandbox-global",
         selectionMode: "single-active-route",
+        choiceCounts: {
+          total: 3,
+          selectable: 3,
+          nonSelectable: 0,
+          inCatalog: 2,
+          outsideCatalog: 1,
+        },
         provider: "nvidia",
         providerLabel: "nvidia",
         savedProvider: "ollama-local",

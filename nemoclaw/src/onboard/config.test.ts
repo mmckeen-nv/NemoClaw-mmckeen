@@ -80,6 +80,13 @@ describe("onboard config helpers", () => {
       liveRouteStatus: "saved-onboarding-fallback",
       selectionScope: "sandbox-global",
       selectionMode: "single-active-route",
+      choiceCounts: {
+        total: 3,
+        selectable: 2,
+        nonSelectable: 1,
+        inCatalog: 3,
+        outsideCatalog: 0,
+      },
       provider: "ollama-local",
       providerLabel: "Local Ollama",
       savedProvider: "ollama-local",
