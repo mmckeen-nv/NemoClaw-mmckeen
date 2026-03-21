@@ -148,6 +148,8 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
   localModelWorkflow: {
     enabled: boolean;
     liveRouteStatus: "live-openshell" | "saved-onboarding-fallback";
+    selectionScope: "sandbox-global";
+    selectionMode: "single-active-route";
     choiceCounts: {
       total: number;
       selectable: number;

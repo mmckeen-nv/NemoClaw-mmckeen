@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { existsSync } from "node:fs";
 import { loadOnboardConfig } from "../onboard/config.js";
 import * as onboardStatus from "./onboard-status.js";
@@ -133,6 +133,35 @@ describe("cliOnboardStatus", () => {
     const output = lines.join("\n");
     expect(output).toContain("Live route: inside sandbox; showing saved onboarding state.");
     expect(output).toContain("Run 'openshell inference get' on the host to query the live inference route.");
+  });
+
+  it("types the local workflow selection semantics for dashboard consumers", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+
+    const data = await onboardStatus.getOnboardStatusData({
+      configured: true,
+      provider: "ollama-local",
+      model: "qwen3:32b",
+      endpoint: "http://host.openshell.internal:11434/v1",
+      query: { ok: true, code: "ok", message: null },
+    });
+
+    expectTypeOf(data.localModelWorkflow).not.toBeNull();
+    if (data.localModelWorkflow) {
+      expectTypeOf(data.localModelWorkflow.selectionScope).toEqualTypeOf<"sandbox-global">();
+      expectTypeOf(data.localModelWorkflow.selectionMode).toEqualTypeOf<"single-active-route">();
+    }
   });
 
   it("returns dashboard-friendly onboarding JSON for local workflows", async () => {
