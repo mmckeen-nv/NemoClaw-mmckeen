@@ -219,59 +219,7 @@ interface InferenceStatusResponse {
   endpoint?: string;
 }
 
-interface LocalModelWorkflowStatus {
-  enabled: boolean;
-  provider: string | null;
-  providerLabel: string | null;
-  endpointType: string | null;
-  endpoint: string | null;
-  defaultModel: string | null;
-  activeModel: string | null;
-  activeModelSource: "inference" | "onboarding" | null;
-  activeModelMatchesDefault: boolean;
-  activeModelInCatalog: boolean;
-  catalog: string[];
-  choices: Array<{
-    model: string;
-    label: string;
-    badges: Array<"default" | "active" | "outside-catalog">;
-    summary: string;
-    isDefault: boolean;
-    isActive: boolean;
-    inCatalog: boolean;
-    source: "default" | "catalog" | "active-route";
-    command: string;
-    argv: string[];
-    requiresAllowOutsideCatalog: boolean;
-  }>;
-  defaultChoice: {
-    model: string;
-    label: string;
-    badges: Array<"default" | "active" | "outside-catalog">;
-    summary: string;
-    isDefault: boolean;
-    isActive: boolean;
-    inCatalog: boolean;
-    source: "default" | "catalog" | "active-route";
-    command: string;
-    argv: string[];
-    requiresAllowOutsideCatalog: boolean;
-  } | null;
-  activeChoice: {
-    model: string;
-    label: string;
-    badges: Array<"default" | "active" | "outside-catalog">;
-    summary: string;
-    isDefault: boolean;
-    isActive: boolean;
-    inCatalog: boolean;
-    source: "default" | "catalog" | "active-route";
-    command: string;
-    argv: string[];
-    requiresAllowOutsideCatalog: boolean;
-  } | null;
-  actions: ReturnType<typeof getLocalModelWorkflowActions>;
-}
+type LocalModelWorkflowStatus = ReturnType<typeof getLocalModelWorkflow>;
 
 function getLocalModelWorkflowStatus(
   onboard: ReturnType<typeof loadOnboardConfig>,

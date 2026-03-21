@@ -339,6 +339,8 @@ describe("cliStatus", () => {
             description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
             supportsAllowOutsideCatalog: true,
             allowOutsideCatalogFlag: "--allow-outside-catalog",
+            targetProvider: "nvidia",
+            targetProviderLabel: "nvidia",
           },
           restoreDefaultModel: {
             command: "openclaw nemoclaw set-local-model \"qwen3:32b\" --json",
@@ -346,6 +348,9 @@ describe("cliStatus", () => {
             description: "Restore the active OpenShell local-model route to the saved onboarding default.",
             enabled: true,
             reason: null,
+            targetModel: "qwen3:32b",
+            targetProvider: "nvidia",
+            targetProviderLabel: "nvidia",
           },
         },
       });
