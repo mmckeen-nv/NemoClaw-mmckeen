@@ -59,6 +59,7 @@ export interface LocalModelWorkflowActions {
     command: "openclaw nemoclaw onboard-status --json";
     argv: ["openclaw", "nemoclaw", "onboard-status", "--json"];
     description: string;
+    stateScope: "saved-onboarding-config";
   };
   setActiveModel: {
     command: "openclaw nemoclaw set-local-model <model> --json";
@@ -75,6 +76,8 @@ export interface LocalModelWorkflowActions {
     description: string;
     supportsAllowOutsideCatalog: boolean;
     allowOutsideCatalogFlag: "--allow-outside-catalog";
+    stateScope: "openshell-active-route";
+    mutatesSavedDefault: false;
     targetProvider: string | null;
     targetProviderLabel: string;
   };
@@ -84,6 +87,8 @@ export interface LocalModelWorkflowActions {
     description: string;
     enabled: boolean;
     reason: string | null;
+    stateScope: "openshell-active-route";
+    mutatesSavedDefault: false;
     targetModel: string;
     targetProvider: string | null;
     targetProviderLabel: string;
@@ -206,6 +211,7 @@ export function getLocalModelWorkflowActions(
       command: "openclaw nemoclaw onboard-status --json",
       argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
       description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
+      stateScope: "saved-onboarding-config",
     },
     setActiveModel: {
       command: "openclaw nemoclaw set-local-model <model> --json",
@@ -222,6 +228,8 @@ export function getLocalModelWorkflowActions(
       description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
       supportsAllowOutsideCatalog: true,
       allowOutsideCatalogFlag: "--allow-outside-catalog",
+      stateScope: "openshell-active-route",
+      mutatesSavedDefault: false,
       targetProvider: provider,
       targetProviderLabel: providerLabel,
     },
@@ -231,6 +239,8 @@ export function getLocalModelWorkflowActions(
       description: "Restore the active OpenShell local-model route to the saved onboarding default.",
       enabled: restoreEnabled,
       reason: restoreEnabled ? null : "active route already matches the saved onboarding default.",
+      stateScope: "openshell-active-route",
+      mutatesSavedDefault: false,
       targetModel: defaultModel,
       targetProvider: provider,
       targetProviderLabel: providerLabel,
