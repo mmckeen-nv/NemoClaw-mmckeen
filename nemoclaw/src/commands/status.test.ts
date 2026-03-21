@@ -139,8 +139,9 @@ describe("cliStatus", () => {
       await cliStatus({ json: false, logger, pluginConfig: defaultConfig });
 
       const output = lines.join("\n");
-      expect(output).toContain("Status:  not running");
+      expect(output).toContain("Status:  unable to query live sandbox state");
       expect(output).toContain("Status:  unable to query live route");
+      expect(output).toContain("command not found: openshell sandbox status openclaw --json");
       expect(output).toContain("command not found: openshell inference get --json");
       expect(output).not.toContain("inside sandbox");
       expect(output).not.toContain("active (inside sandbox)");
@@ -163,6 +164,7 @@ describe("cliStatus", () => {
       expect(data.insideSandbox).toBe(false);
       expect(data.sandbox.insideSandbox).toBe(false);
       expect(data.sandbox.running).toBe(false);
+      expect(data.sandbox.query.code).toBe("query-failed");
       expect(data.inference.insideSandbox).toBe(false);
       expect(data.inference.configured).toBe(false);
     });
@@ -519,6 +521,7 @@ describe("cliStatus", () => {
       expect(data.sandbox.running).toBe(true);
       expect(data.sandbox.uptime).toBe("2h 14m");
       expect(data.sandbox.insideSandbox).toBe(false);
+      expect(data.sandbox.query.code).toBe("ok");
       expect(data.inference.configured).toBe(true);
       expect(data.inference.provider).toBe("nvidia");
       expect(data.inference.insideSandbox).toBe(false);
@@ -617,6 +620,7 @@ describe("cliStatus", () => {
       expect(data.insideSandbox).toBe(true);
       expect(data.sandbox.insideSandbox).toBe(true);
       expect(data.sandbox.running).toBe(false);
+      expect(data.sandbox.query.code).toBe("inside-sandbox");
       expect(data.inference.insideSandbox).toBe(true);
       expect(data.inference.configured).toBe(false);
     });

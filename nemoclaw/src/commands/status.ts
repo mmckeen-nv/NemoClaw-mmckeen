@@ -129,6 +129,14 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     logger.info(`  Name:    ${sandbox.name}`);
     logger.info("  Status:  active (inside sandbox)");
     logger.info("  Note:    Cannot query host sandbox state from within the sandbox.");
+  } else if (sandbox.query.code === "openshell-unavailable") {
+    logger.info("  Status:  OpenShell CLI unavailable");
+    if (sandbox.query.message) {
+      logger.info(`  Error:   ${sandbox.query.message}`);
+    }
+  } else if (sandbox.query.code === "query-failed" && sandbox.query.message) {
+    logger.info("  Status:  unable to query live sandbox state");
+    logger.info(`  Error:   ${sandbox.query.message}`);
   } else {
     logger.info("  Status:  not running");
   }
@@ -199,6 +207,11 @@ interface SandboxStatus {
   running: boolean;
   uptime: string | null;
   insideSandbox: boolean;
+  query: {
+    ok: boolean;
+    code: "ok" | "inside-sandbox" | "openshell-unavailable" | "query-failed";
+    message: string | null;
+  };
 }
 
 interface SandboxStatusResponse {
@@ -208,7 +221,17 @@ interface SandboxStatusResponse {
 
 async function getSandboxStatus(sandboxName: string, insideSandbox: boolean): Promise<SandboxStatus> {
   if (insideSandbox) {
-    return { name: sandboxName, running: false, uptime: null, insideSandbox: true };
+    return {
+      name: sandboxName,
+      running: false,
+      uptime: null,
+      insideSandbox: true,
+      query: {
+        ok: false,
+        code: "inside-sandbox",
+        message: "Run 'openshell sandbox status' on the host to query the live sandbox state.",
+      },
+    };
   }
   try {
     const { stdout } = await execAsync(`openshell sandbox status ${sandboxName} --json`, {
@@ -220,9 +243,29 @@ async function getSandboxStatus(sandboxName: string, insideSandbox: boolean): Pr
       running: parsed.state === "running",
       uptime: parsed.uptime ?? null,
       insideSandbox: false,
+      query: {
+        ok: true,
+        code: "ok",
+        message: null,
+      },
     };
-  } catch {
-    return { name: sandboxName, running: false, uptime: null, insideSandbox: false };
+  } catch (error) {
+    const message = error instanceof Error
+      ? ("stderr" in error && typeof error.stderr === "string" && error.stderr.trim()) || error.message
+      : String(error);
+    return {
+      name: sandboxName,
+      running: false,
+      uptime: null,
+      insideSandbox: false,
+      query: {
+        ok: false,
+        code: error instanceof Error && "code" in error && error.code === "ENOENT"
+          ? "openshell-unavailable"
+          : "query-failed",
+        message: message.trim() || null,
+      },
+    };
   }
 }
 
