@@ -7,17 +7,16 @@ import { promisify } from "node:util";
 import type { PluginLogger, NemoClawConfig } from "../index.js";
 import { loadState } from "../blueprint/state.js";
 import {
-  buildLocalModelChoices,
   describeLocalModelWorkflowDrift,
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
   getLocalModelWorkflow,
-  getLocalModelWorkflowActions,
   getSetupConfigureAction,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
+import type { buildLocalModelChoices, getLocalModelWorkflowActions } from "../onboard/config.js";
 
 const execAsync = promisify(exec);
 

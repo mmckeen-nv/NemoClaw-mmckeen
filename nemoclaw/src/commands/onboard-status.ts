@@ -6,17 +6,16 @@ import { existsSync } from "node:fs";
 import { promisify } from "node:util";
 import type { PluginLogger } from "../index.js";
 import {
-  buildLocalModelChoices,
   describeLocalModelWorkflowDrift,
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
   getLocalModelWorkflow,
-  getLocalModelWorkflowActions,
   getSetupConfigureAction,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
+import type { buildLocalModelChoices, getLocalModelWorkflowActions } from "../onboard/config.js";
 
 const execAsync = promisify(exec);
 

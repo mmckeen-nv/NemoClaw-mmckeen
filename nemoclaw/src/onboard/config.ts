@@ -41,6 +41,12 @@ export interface LocalModelChoice {
   isActive: boolean;
   isSelectable: boolean;
   selectableReason: "already-active-on-target-route" | "would-change-target-route";
+  routeChange: {
+    any: boolean;
+    model: boolean;
+    provider: boolean;
+    endpoint: boolean;
+  };
   inCatalog: boolean;
   source: "default" | "catalog" | "active-route";
   command: string;
@@ -191,8 +197,13 @@ export function buildLocalModelChoices(
       const requiresAllowOutsideCatalog = !inCatalog;
       const isDefault = model === defaultModel;
       const isActive = model === activeModel;
-      const wouldChangeActiveRoute =
-        model !== activeModel || activeProvider !== targetProvider || activeEndpoint !== targetEndpoint;
+      const routeChange = {
+        any: model !== activeModel || activeProvider !== targetProvider || activeEndpoint !== targetEndpoint,
+        model: model !== activeModel,
+        provider: activeProvider !== targetProvider,
+        endpoint: activeEndpoint !== targetEndpoint,
+      };
+      const wouldChangeActiveRoute = routeChange.any;
       const argv = ["openclaw", "nemoclaw", "set-local-model", model, "--json"];
       if (requiresAllowOutsideCatalog) {
         argv.push("--allow-outside-catalog");
@@ -218,6 +229,7 @@ export function buildLocalModelChoices(
         selectableReason: wouldChangeActiveRoute
           ? "would-change-target-route"
           : "already-active-on-target-route",
+        routeChange,
         inCatalog,
         source: isActive && !inCatalog
           ? "active-route"
