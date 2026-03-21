@@ -39,6 +39,7 @@ export interface LocalModelChoice {
   summary: string;
   isDefault: boolean;
   isActive: boolean;
+  isSelectable: boolean;
   inCatalog: boolean;
   source: "default" | "catalog" | "active-route";
   command: string;
@@ -72,6 +73,8 @@ export interface LocalModelWorkflowActions {
     command: string;
     argv: ["openclaw", "nemoclaw", "set-local-model", string, "--json"];
     description: string;
+    enabled: boolean;
+    reason: string | null;
   };
 }
 
@@ -145,6 +148,7 @@ export function buildLocalModelChoices(
         summary: badges.length > 0 ? badges.join(", ") : "catalog",
         isDefault,
         isActive,
+        isSelectable: !isActive,
         inCatalog,
         source: isActive && !inCatalog
           ? "active-route"
@@ -158,7 +162,11 @@ export function buildLocalModelChoices(
     });
 }
 
-export function getLocalModelWorkflowActions(defaultModel: string): LocalModelWorkflowActions {
+export function getLocalModelWorkflowActions(
+  defaultModel: string,
+  activeModel: string = defaultModel,
+): LocalModelWorkflowActions {
+  const restoreEnabled = activeModel !== defaultModel;
   return {
     read: {
       command: "openclaw nemoclaw onboard-status --json",
@@ -185,6 +193,8 @@ export function getLocalModelWorkflowActions(defaultModel: string): LocalModelWo
       command: `openclaw nemoclaw set-local-model ${JSON.stringify(defaultModel)} --json`,
       argv: ["openclaw", "nemoclaw", "set-local-model", defaultModel, "--json"],
       description: "Restore the active OpenShell local-model route to the saved onboarding default.",
+      enabled: restoreEnabled,
+      reason: restoreEnabled ? null : "active route already matches the saved onboarding default.",
     },
   };
 }
@@ -235,7 +245,7 @@ export function getLocalModelWorkflow(
     choices,
     defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
     activeChoice: choices.find((choice) => choice.isActive) ?? null,
-    actions: getLocalModelWorkflowActions(defaultModel),
+    actions: getLocalModelWorkflowActions(defaultModel, activeModel),
   };
 }
 

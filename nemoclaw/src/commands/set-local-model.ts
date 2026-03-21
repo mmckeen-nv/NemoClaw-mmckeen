@@ -213,7 +213,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     choices,
     defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
     activeChoice: choices.find((choice) => choice.isActive) ?? null,
-    actions: getLocalModelWorkflowActions(defaultModel),
+    actions: getLocalModelWorkflowActions(defaultModel, trimmedModel),
   };
 
   if (json) {
