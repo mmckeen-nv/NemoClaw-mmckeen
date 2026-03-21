@@ -68,6 +68,11 @@ export interface LocalModelWorkflowActions {
     supportsAllowOutsideCatalog: boolean;
     allowOutsideCatalogFlag: "--allow-outside-catalog";
   };
+  restoreDefaultModel: {
+    command: "openclaw nemoclaw set-local-model <default-model> --json";
+    argv: ["openclaw", "nemoclaw", "set-local-model", string, "--json"];
+    description: string;
+  };
 }
 
 export interface LocalModelWorkflow {
@@ -153,7 +158,7 @@ export function buildLocalModelChoices(
     });
 }
 
-export function getLocalModelWorkflowActions(): LocalModelWorkflowActions {
+export function getLocalModelWorkflowActions(defaultModel: string): LocalModelWorkflowActions {
   return {
     read: {
       command: "openclaw nemoclaw onboard-status --json",
@@ -175,6 +180,11 @@ export function getLocalModelWorkflowActions(): LocalModelWorkflowActions {
       description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
       supportsAllowOutsideCatalog: true,
       allowOutsideCatalogFlag: "--allow-outside-catalog",
+    },
+    restoreDefaultModel: {
+      command: "openclaw nemoclaw set-local-model <default-model> --json",
+      argv: ["openclaw", "nemoclaw", "set-local-model", defaultModel, "--json"],
+      description: "Restore the active OpenShell local-model route to the saved onboarding default.",
     },
   };
 }
@@ -225,7 +235,7 @@ export function getLocalModelWorkflow(
     choices,
     defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
     activeChoice: choices.find((choice) => choice.isActive) ?? null,
-    actions: getLocalModelWorkflowActions(),
+    actions: getLocalModelWorkflowActions(defaultModel),
   };
 }
 

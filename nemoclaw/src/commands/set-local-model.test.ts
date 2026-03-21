@@ -206,6 +206,11 @@ describe("cliSetLocalModel", () => {
           supportsAllowOutsideCatalog: true,
           allowOutsideCatalogFlag: "--allow-outside-catalog",
         },
+        restoreDefaultModel: {
+          command: "openclaw nemoclaw set-local-model <default-model> --json",
+          argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
+          description: "Restore the active OpenShell local-model route to the saved onboarding default.",
+        },
       },
       hint: "Saved catalog: qwen3:32b, nemotron-3-nano:30b\nUse --allow-outside-catalog to force a one-off route change.",
     });
@@ -367,6 +372,11 @@ describe("cliSetLocalModel", () => {
           description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
           supportsAllowOutsideCatalog: true,
           allowOutsideCatalogFlag: "--allow-outside-catalog",
+        },
+        restoreDefaultModel: {
+          command: "openclaw nemoclaw set-local-model <default-model> --json",
+          argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
+          description: "Restore the active OpenShell local-model route to the saved onboarding default.",
         },
       },
     });

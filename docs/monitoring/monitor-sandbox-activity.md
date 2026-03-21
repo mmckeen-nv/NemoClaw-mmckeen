@@ -47,6 +47,7 @@ Key fields in the output include the following:
 - Blueprint run ID, which is the identifier for the most recent blueprint execution.
 - Inference provider, which shows the active provider, model, and endpoint.
 - `localModelWorkflow.choices`, which exposes a dashboard-friendly list of saved local models plus the currently active route when local inference is onboarded, including per-choice badges/summary metadata for direct button rendering.
+- `localModelWorkflow.actions.restoreDefaultModel`, which gives a single-user dashboard a ready-to-run reset action back to the saved default local model.
 
 If you run `openclaw nemoclaw status` from inside the sandbox, the command detects the sandbox context and reports it. Host-level sandbox and inference details are not available from within the sandbox. Run `openshell sandbox list` on the host to check the underlying sandbox state.
 
