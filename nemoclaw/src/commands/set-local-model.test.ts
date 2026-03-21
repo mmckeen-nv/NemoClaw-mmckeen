@@ -181,6 +181,18 @@ describe("cliSetLocalModel", () => {
           source: "catalog",
         },
       ],
+      actions: {
+        read: {
+          command: "openclaw nemoclaw onboard-status --json",
+          description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
+        },
+        setActiveModel: {
+          command: "openclaw nemoclaw set-local-model <model> --json",
+          description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
+          supportsAllowOutsideCatalog: true,
+          allowOutsideCatalogFlag: "--allow-outside-catalog",
+        },
+      },
       hint: "Saved catalog: qwen3:32b, nemotron-3-nano:30b\nUse --allow-outside-catalog to force a one-off route change.",
     });
     expect(execFileSync).not.toHaveBeenCalled();
@@ -286,6 +298,18 @@ describe("cliSetLocalModel", () => {
           source: "active-route",
         },
       ],
+      actions: {
+        read: {
+          command: "openclaw nemoclaw onboard-status --json",
+          description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
+        },
+        setActiveModel: {
+          command: "openclaw nemoclaw set-local-model <model> --json",
+          description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
+          supportsAllowOutsideCatalog: true,
+          allowOutsideCatalogFlag: "--allow-outside-catalog",
+        },
+      },
     });
   });
 });

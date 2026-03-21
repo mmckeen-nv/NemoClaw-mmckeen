@@ -119,6 +119,18 @@ describe("cliOnboardStatus", () => {
             source: "catalog",
           },
         ],
+        actions: {
+          read: {
+            command: "openclaw nemoclaw onboard-status --json",
+            description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
+          },
+          setActiveModel: {
+            command: "openclaw nemoclaw set-local-model <model> --json",
+            description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
+            supportsAllowOutsideCatalog: true,
+            allowOutsideCatalogFlag: "--allow-outside-catalog",
+          },
+        },
       },
     });
   });

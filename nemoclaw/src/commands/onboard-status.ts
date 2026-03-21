@@ -9,6 +9,7 @@ import {
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
+  getLocalModelWorkflowActions,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
@@ -77,6 +78,7 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
     activeModelInCatalog: boolean;
     catalog: string[];
     choices: ReturnType<typeof buildLocalModelChoices>;
+    actions: ReturnType<typeof getLocalModelWorkflowActions>;
   } | null;
 }> {
   const onboard = loadOnboardConfig();
@@ -119,6 +121,7 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
             activeModelInCatalog: catalog.includes(activeModel),
             catalog,
             choices: buildLocalModelChoices(defaultModel, activeModel, catalog),
+            actions: getLocalModelWorkflowActions(),
           };
         })()
       : null,

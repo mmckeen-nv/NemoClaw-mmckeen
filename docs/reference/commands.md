@@ -87,7 +87,7 @@ $ openclaw nemoclaw onboard-status [--json]
 `--json`
 : Output only the onboarding/control-plane payload as JSON.
 
-For local inference onboarding, the output includes the saved local model catalog, default model, and dashboard-friendly `localModelWorkflow` metadata.
+For local inference onboarding, the output includes the saved local model catalog, default model, dashboard-friendly `localModelWorkflow` metadata, and an `actions` block describing the supported read/write commands for single-user local dashboards.
 Unlike `status`, this command does not depend on OpenShell sandbox introspection.
 
 ### `openclaw nemoclaw set-local-model`
@@ -100,7 +100,7 @@ $ openclaw nemoclaw set-local-model <model> [--json] [--allow-outside-catalog]
 ```
 
 `--json`
-: Output the resulting active-route summary as JSON. When the write is rejected (for example, missing onboarding or a model outside the saved catalog), the command now returns a structured JSON error payload with `ok: false`, a stable `code`, and the saved catalog/default metadata that a local dashboard can use to recover.
+: Output the resulting active-route summary as JSON. When the write is rejected (for example, missing onboarding or a model outside the saved catalog), the command now returns a structured JSON error payload with `ok: false`, a stable `code`, the saved catalog/default metadata, and an `actions` block that a local dashboard can use to recover without hardcoding CLI strings.
 
 `--allow-outside-catalog`
 : Permit a one-off route change to a model that is not in the saved onboarding catalog.

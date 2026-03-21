@@ -41,6 +41,19 @@ export interface LocalModelChoice {
   source: "default" | "catalog" | "active-route";
 }
 
+export interface LocalModelWorkflowActions {
+  read: {
+    command: "openclaw nemoclaw onboard-status --json";
+    description: string;
+  };
+  setActiveModel: {
+    command: "openclaw nemoclaw set-local-model <model> --json";
+    description: string;
+    supportsAllowOutsideCatalog: boolean;
+    allowOutsideCatalogFlag: "--allow-outside-catalog";
+  };
+}
+
 export interface SavedLocalModelWorkflow {
   enabled: true;
   provider: string | null;
@@ -54,6 +67,7 @@ export interface SavedLocalModelWorkflow {
   activeModelInCatalog: boolean;
   catalog: string[];
   choices: LocalModelChoice[];
+  actions: LocalModelWorkflowActions;
 }
 
 export function buildLocalModelChoices(
@@ -91,6 +105,21 @@ export function buildLocalModelChoices(
     }));
 }
 
+export function getLocalModelWorkflowActions(): LocalModelWorkflowActions {
+  return {
+    read: {
+      command: "openclaw nemoclaw onboard-status --json",
+      description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
+    },
+    setActiveModel: {
+      command: "openclaw nemoclaw set-local-model <model> --json",
+      description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
+      supportsAllowOutsideCatalog: true,
+      allowOutsideCatalogFlag: "--allow-outside-catalog",
+    },
+  };
+}
+
 export function getSavedLocalModelWorkflow(config: NemoClawOnboardConfig): SavedLocalModelWorkflow | null {
   if (!isLocalEndpointType(config.endpointType)) {
     return null;
@@ -112,6 +141,7 @@ export function getSavedLocalModelWorkflow(config: NemoClawOnboardConfig): Saved
     activeModelInCatalog: catalog.includes(defaultModel),
     catalog,
     choices: buildLocalModelChoices(defaultModel, defaultModel, catalog),
+    actions: getLocalModelWorkflowActions(),
   };
 }
 

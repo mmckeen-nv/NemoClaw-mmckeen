@@ -70,9 +70,9 @@ If your dashboard only needs the saved onboarding/control-plane state, use the n
 $ openclaw nemoclaw onboard-status --json
 ```
 
-This returns the saved endpoint/provider/model configuration plus any local-model catalog metadata without requiring OpenShell sandbox status reads.
+This returns the saved endpoint/provider/model configuration plus any local-model catalog metadata without requiring OpenShell sandbox status reads. For local workflows, the payload also includes `localModelWorkflow.actions`, which describes the supported control-plane read/write commands for a single-user dashboard.
 
-For write actions, `openclaw nemoclaw set-local-model --json` now also returns structured JSON on rejected writes (for example `ONBOARDING_REQUIRED` or `MODEL_OUTSIDE_CATALOG`) so a local dashboard can surface the failure without scraping human-oriented stderr.
+For write actions, `openclaw nemoclaw set-local-model --json` now also returns structured JSON on rejected writes (for example `ONBOARDING_REQUIRED` or `MODEL_OUTSIDE_CATALOG`) so a local dashboard can surface the failure without scraping human-oriented stderr. Success and recoverable error payloads include the same `actions` block so the UI does not need to hardcode command templates.
 
 ## Available Models
 

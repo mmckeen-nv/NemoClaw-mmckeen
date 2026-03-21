@@ -7,6 +7,7 @@ import {
   buildLocalModelChoices,
   describeOnboardProvider,
   getConfiguredModelCatalog,
+  getLocalModelWorkflowActions,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
@@ -31,6 +32,7 @@ interface SetLocalModelResult {
   activeModelInCatalog: boolean;
   catalog: string[];
   choices: ReturnType<typeof buildLocalModelChoices>;
+  actions: ReturnType<typeof getLocalModelWorkflowActions>;
 }
 
 interface SetLocalModelErrorResult {
@@ -50,6 +52,7 @@ interface SetLocalModelErrorResult {
   defaultModel?: string;
   catalog?: string[];
   choices?: ReturnType<typeof buildLocalModelChoices>;
+  actions?: ReturnType<typeof getLocalModelWorkflowActions>;
   hint?: string;
   details?: string;
 }
@@ -163,6 +166,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       defaultModel,
       catalog,
       choices: buildLocalModelChoices(defaultModel, defaultModel, catalog),
+      actions: getLocalModelWorkflowActions(),
       hint: catalog.length > 0
         ? `Saved catalog: ${catalog.join(", ")}\nUse --allow-outside-catalog to force a one-off route change.`
         : "Use --allow-outside-catalog to force a one-off route change.",
@@ -185,6 +189,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       defaultModel,
       catalog,
       choices: buildLocalModelChoices(defaultModel, trimmedModel, catalog),
+      actions: getLocalModelWorkflowActions(),
       details: stderr || String(err),
     });
     return;
@@ -203,6 +208,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     activeModelInCatalog: inCatalog,
     catalog,
     choices: buildLocalModelChoices(defaultModel, trimmedModel, catalog),
+    actions: getLocalModelWorkflowActions(),
   };
 
   if (json) {
