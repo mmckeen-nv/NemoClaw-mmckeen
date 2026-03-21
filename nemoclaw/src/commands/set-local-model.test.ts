@@ -3,12 +3,17 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { loadOnboardConfig } from "../onboard/config.js";
 import { cliSetLocalModel } from "./set-local-model.js";
 import type { PluginLogger } from "../index.js";
 
 vi.mock("node:child_process", () => ({
   execFileSync: vi.fn(),
+}));
+
+vi.mock("node:fs", () => ({
+  existsSync: vi.fn(() => false),
 }));
 
 vi.mock("../onboard/config.js", async () => {
@@ -37,6 +42,7 @@ describe("cliSetLocalModel", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(loadOnboardConfig).mockReturnValue(null);
+    vi.mocked(existsSync).mockReturnValue(false);
   });
 
   it("requires onboarding config", async () => {
@@ -106,6 +112,46 @@ describe("cliSetLocalModel", () => {
           mutatesSavedDefault: true,
         },
       },
+    });
+    expect(execFileSync).not.toHaveBeenCalled();
+  });
+
+  it("rejects local-model writes inside the sandbox with structured JSON", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["nemotron-3-nano:30b"],
+      onboardedAt: "2026-03-21T18:00:00.000Z",
+    });
+    vi.mocked(existsSync).mockImplementation((path) => String(path).startsWith("/sandbox/"));
+
+    const { lines, logger } = captureLogger();
+
+    await cliSetLocalModel({
+      model: "nemotron-3-nano:30b",
+      allowOutsideCatalog: false,
+      json: true,
+      logger,
+    });
+
+    expect(JSON.parse(lines.join(""))).toMatchObject({
+      ok: false,
+      code: "INSIDE_SANDBOX",
+      message: "Live OpenShell route changes must run on the host because this command is inside the sandbox.",
+      model: "nemotron-3-nano:30b",
+      endpointType: "ollama",
+      endpoint: "http://host.openshell.internal:11434/v1",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      defaultModel: "qwen3:32b",
+      catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
+      hint: "Run this command from the host that manages the NemoClaw sandbox.",
     });
     expect(execFileSync).not.toHaveBeenCalled();
   });
@@ -326,6 +372,51 @@ describe("cliSetLocalModel", () => {
     expect(output).toContain("Active:   nemotron-3-nano:30b");
     expect(output).toContain("active route differs from saved default");
     expect(output).toContain("active route is in saved catalog");
+  });
+
+  it("returns a dashboard-readable openshell-unavailable error when the CLI is missing", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["qwen3:32b", "nemotron-3-nano:30b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+    vi.mocked(execFileSync).mockImplementation(() => {
+      const error = new Error("spawn openshell ENOENT") as Error & { code: string };
+      error.code = "ENOENT";
+      throw error;
+    });
+
+    const { lines, logger } = captureLogger();
+
+    await cliSetLocalModel({
+      model: "nemotron-3-nano:30b",
+      allowOutsideCatalog: false,
+      json: true,
+      logger,
+    });
+
+    expect(JSON.parse(lines.join(""))).toMatchObject({
+      generatedAt: expect.any(String),
+      ok: false,
+      code: "OPENSHELL_UNAVAILABLE",
+      message: "Failed to set inference route: Error: spawn openshell ENOENT",
+      model: "nemotron-3-nano:30b",
+      endpointType: "ollama",
+      endpoint: "http://host.openshell.internal:11434/v1",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      defaultModel: "qwen3:32b",
+      catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
+      hint:
+        "Install OpenShell on the host or run the command from an environment where the openshell CLI is available.",
+    });
   });
 
   it("returns conservative JSON when applying the requested route fails", async () => {

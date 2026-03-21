@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import type { PluginLogger } from "../index.js";
 import {
   buildLocalModelChoices,
@@ -70,6 +71,8 @@ interface SetLocalModelErrorResult {
     | "MODEL_REQUIRED"
     | "ONBOARDING_REQUIRED"
     | "NON_LOCAL_WORKFLOW"
+    | "INSIDE_SANDBOX"
+    | "OPENSHELL_UNAVAILABLE"
     | "MODEL_OUTSIDE_CATALOG"
     | "INFERENCE_SET_FAILED";
   message: string;
@@ -117,6 +120,18 @@ function emitError(
   if (payload.hint) {
     logger.info(payload.hint);
   }
+}
+
+function isInsideSandbox(): boolean {
+  return existsSync("/sandbox/.openclaw") || existsSync("/sandbox/.nemoclaw");
+}
+
+function isOpenShellUnavailable(error: unknown, message: string): boolean {
+  if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+    return true;
+  }
+
+  return /(?:^|\b)(?:openshell: )?(?:command not found|not found)\b/i.test(message);
 }
 
 function resolveProviderName(config: ReturnType<typeof loadOnboardConfig>): string {
@@ -261,6 +276,27 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     return;
   }
 
+  if (isInsideSandbox()) {
+    emitError(
+      logger,
+      json,
+      "Live OpenShell route changes must run on the host because this command is inside the sandbox.",
+      {
+        code: "INSIDE_SANDBOX",
+        model: trimmedModel,
+        endpointType: onboard.endpointType,
+        endpoint: onboard.endpointUrl,
+        provider: onboard.provider,
+        providerLabel: describeOnboardProvider(onboard),
+        defaultModel: onboard.model.trim(),
+        catalog: getConfiguredModelCatalog(onboard),
+        setup,
+        hint: "Run this command from the host that manages the NemoClaw sandbox.",
+      },
+    );
+    return;
+  }
+
   const catalog = getConfiguredModelCatalog(onboard);
   const defaultModel = onboard.model.trim();
   const provider = resolveProviderName(onboard);
@@ -317,6 +353,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
   } catch (err) {
     const stderr =
       err instanceof Error && "stderr" in err ? String((err as { stderr: unknown }).stderr) : "";
+    const message = stderr || String(err);
     const fallbackChoices = buildLocalModelChoices(
       defaultModel,
       defaultModel,
@@ -326,8 +363,8 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       onboard.endpointUrl,
       onboard.endpointType,
     );
-    emitError(logger, json, `Failed to set inference route: ${stderr || String(err)}`, {
-      code: "INFERENCE_SET_FAILED",
+    emitError(logger, json, `Failed to set inference route: ${message}`, {
+      code: isOpenShellUnavailable(err, message) ? "OPENSHELL_UNAVAILABLE" : "INFERENCE_SET_FAILED",
       model: trimmedModel,
       endpointType: onboard.endpointType,
       endpoint: onboard.endpointUrl,
@@ -354,8 +391,10 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
         onboard.endpointUrl,
         onboard.endpointType,
       ),
-      details: stderr || String(err),
-      hint: `Requested model '${trimmedModel}' was not applied; active route is reported from the saved onboarding default.`,
+      details: message,
+      hint: isOpenShellUnavailable(err, message)
+        ? "Install OpenShell on the host or run the command from an environment where the openshell CLI is available."
+        : `Requested model '${trimmedModel}' was not applied; active route is reported from the saved onboarding default.`,
       setup,
     });
     return;
