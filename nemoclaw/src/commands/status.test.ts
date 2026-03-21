@@ -310,6 +310,7 @@ describe("cliStatus", () => {
         catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
         choices: [
           {
+            id: "model:qwen3:32b",
             model: "qwen3:32b",
             label: "qwen3:32b",
             badges: ["default"],
@@ -330,6 +331,7 @@ describe("cliStatus", () => {
           targetEndpointType: "ollama",
           },
           {
+            id: "model:nemotron-3-nano:30b",
             model: "nemotron-3-nano:30b",
             label: "nemotron-3-nano:30b",
             badges: [],
@@ -350,6 +352,7 @@ describe("cliStatus", () => {
           targetEndpointType: "ollama",
           },
           {
+            id: "model:nemotron-3-super-120b",
             model: "nemotron-3-super-120b",
             label: "nemotron-3-super-120b",
             badges: ["active", "outside-catalog", "provider-drift", "endpoint-drift"],
@@ -371,6 +374,7 @@ describe("cliStatus", () => {
           },
         ],
         defaultChoice: {
+          id: "model:qwen3:32b",
           model: "qwen3:32b",
           label: "qwen3:32b",
           badges: ["default"],
@@ -391,6 +395,7 @@ describe("cliStatus", () => {
           targetEndpointType: "ollama",
         },
         activeChoice: {
+          id: "model:nemotron-3-super-120b",
           model: "nemotron-3-super-120b",
           label: "nemotron-3-super-120b",
           badges: ["active", "outside-catalog", "provider-drift", "endpoint-drift"],
@@ -450,6 +455,7 @@ describe("cliStatus", () => {
         },
         recommendedActions: [
           {
+            id: "read-state",
             kind: "read-state",
             label: "Read workflow state",
             description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
@@ -457,6 +463,7 @@ describe("cliStatus", () => {
             argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
           },
           {
+            id: "restore-default-model",
             kind: "restore-default-model",
             label: "Restore saved default (qwen3:32b)",
             description: "Restore the active OpenShell local-model route to the saved onboarding default.",
@@ -464,6 +471,7 @@ describe("cliStatus", () => {
             argv: ["openclaw", "nemoclaw", "restore-local-model", "--json"],
           },
           {
+            id: "set-active-model:qwen3:32b",
             kind: "set-active-model",
             label: "Switch active route to qwen3:32b",
             description: "default",

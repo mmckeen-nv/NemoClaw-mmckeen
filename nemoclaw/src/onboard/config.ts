@@ -33,6 +33,7 @@ export function getConfiguredModelCatalog(config: NemoClawOnboardConfig): string
 }
 
 export interface LocalModelChoice {
+  id: string;
   model: string;
   label: string;
   badges: Array<
@@ -128,6 +129,7 @@ export interface LocalModelWorkflowDrift {
 }
 
 export interface LocalModelWorkflowRecommendedAction {
+  id: "read-state" | "restore-default-model" | `set-active-model:${string}`;
   kind: "read-state" | "set-active-model" | "restore-default-model";
   label: string;
   description: string;
@@ -257,6 +259,7 @@ export function buildLocalModelChoices(
         badges.push("endpoint-drift");
       }
       return {
+        id: `model:${model}`,
         model,
         label: model,
         badges,
@@ -299,6 +302,7 @@ export function getLocalModelWorkflowRecommendedActions(
 ): LocalModelWorkflowRecommendedAction[] {
   const actions: LocalModelWorkflowRecommendedAction[] = [
     {
+      id: "read-state",
       kind: "read-state",
       label: "Read workflow state",
       description: workflow.actions.read.description,
@@ -309,6 +313,7 @@ export function getLocalModelWorkflowRecommendedActions(
 
   if (workflow.actions.restoreDefaultModel.enabled) {
     actions.push({
+      id: "restore-default-model",
       kind: "restore-default-model",
       label: `Restore saved default (${workflow.actions.restoreDefaultModel.targetModel})`,
       description: workflow.actions.restoreDefaultModel.description,
@@ -322,6 +327,7 @@ export function getLocalModelWorkflowRecommendedActions(
     workflow.choices.find((choice) => choice.isSelectable);
   if (suggestedChoice) {
     actions.push({
+      id: `set-active-model:${suggestedChoice.model}`,
       kind: "set-active-model",
       label: `Switch active route to ${suggestedChoice.model}`,
       description: suggestedChoice.summary,

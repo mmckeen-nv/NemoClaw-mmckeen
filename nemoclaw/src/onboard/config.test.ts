@@ -110,6 +110,7 @@ describe("onboard config helpers", () => {
       catalog: ["nemotron-3-nano:30b", "llama3.3:70b", "qwen2.5:32b"],
       choices: [
         {
+          id: "model:nemotron-3-nano:30b",
           model: "nemotron-3-nano:30b",
           label: "nemotron-3-nano:30b",
           badges: ["default", "active"],
@@ -130,6 +131,7 @@ describe("onboard config helpers", () => {
           targetEndpointType: "ollama",
         },
         {
+          id: "model:llama3.3:70b",
           model: "llama3.3:70b",
           label: "llama3.3:70b",
           badges: [],
@@ -150,6 +152,7 @@ describe("onboard config helpers", () => {
           targetEndpointType: "ollama",
         },
         {
+          id: "model:qwen2.5:32b",
           model: "qwen2.5:32b",
           label: "qwen2.5:32b",
           badges: [],
@@ -171,6 +174,7 @@ describe("onboard config helpers", () => {
         },
       ],
       defaultChoice: {
+        id: "model:nemotron-3-nano:30b",
         model: "nemotron-3-nano:30b",
         label: "nemotron-3-nano:30b",
         badges: ["default", "active"],
@@ -191,6 +195,7 @@ describe("onboard config helpers", () => {
           targetEndpointType: "ollama",
       },
       activeChoice: {
+        id: "model:nemotron-3-nano:30b",
         model: "nemotron-3-nano:30b",
         label: "nemotron-3-nano:30b",
         badges: ["default", "active"],
@@ -255,6 +260,7 @@ describe("onboard config helpers", () => {
     expect(buildLocalModelChoices("qwen3:32b", "nemotron-3-super-120b", ["qwen3:32b", "llama3.3:70b"]))
       .toEqual([
         {
+          id: "model:qwen3:32b",
           model: "qwen3:32b",
           label: "qwen3:32b",
           badges: ["default"],
@@ -275,6 +281,7 @@ describe("onboard config helpers", () => {
           targetEndpointType: null,
         },
         {
+          id: "model:llama3.3:70b",
           model: "llama3.3:70b",
           label: "llama3.3:70b",
           badges: [],
@@ -295,6 +302,7 @@ describe("onboard config helpers", () => {
           targetEndpointType: null,
         },
         {
+          id: "model:nemotron-3-super-120b",
           model: "nemotron-3-super-120b",
           label: "nemotron-3-super-120b",
           badges: ["active", "outside-catalog"],
