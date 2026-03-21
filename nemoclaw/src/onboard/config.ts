@@ -32,6 +32,15 @@ export function getConfiguredModelCatalog(config: NemoClawOnboardConfig): string
   return [...new Set(catalog)];
 }
 
+export interface LocalModelChoice {
+  model: string;
+  label: string;
+  isDefault: boolean;
+  isActive: boolean;
+  inCatalog: boolean;
+  source: "default" | "catalog" | "active-route";
+}
+
 export interface SavedLocalModelWorkflow {
   enabled: true;
   provider: string | null;
@@ -44,6 +53,42 @@ export interface SavedLocalModelWorkflow {
   activeModelMatchesDefault: true;
   activeModelInCatalog: boolean;
   catalog: string[];
+  choices: LocalModelChoice[];
+}
+
+export function buildLocalModelChoices(
+  defaultModel: string,
+  activeModel: string,
+  catalog: string[],
+): LocalModelChoice[] {
+  const ordered = [defaultModel, ...catalog];
+  if (!catalog.includes(activeModel)) {
+    ordered.push(activeModel);
+  }
+
+  const seen = new Set<string>();
+  return ordered
+    .map((entry) => entry.trim())
+    .filter(Boolean)
+    .filter((entry) => {
+      if (seen.has(entry)) {
+        return false;
+      }
+      seen.add(entry);
+      return true;
+    })
+    .map((model) => ({
+      model,
+      label: model,
+      isDefault: model === defaultModel,
+      isActive: model === activeModel,
+      inCatalog: catalog.includes(model),
+      source: model === activeModel && !catalog.includes(model)
+        ? "active-route"
+        : model === defaultModel
+          ? "default"
+          : "catalog",
+    }));
 }
 
 export function getSavedLocalModelWorkflow(config: NemoClawOnboardConfig): SavedLocalModelWorkflow | null {
@@ -66,6 +111,7 @@ export function getSavedLocalModelWorkflow(config: NemoClawOnboardConfig): Saved
     activeModelMatchesDefault: true,
     activeModelInCatalog: catalog.includes(defaultModel),
     catalog,
+    choices: buildLocalModelChoices(defaultModel, defaultModel, catalog),
   };
 }
 

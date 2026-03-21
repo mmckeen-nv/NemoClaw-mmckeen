@@ -53,7 +53,7 @@ Add the `--json` flag for machine-readable output:
 $ openclaw nemoclaw status --json
 ```
 
-The output includes the active provider, model, and endpoint.
+The output includes the active provider, model, and endpoint. For local inference workflows, the JSON payload also includes `localModelWorkflow.choices`, which can be used by a local dashboard or control surface to render the saved catalog, default model, and any active-route drift.
 
 ## Available Models
 

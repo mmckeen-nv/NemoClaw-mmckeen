@@ -249,6 +249,32 @@ describe("cliStatus", () => {
         activeModelMatchesDefault: false,
         activeModelInCatalog: false,
         catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
+        choices: [
+          {
+            model: "qwen3:32b",
+            label: "qwen3:32b",
+            isDefault: true,
+            isActive: false,
+            inCatalog: true,
+            source: "default",
+          },
+          {
+            model: "nemotron-3-nano:30b",
+            label: "nemotron-3-nano:30b",
+            isDefault: false,
+            isActive: false,
+            inCatalog: true,
+            source: "catalog",
+          },
+          {
+            model: "nemotron-3-super-120b",
+            label: "nemotron-3-super-120b",
+            isDefault: false,
+            isActive: true,
+            inCatalog: false,
+            source: "active-route",
+          },
+        ],
       });
     });
 

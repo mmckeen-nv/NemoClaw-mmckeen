@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  buildLocalModelChoices,
   getConfiguredModelCatalog,
   getSavedLocalModelWorkflow,
   isLocalEndpointType,
@@ -68,7 +69,63 @@ describe("onboard config helpers", () => {
       activeModelMatchesDefault: true,
       activeModelInCatalog: true,
       catalog: ["nemotron-3-nano:30b", "llama3.3:70b", "qwen2.5:32b"],
+      choices: [
+        {
+          model: "nemotron-3-nano:30b",
+          label: "nemotron-3-nano:30b",
+          isDefault: true,
+          isActive: true,
+          inCatalog: true,
+          source: "default",
+        },
+        {
+          model: "llama3.3:70b",
+          label: "llama3.3:70b",
+          isDefault: false,
+          isActive: false,
+          inCatalog: true,
+          source: "catalog",
+        },
+        {
+          model: "qwen2.5:32b",
+          label: "qwen2.5:32b",
+          isDefault: false,
+          isActive: false,
+          inCatalog: true,
+          source: "catalog",
+        },
+      ],
     });
+  });
+
+  it("adds the active route as a dashboard choice when it drifts outside the saved catalog", () => {
+    expect(buildLocalModelChoices("qwen3:32b", "nemotron-3-super-120b", ["qwen3:32b", "llama3.3:70b"]))
+      .toEqual([
+        {
+          model: "qwen3:32b",
+          label: "qwen3:32b",
+          isDefault: true,
+          isActive: false,
+          inCatalog: true,
+          source: "default",
+        },
+        {
+          model: "llama3.3:70b",
+          label: "llama3.3:70b",
+          isDefault: false,
+          isActive: false,
+          inCatalog: true,
+          source: "catalog",
+        },
+        {
+          model: "nemotron-3-super-120b",
+          label: "nemotron-3-super-120b",
+          isDefault: false,
+          isActive: true,
+          inCatalog: false,
+          source: "active-route",
+        },
+      ]);
   });
 
   it("returns null saved workflow metadata for non-local endpoints", () => {

@@ -7,6 +7,7 @@ import { promisify } from "node:util";
 import type { PluginLogger, NemoClawConfig } from "../index.js";
 import { loadState } from "../blueprint/state.js";
 import {
+  buildLocalModelChoices,
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
@@ -224,6 +225,14 @@ interface LocalModelWorkflowStatus {
   activeModelMatchesDefault: boolean;
   activeModelInCatalog: boolean;
   catalog: string[];
+  choices: Array<{
+    model: string;
+    label: string;
+    isDefault: boolean;
+    isActive: boolean;
+    inCatalog: boolean;
+    source: "default" | "catalog" | "active-route";
+  }>;
 }
 
 function getLocalModelWorkflowStatus(
@@ -251,6 +260,7 @@ function getLocalModelWorkflowStatus(
     activeModelMatchesDefault: activeModel === defaultModel,
     activeModelInCatalog: catalog.includes(activeModel),
     catalog,
+    choices: buildLocalModelChoices(defaultModel, activeModel, catalog),
   };
 }
 
