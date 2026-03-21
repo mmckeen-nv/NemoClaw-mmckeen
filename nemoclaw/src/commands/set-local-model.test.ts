@@ -470,6 +470,7 @@ describe("cliSetLocalModel", () => {
     expect(data).toMatchObject({
       generatedAt: expect.any(String),
       ok: true,
+      liveRouteStatus: "live-openshell",
       selectionScope: "sandbox-global",
       selectionMode: "single-active-route",
       setup: {
@@ -484,8 +485,12 @@ describe("cliSetLocalModel", () => {
       },
       provider: "ollama-local",
       providerLabel: "Local Ollama",
+      savedProvider: "ollama-local",
+      savedProviderLabel: "Local Ollama",
       endpointType: "ollama",
       endpoint: "http://host.openshell.internal:11434/v1",
+      savedEndpointType: "ollama",
+      savedEndpoint: "http://host.openshell.internal:11434/v1",
       defaultModel: "qwen3:32b",
       activeModel: "llama3.3:70b",
       activeModelSource: "inference",

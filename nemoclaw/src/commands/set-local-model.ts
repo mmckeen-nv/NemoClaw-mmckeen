@@ -27,12 +27,17 @@ interface SetLocalModelResult {
   setup: {
     configure: ReturnType<typeof getSetupConfigureAction>;
   };
+  liveRouteStatus: "live-openshell";
   selectionScope: "sandbox-global";
   selectionMode: "single-active-route";
   provider: string;
   providerLabel: string;
+  savedProvider: string;
+  savedProviderLabel: string;
   endpointType: string;
   endpoint: string;
+  savedEndpointType: string;
+  savedEndpoint: string;
   defaultModel: string;
   activeModel: string;
   activeModelSource: "inference";
@@ -270,12 +275,17 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     ok: true,
     generatedAt: new Date().toISOString(),
     setup,
+    liveRouteStatus: "live-openshell",
     selectionScope: "sandbox-global",
     selectionMode: "single-active-route",
     provider,
     providerLabel,
+    savedProvider: provider,
+    savedProviderLabel: providerLabel,
     endpointType: onboard.endpointType,
     endpoint: onboard.endpointUrl,
+    savedEndpointType: onboard.endpointType,
+    savedEndpoint: onboard.endpointUrl,
     defaultModel,
     activeModel: trimmedModel,
     activeModelSource: "inference",

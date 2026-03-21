@@ -101,7 +101,7 @@ $ openclaw nemoclaw set-local-model <model> [--json] [--allow-outside-catalog]
 ```
 
 `--json`
-: Output the resulting active-route summary as JSON. Success and recoverable error payloads include a stable `setup.configure` onboarding action, a top-level `generatedAt` timestamp for poll/write ordering, and recoverable local-workflow responses also include a stable `actions` block, so a local dashboard can recover without hardcoding CLI strings. Successful write responses also carry `selectionScope` / `selectionMode` (`sandbox-global` / `single-active-route`) so dashboards can apply the same single-user route semantics they see in `onboard-status --json`.
+: Output the resulting active-route summary as JSON. Success and recoverable error payloads include a stable `setup.configure` onboarding action, a top-level `generatedAt` timestamp for poll/write ordering, and recoverable local-workflow responses also include a stable `actions` block, so a local dashboard can recover without hardcoding CLI strings. Successful write responses also carry `liveRouteStatus` (`live-openshell`), `savedProvider` / `savedProviderLabel`, `savedEndpoint` / `savedEndpointType`, and `selectionScope` / `selectionMode` (`sandbox-global` / `single-active-route`) so dashboards can reconcile write results with the richer `status --json` / `onboard-status --json` control-plane payload without inventing fallback state.
 
 `--allow-outside-catalog`
 : Permit a one-off route change to a model that is not in the saved onboarding catalog.
@@ -118,7 +118,7 @@ $ openclaw nemoclaw restore-local-model [--json]
 ```
 
 `--json`
-: Output the resulting active-route summary as JSON using the same success and recoverable error shape as `set-local-model`, including `selectionScope` / `selectionMode` for single-user dashboard consumers.
+: Output the resulting active-route summary as JSON using the same success and recoverable error shape as `set-local-model`, including `liveRouteStatus`, saved-provider/endpoint metadata, and `selectionScope` / `selectionMode` for single-user dashboard consumers.
 
 ### `openclaw nemoclaw logs`
 

@@ -27,12 +27,17 @@ interface RestoreLocalModelResult {
   setup: {
     configure: ReturnType<typeof getSetupConfigureAction>;
   };
+  liveRouteStatus: "live-openshell";
   selectionScope: "sandbox-global";
   selectionMode: "single-active-route";
   provider: string;
   providerLabel: string;
+  savedProvider: string;
+  savedProviderLabel: string;
   endpointType: string;
   endpoint: string;
+  savedEndpointType: string;
+  savedEndpoint: string;
   defaultModel: string;
   activeModel: string;
   activeModelSource: "inference";
@@ -203,12 +208,17 @@ export function cliRestoreLocalModel(opts: RestoreLocalModelOptions): void {
       generatedAt: new Date().toISOString(),
       noop: true,
       setup,
+      liveRouteStatus: "live-openshell",
       selectionScope: "sandbox-global",
       selectionMode: "single-active-route",
       provider,
       providerLabel,
+      savedProvider: provider,
+      savedProviderLabel: providerLabel,
       endpointType: onboard.endpointType,
       endpoint: onboard.endpointUrl,
+      savedEndpointType: onboard.endpointType,
+      savedEndpoint: onboard.endpointUrl,
       defaultModel,
       activeModel: defaultModel,
       activeModelSource: "inference",
