@@ -4,6 +4,7 @@
 import { execFileSync } from "node:child_process";
 import type { PluginLogger } from "../index.js";
 import {
+  buildLocalModelChoices,
   describeOnboardProvider,
   getConfiguredModelCatalog,
   isLocalEndpointType,
@@ -29,6 +30,7 @@ interface SetLocalModelResult {
   activeModelMatchesDefault: boolean;
   activeModelInCatalog: boolean;
   catalog: string[];
+  choices: ReturnType<typeof buildLocalModelChoices>;
 }
 
 function resolveProviderName(config: ReturnType<typeof loadOnboardConfig>): string {
@@ -102,18 +104,20 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     return;
   }
 
+  const defaultModel = onboard.model.trim();
   const result: SetLocalModelResult = {
     ok: true,
     provider,
     providerLabel: describeOnboardProvider(onboard),
     endpointType: onboard.endpointType,
     endpoint: onboard.endpointUrl,
-    defaultModel: onboard.model.trim(),
+    defaultModel,
     activeModel: trimmedModel,
     activeModelSource: "inference",
-    activeModelMatchesDefault: trimmedModel === onboard.model.trim(),
+    activeModelMatchesDefault: trimmedModel === defaultModel,
     activeModelInCatalog: inCatalog,
     catalog,
+    choices: buildLocalModelChoices(defaultModel, trimmedModel, catalog),
   };
 
   if (json) {
