@@ -361,12 +361,32 @@ install_openshell
 
 # ── Install NemoClaw CLI ─────────────────────────────────────────
 
+npm_global_install() {
+  local npm_prefix
+  npm_prefix="$(npm config get prefix 2>/dev/null || true)"
+
+  if [ -n "$npm_prefix" ] && [ -w "$npm_prefix" ]; then
+    npm install -g "$@"
+    return 0
+  fi
+
+  case "$npm_prefix" in
+    "$HOME"|"$HOME"/*)
+      mkdir -p "$npm_prefix"
+      npm install -g "$@"
+      return 0
+      ;;
+  esac
+
+  if [ "$NODE_MGR" = "nodesource" ]; then
+    sudo npm install -g "$@"
+  else
+    npm install -g "$@"
+  fi
+}
+
 info "Installing nemoclaw CLI..."
-if [ "$NODE_MGR" = "nodesource" ]; then
-  sudo npm install -g git+https://github.com/NVIDIA/NemoClaw.git
-else
-  npm install -g git+https://github.com/NVIDIA/NemoClaw.git
-fi
+npm_global_install git+https://github.com/NVIDIA/NemoClaw.git
 
 if [ "$NEED_RESHIM" = true ]; then
   info "Reshimming asdf..."
