@@ -108,6 +108,18 @@ $ openclaw nemoclaw set-local-model <model> [--json] [--allow-outside-catalog]
 
 By default, the command only accepts models from the saved local catalog to reduce accidental route drift.
 
+### `openclaw nemoclaw restore-local-model`
+
+Restore the active OpenShell local-model route to the saved onboarding default model.
+This gives single-user dashboards and operators an explicit reset command instead of requiring them to replay `set-local-model` with the saved default model manually.
+
+```console
+$ openclaw nemoclaw restore-local-model [--json]
+```
+
+`--json`
+: Output the resulting active-route summary as JSON using the same success and recoverable error shape as `set-local-model`.
+
 ### `openclaw nemoclaw logs`
 
 Stream blueprint execution and sandbox logs.

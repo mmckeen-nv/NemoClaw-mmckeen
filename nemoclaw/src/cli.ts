@@ -18,6 +18,7 @@ import { cliLogs } from "./commands/logs.js";
 import { cliOnboard } from "./commands/onboard.js";
 import { cliOnboardStatus } from "./commands/onboard-status.js";
 import { cliSetLocalModel } from "./commands/set-local-model.js";
+import { cliRestoreLocalModel } from "./commands/restore-local-model.js";
 
 export function registerCliCommands(ctx: PluginCliContext, api: OpenClawPluginApi): void {
   const { program, logger } = ctx;
@@ -167,6 +168,18 @@ export function registerCliCommands(ctx: PluginCliContext, api: OpenClawPluginAp
       await cliSetLocalModel({
         model,
         allowOutsideCatalog: opts.allowOutsideCatalog,
+        json: opts.json,
+        logger,
+      });
+    });
+
+  // openclaw nemoclaw restore-local-model
+  nemoclaw
+    .command("restore-local-model")
+    .description("Restore the active OpenShell local-model route to the saved onboarding default")
+    .option("--json", "Output as JSON", false)
+    .action(async (opts: { json: boolean }) => {
+      await cliRestoreLocalModel({
         json: opts.json,
         logger,
       });

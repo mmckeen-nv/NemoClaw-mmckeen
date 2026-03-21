@@ -30,6 +30,7 @@ import {
 } from "../onboard/config.js";
 import { getInferenceStatus } from "./onboard-status.js";
 import { cliSetLocalModel } from "./set-local-model.js";
+import { cliRestoreLocalModel } from "./restore-local-model.js";
 
 export async function handleSlashCommand(
   ctx: PluginCommandContext,
@@ -46,6 +47,8 @@ export async function handleSlashCommand(
       return await slashOnboard();
     case "set-local-model":
       return slashSetLocalModel(ctx.args ?? "");
+    case "restore-local-model":
+      return slashRestoreLocalModel();
     default:
       return slashHelp();
   }
@@ -62,7 +65,8 @@ function slashHelp(): PluginCommandResult {
       "  `status`          - Show sandbox, blueprint, and inference state",
       "  `eject`           - Show rollback instructions",
       "  `onboard`         - Show onboarding status and instructions",
-      "  `set-local-model` - Switch the active OpenShell local model route",
+      "  `set-local-model`     - Switch the active OpenShell local model route",
+      "  `restore-local-model` - Restore the saved default local model route",
       "",
       "Examples:",
       "  `/nemoclaw set-local-model qwen3:32b`",
@@ -74,6 +78,7 @@ function slashHelp(): PluginCommandResult {
       "  `openclaw nemoclaw launch`",
       "  `openclaw nemoclaw connect`",
       "  `openclaw nemoclaw set-local-model <model>`",
+      "  `openclaw nemoclaw restore-local-model`",
       "  `openclaw nemoclaw eject --confirm`",
     ].join("\n"),
   };
@@ -98,6 +103,16 @@ function slashSetLocalModel(args: string): PluginCommandResult {
   cliSetLocalModel({
     model: parsed.model,
     allowOutsideCatalog: parsed.allowOutsideCatalog,
+    json: false,
+    logger: capture.logger,
+  });
+
+  return { text: capture.flush() };
+}
+
+function slashRestoreLocalModel(): PluginCommandResult {
+  const capture = createCapturedLogger();
+  cliRestoreLocalModel({
     json: false,
     logger: capture.logger,
   });

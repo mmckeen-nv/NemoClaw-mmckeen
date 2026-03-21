@@ -7,6 +7,7 @@ import { loadState } from "../blueprint/state.js";
 import { loadOnboardConfig } from "../onboard/config.js";
 import { getInferenceStatus } from "./onboard-status.js";
 import { cliSetLocalModel } from "./set-local-model.js";
+import { cliRestoreLocalModel } from "./restore-local-model.js";
 
 vi.mock("../blueprint/state.js", () => ({
   loadState: vi.fn(),
@@ -26,6 +27,10 @@ vi.mock("./onboard-status.js", () => ({
 
 vi.mock("./set-local-model.js", () => ({
   cliSetLocalModel: vi.fn(),
+}));
+
+vi.mock("./restore-local-model.js", () => ({
+  cliRestoreLocalModel: vi.fn(),
 }));
 
 describe("/nemoclaw slash command", () => {
@@ -177,6 +182,23 @@ describe("/nemoclaw slash command", () => {
     );
     expect(result.text).toContain("NemoClaw Local Model Route");
     expect(result.text).toContain("Active:   nemotron-3-nano:30b");
+  });
+
+  it("routes slash restore-local-model through the restore command", async () => {
+    vi.mocked(cliRestoreLocalModel).mockImplementation(({ logger }) => {
+      logger.info("NemoClaw Local Model Route");
+      logger.info("Active:   qwen3:32b");
+    });
+
+    const result = await handleSlashCommand({ args: "restore-local-model" }, {} as never);
+
+    expect(cliRestoreLocalModel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        json: false,
+      }),
+    );
+    expect(result.text).toContain("NemoClaw Local Model Route");
+    expect(result.text).toContain("Active:   qwen3:32b");
   });
 
   it("shows usage when slash set-local-model is missing the model argument", async () => {

@@ -48,6 +48,12 @@ $ openclaw nemoclaw set-local-model qwen3:32b
 This switches the active OpenShell route without mutating the saved onboarding default model.
 By default it only accepts models from the saved local catalog. Add `--allow-outside-catalog` for a one-off route change.
 
+To reset the active route back to the saved default local model, use:
+
+```console
+$ openclaw nemoclaw restore-local-model
+```
+
 ## Verify the Active Model
 
 Run the status command to confirm the change:
