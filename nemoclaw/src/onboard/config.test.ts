@@ -153,7 +153,7 @@ describe("onboard config helpers", () => {
           allowOutsideCatalogFlag: "--allow-outside-catalog",
         },
         restoreDefaultModel: {
-          command: "openclaw nemoclaw set-local-model <default-model> --json",
+          command: "openclaw nemoclaw set-local-model \"nemotron-3-nano:30b\" --json",
           argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
           description: "Restore the active OpenShell local-model route to the saved onboarding default.",
         },

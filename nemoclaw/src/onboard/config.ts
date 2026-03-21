@@ -69,7 +69,7 @@ export interface LocalModelWorkflowActions {
     allowOutsideCatalogFlag: "--allow-outside-catalog";
   };
   restoreDefaultModel: {
-    command: "openclaw nemoclaw set-local-model <default-model> --json";
+    command: string;
     argv: ["openclaw", "nemoclaw", "set-local-model", string, "--json"];
     description: string;
   };
@@ -182,7 +182,7 @@ export function getLocalModelWorkflowActions(defaultModel: string): LocalModelWo
       allowOutsideCatalogFlag: "--allow-outside-catalog",
     },
     restoreDefaultModel: {
-      command: "openclaw nemoclaw set-local-model <default-model> --json",
+      command: `openclaw nemoclaw set-local-model ${JSON.stringify(defaultModel)} --json`,
       argv: ["openclaw", "nemoclaw", "set-local-model", defaultModel, "--json"],
       description: "Restore the active OpenShell local-model route to the saved onboarding default.",
     },

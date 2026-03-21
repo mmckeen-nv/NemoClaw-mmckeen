@@ -171,7 +171,7 @@ describe("cliOnboardStatus", () => {
             allowOutsideCatalogFlag: "--allow-outside-catalog",
           },
           restoreDefaultModel: {
-            command: "openclaw nemoclaw set-local-model <default-model> --json",
+            command: "openclaw nemoclaw set-local-model \"qwen3:32b\" --json",
             argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
             description: "Restore the active OpenShell local-model route to the saved onboarding default.",
           },
