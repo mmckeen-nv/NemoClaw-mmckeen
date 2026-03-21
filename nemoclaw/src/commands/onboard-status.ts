@@ -134,6 +134,7 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
   } | null;
   localModelWorkflow: {
     enabled: boolean;
+    liveRouteStatus: "live-openshell" | "saved-onboarding-fallback";
     provider: string | null;
     providerLabel: string;
     savedProvider: string | null;
@@ -255,6 +256,7 @@ export async function cliOnboardStatus(opts: OnboardStatusOptions): Promise<void
     logger.info(`Default:    ${data.localModelWorkflow.defaultModel}`);
     logger.info(`Active:     ${data.localModelWorkflow.activeModel}`);
     logger.info(`Source:     ${data.localModelWorkflow.activeModelSource}`);
+    logger.info(`Live Route: ${data.localModelWorkflow.liveRouteStatus}`);
     logger.info(`Drift:      ${describeLocalModelWorkflowDrift(data.localModelWorkflow)}`);
     logger.info(
       `Catalog:    ${data.localModelWorkflow.activeModelInCatalog ? "active route is in saved catalog" : "active route is outside saved catalog"}`,

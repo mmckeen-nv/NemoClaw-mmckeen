@@ -159,6 +159,7 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     logger.info(`  Default:   ${localModelWorkflow.defaultModel ?? "unknown"}`);
     logger.info(`  Active:    ${localModelWorkflow.activeModel ?? "unknown"}`);
     logger.info(`  Source:    ${localModelWorkflow.activeModelSource ?? "unknown"}`);
+    logger.info(`  Live:      ${localModelWorkflow.liveRouteStatus ?? "unknown"}`);
     logger.info(`  Drift:     ${describeLocalModelWorkflowDrift(localModelWorkflow)}`);
     logger.info(
       `  Catalog:   ${localModelWorkflow.activeModelInCatalog ? "active route is in saved catalog" : "active route is outside saved catalog"}`,

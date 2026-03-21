@@ -191,6 +191,7 @@ describe("cliOnboardStatus", () => {
       },
       localModelWorkflow: {
         enabled: true,
+        liveRouteStatus: "live-openshell",
         provider: "ollama-local",
         providerLabel: "Local Ollama",
         savedProvider: "ollama-local",

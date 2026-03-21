@@ -77,6 +77,7 @@ describe("onboard config helpers", () => {
       ),
     ).toEqual({
       enabled: true,
+      liveRouteStatus: "saved-onboarding-fallback",
       provider: "ollama-local",
       providerLabel: "Local Ollama",
       savedProvider: "ollama-local",

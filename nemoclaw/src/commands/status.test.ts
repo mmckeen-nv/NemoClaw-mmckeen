@@ -271,6 +271,7 @@ describe("cliStatus", () => {
       });
       expect(data.localModelWorkflow).toEqual({
         enabled: true,
+        liveRouteStatus: "live-openshell",
         provider: "nvidia",
         providerLabel: "nvidia",
         savedProvider: "ollama-local",
