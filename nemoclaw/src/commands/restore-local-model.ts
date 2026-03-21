@@ -22,6 +22,7 @@ export interface RestoreLocalModelOptions {
 
 interface RestoreLocalModelResult {
   ok: true;
+  generatedAt: string;
   noop: boolean;
   setup: {
     configure: ReturnType<typeof getSetupConfigureAction>;
@@ -47,6 +48,7 @@ interface RestoreLocalModelResult {
 
 interface RestoreLocalModelErrorResult {
   ok: false;
+  generatedAt: string;
   code: "ONBOARDING_REQUIRED" | "NON_LOCAL_WORKFLOW";
   message: string;
   endpointType?: string;
@@ -65,13 +67,14 @@ function emitError(
   logger: PluginLogger,
   json: boolean,
   message: string,
-  payload: Omit<RestoreLocalModelErrorResult, "ok" | "message">,
+  payload: Omit<RestoreLocalModelErrorResult, "ok" | "generatedAt" | "message">,
 ): void {
   if (json) {
     logger.info(
       JSON.stringify(
         {
           ok: false,
+          generatedAt: new Date().toISOString(),
           message,
           ...payload,
         } satisfies RestoreLocalModelErrorResult,
@@ -197,6 +200,7 @@ export function cliRestoreLocalModel(opts: RestoreLocalModelOptions): void {
     );
     emitSuccess(opts.logger, opts.json, {
       ok: true,
+      generatedAt: new Date().toISOString(),
       noop: true,
       setup,
       selectionScope: "sandbox-global",

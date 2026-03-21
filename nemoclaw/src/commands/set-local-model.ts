@@ -23,6 +23,7 @@ export interface SetLocalModelOptions {
 
 interface SetLocalModelResult {
   ok: true;
+  generatedAt: string;
   setup: {
     configure: ReturnType<typeof getSetupConfigureAction>;
   };
@@ -47,6 +48,7 @@ interface SetLocalModelResult {
 
 interface SetLocalModelErrorResult {
   ok: false;
+  generatedAt: string;
   code:
     | "MODEL_REQUIRED"
     | "ONBOARDING_REQUIRED"
@@ -74,13 +76,14 @@ function emitError(
   logger: PluginLogger,
   json: boolean,
   message: string,
-  payload: Omit<SetLocalModelErrorResult, "ok" | "message">,
+  payload: Omit<SetLocalModelErrorResult, "ok" | "generatedAt" | "message">,
 ): void {
   if (json) {
     logger.info(
       JSON.stringify(
         {
           ok: false,
+          generatedAt: new Date().toISOString(),
           message,
           ...payload,
         } satisfies SetLocalModelErrorResult,
@@ -265,6 +268,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
   };
   const result: SetLocalModelResult = {
     ok: true,
+    generatedAt: new Date().toISOString(),
     setup,
     selectionScope: "sandbox-global",
     selectionMode: "single-active-route",

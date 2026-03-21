@@ -53,7 +53,8 @@ describe("cliOnboardStatus", () => {
         endpoint: null,
         query: { ok: false, code: "query-failed", message: null },
       }),
-    ).resolves.toEqual({
+    ).resolves.toMatchObject({
+      generatedAt: expect.any(String),
       configured: false,
       setup: {
         configure: {
@@ -150,7 +151,8 @@ describe("cliOnboardStatus", () => {
         endpoint: "http://host.openshell.internal:11434/v1",
         query: { ok: true, code: "ok", message: null },
       }),
-    ).resolves.toEqual({
+    ).resolves.toMatchObject({
+      generatedAt: expect.any(String),
       configured: true,
       setup: {
         configure: {

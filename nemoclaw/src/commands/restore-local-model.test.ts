@@ -96,6 +96,7 @@ describe("cliRestoreLocalModel", () => {
 
     expect(cliSetLocalModel).not.toHaveBeenCalled();
     expect(JSON.parse(vi.mocked(logger.info).mock.calls[0]?.[0] as string)).toMatchObject({
+      generatedAt: expect.any(String),
       ok: true,
       noop: true,
       selectionScope: "sandbox-global",
@@ -133,7 +134,8 @@ describe("cliRestoreLocalModel", () => {
 
     expect(cliSetLocalModel).not.toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(vi.mocked(logger.info).mock.calls[0]?.[0] as string)).toEqual({
+    expect(JSON.parse(vi.mocked(logger.info).mock.calls[0]?.[0] as string)).toMatchObject({
+      generatedAt: expect.any(String),
       ok: false,
       code: "ONBOARDING_REQUIRED",
       message: "No onboarding configuration found. Run 'openclaw nemoclaw onboard' first.",
@@ -169,7 +171,8 @@ describe("cliRestoreLocalModel", () => {
 
     expect(cliSetLocalModel).not.toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(vi.mocked(logger.info).mock.calls[0]?.[0] as string)).toEqual({
+    expect(JSON.parse(vi.mocked(logger.info).mock.calls[0]?.[0] as string)).toMatchObject({
+      generatedAt: expect.any(String),
       ok: false,
       code: "NON_LOCAL_WORKFLOW",
       message: "Saved onboarding uses 'build', not a local endpoint. This command only supports local workflows.",

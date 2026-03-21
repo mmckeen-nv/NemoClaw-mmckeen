@@ -89,7 +89,8 @@ describe("cliSetLocalModel", () => {
       logger,
     });
 
-    expect(JSON.parse(lines.join(""))).toEqual({
+    expect(JSON.parse(lines.join(""))).toMatchObject({
+      generatedAt: expect.any(String),
       ok: false,
       code: "ONBOARDING_REQUIRED",
       message: "No onboarding configuration found. Run 'openclaw nemoclaw onboard' first.",
@@ -162,7 +163,8 @@ describe("cliSetLocalModel", () => {
       logger,
     });
 
-    expect(JSON.parse(lines.join(""))).toEqual({
+    expect(JSON.parse(lines.join(""))).toMatchObject({
+      generatedAt: expect.any(String),
       ok: false,
       code: "MODEL_OUTSIDE_CATALOG",
       message: "Model 'llama3.3:70b' is outside the saved local catalog.",
@@ -333,7 +335,8 @@ describe("cliSetLocalModel", () => {
       logger,
     });
 
-    expect(JSON.parse(lines.join(""))).toEqual({
+    expect(JSON.parse(lines.join(""))).toMatchObject({
+      generatedAt: expect.any(String),
       ok: false,
       code: "INFERENCE_SET_FAILED",
       message: "Failed to set inference route: permission denied",
@@ -464,7 +467,8 @@ describe("cliSetLocalModel", () => {
     });
 
     const data = JSON.parse(lines.join(""));
-    expect(data).toEqual({
+    expect(data).toMatchObject({
+      generatedAt: expect.any(String),
       ok: true,
       selectionScope: "sandbox-global",
       selectionMode: "single-active-route",

@@ -102,6 +102,7 @@ export async function getInferenceStatus(): Promise<InferenceStatus> {
 }
 
 export async function getOnboardStatusData(inferenceOverride?: InferenceStatus): Promise<{
+  generatedAt: string;
   configured: boolean;
   setup: {
     configure: {
@@ -186,8 +187,10 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
     onboard && isLocalEndpointType(onboard.endpointType) ? getConfiguredModelCatalog(onboard) : [];
   const inference = inferenceOverride ?? (await getInferenceStatus());
   const configureAction = getSetupConfigureAction(!!onboard);
+  const generatedAt = new Date().toISOString();
 
   return {
+    generatedAt,
     configured: !!onboard,
     setup: {
       configure: configureAction,
