@@ -75,6 +75,21 @@ When running inside an active OpenShell sandbox, the status command detects the 
 Host-side sandbox state and inference configuration are not inspectable from inside the sandbox.
 Run `openshell sandbox list` on the host to check the underlying sandbox state.
 
+### `openclaw nemoclaw onboard-status`
+
+Display the saved onboarding configuration and local-model workflow metadata without querying sandbox health.
+This is intended for local dashboard or control-plane consumers that only need the operator-facing inference configuration.
+
+```console
+$ openclaw nemoclaw onboard-status [--json]
+```
+
+`--json`
+: Output only the onboarding/control-plane payload as JSON.
+
+For local inference onboarding, the output includes the saved local model catalog, default model, and dashboard-friendly `localModelWorkflow` metadata.
+Unlike `status`, this command does not depend on OpenShell sandbox introspection.
+
 ### `openclaw nemoclaw logs`
 
 Stream blueprint execution and sandbox logs.

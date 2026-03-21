@@ -1,0 +1,164 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { loadOnboardConfig } from "../onboard/config.js";
+import { cliOnboardStatus, getOnboardStatusData } from "./onboard-status.js";
+import type { PluginLogger } from "../index.js";
+
+vi.mock("../onboard/config.js", async () => {
+  const actual = await vi.importActual<typeof import("../onboard/config.js")>("../onboard/config.js");
+  return {
+    ...actual,
+    loadOnboardConfig: vi.fn(() => null),
+  };
+});
+
+function captureLogger(): { lines: string[]; logger: PluginLogger } {
+  const lines: string[] = [];
+  return {
+    lines,
+    logger: {
+      info: (msg: string) => lines.push(msg),
+      warn: (msg: string) => lines.push(`WARN: ${msg}`),
+      error: (msg: string) => lines.push(`ERROR: ${msg}`),
+      debug: (_msg: string) => {},
+    },
+  };
+}
+
+describe("cliOnboardStatus", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.mocked(loadOnboardConfig).mockReturnValue(null);
+  });
+
+  it("returns not-configured JSON when no onboarding config exists", () => {
+    expect(getOnboardStatusData()).toEqual({
+      configured: false,
+      onboarding: null,
+      localModelWorkflow: null,
+    });
+  });
+
+  it("prints a setup hint when no onboarding config exists", async () => {
+    const { lines, logger } = captureLogger();
+
+    await cliOnboardStatus({ json: false, logger });
+
+    const output = lines.join("\n");
+    expect(output).toContain("No onboarding configuration found.");
+    expect(output).toContain("openclaw nemoclaw onboard");
+  });
+
+  it("returns dashboard-friendly onboarding JSON for local workflows", () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+
+    expect(getOnboardStatusData()).toEqual({
+      configured: true,
+      onboarding: {
+        endpoint: "ollama (http://host.openshell.internal:11434/v1)",
+        provider: "Local Ollama",
+        endpointType: "ollama",
+        model: "qwen3:32b",
+        credentialEnv: "OPENAI_API_KEY",
+        profile: "ollama",
+        ncpPartner: null,
+        localModelCatalog: ["qwen3:32b", "nemotron-3-nano:30b"],
+        isLocalEndpoint: true,
+        onboardedAt: "2026-03-20T22:00:00.000Z",
+      },
+      localModelWorkflow: {
+        enabled: true,
+        provider: "ollama-local",
+        providerLabel: "Local Ollama",
+        endpointType: "ollama",
+        endpoint: "http://host.openshell.internal:11434/v1",
+        defaultModel: "qwen3:32b",
+        activeModel: "qwen3:32b",
+        activeModelSource: "onboarding",
+        activeModelMatchesDefault: true,
+        activeModelInCatalog: true,
+        catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
+        choices: [
+          {
+            model: "qwen3:32b",
+            label: "qwen3:32b",
+            isDefault: true,
+            isActive: true,
+            inCatalog: true,
+            source: "default",
+          },
+          {
+            model: "nemotron-3-nano:30b",
+            label: "nemotron-3-nano:30b",
+            isDefault: false,
+            isActive: false,
+            inCatalog: true,
+            source: "catalog",
+          },
+        ],
+      },
+    });
+  });
+
+  it("prints local catalog/workflow hints for dashboard consumers", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+
+    const { lines, logger } = captureLogger();
+
+    await cliOnboardStatus({ json: false, logger });
+
+    const output = lines.join("\n");
+    expect(output).toContain("Catalog:    qwen3:32b, nemotron-3-nano:30b");
+    expect(output).toContain("Saved local catalog/default for dashboard control-plane reads.");
+    expect(output).toContain("Local Model Workflow:");
+    expect(output).toContain("Default:    qwen3:32b");
+    expect(output).toContain("Active:     qwen3:32b");
+  });
+
+  it("prints JSON when requested", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "build",
+      endpointUrl: "https://integrate.api.nvidia.com/v1",
+      ncpPartner: null,
+      model: "nvidia/nemotron-3-super-120b-a12b",
+      profile: "build",
+      credentialEnv: "NVIDIA_API_KEY",
+      provider: "nvidia",
+      providerLabel: "NVIDIA Cloud API",
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+
+    const { lines, logger } = captureLogger();
+
+    await cliOnboardStatus({ json: true, logger });
+
+    const data = JSON.parse(lines.join(""));
+    expect(data.configured).toBe(true);
+    expect(data.onboarding.provider).toBe("NVIDIA Cloud API");
+    expect(data.localModelWorkflow).toBeNull();
+  });
+});

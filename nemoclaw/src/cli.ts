@@ -16,6 +16,7 @@ import { cliConnect } from "./commands/connect.js";
 import { cliEject } from "./commands/eject.js";
 import { cliLogs } from "./commands/logs.js";
 import { cliOnboard } from "./commands/onboard.js";
+import { cliOnboardStatus } from "./commands/onboard-status.js";
 
 export function registerCliCommands(ctx: PluginCliContext, api: OpenClawPluginApi): void {
   const { program, logger } = ctx;
@@ -133,4 +134,13 @@ export function registerCliCommands(ctx: PluginCliContext, api: OpenClawPluginAp
         });
       },
     );
+
+  // openclaw nemoclaw onboard-status
+  nemoclaw
+    .command("onboard-status")
+    .description("Show saved onboarding and local model workflow state for dashboard/control-plane consumers")
+    .option("--json", "Output as JSON", false)
+    .action(async (opts: { json: boolean }) => {
+      await cliOnboardStatus({ json: opts.json, logger });
+    });
 }

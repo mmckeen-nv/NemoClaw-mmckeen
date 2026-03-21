@@ -55,6 +55,14 @@ $ openclaw nemoclaw status --json
 
 The output includes the active provider, model, and endpoint. For local inference workflows, the JSON payload also includes `localModelWorkflow.choices`, which can be used by a local dashboard or control surface to render the saved catalog, default model, and any active-route drift.
 
+If your dashboard only needs the saved onboarding/control-plane state, use the narrower command instead:
+
+```console
+$ openclaw nemoclaw onboard-status --json
+```
+
+This returns the saved endpoint/provider/model configuration plus any local-model catalog metadata without requiring OpenShell sandbox status reads.
+
 ## Available Models
 
 The following table lists the models registered with the `nvidia-nim` provider.
