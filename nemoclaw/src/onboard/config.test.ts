@@ -231,6 +231,7 @@ describe("onboard config helpers", () => {
           description: "Restore the active OpenShell local-model route to the saved onboarding default.",
           enabled: false,
           reason: "active route already matches the saved onboarding default.",
+          reasonCode: "active-route-already-matches-saved-default",
           stateScope: "openshell-active-route",
           mutatesSavedDefault: false,
           targetModel: "nemotron-3-nano:30b",
@@ -373,6 +374,7 @@ describe("onboard config helpers", () => {
         restoreDefaultModel: {
           enabled: true,
           reason: "active route provider differs from the saved onboarding provider.",
+          reasonCode: "active-route-provider-differs-from-onboarding",
           targetModel: "qwen3:32b",
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",

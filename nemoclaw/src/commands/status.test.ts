@@ -431,6 +431,7 @@ describe("cliStatus", () => {
             description: "Restore the active OpenShell local-model route to the saved onboarding default.",
             enabled: true,
             reason: null,
+            reasonCode: "active-route-differs-from-saved-default",
             stateScope: "openshell-active-route",
             mutatesSavedDefault: false,
             targetModel: "qwen3:32b",

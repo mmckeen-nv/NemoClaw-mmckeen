@@ -120,6 +120,7 @@ describe("cliRestoreLocalModel", () => {
         restoreDefaultModel: {
           enabled: false,
           reason: "active route already matches the saved onboarding default.",
+          reasonCode: "active-route-already-matches-saved-default",
         },
       },
     });

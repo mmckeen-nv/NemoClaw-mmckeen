@@ -102,6 +102,11 @@ export interface LocalModelWorkflowActions {
     description: string;
     enabled: boolean;
     reason: string | null;
+    reasonCode:
+      | "active-route-differs-from-saved-default"
+      | "active-route-provider-differs-from-onboarding"
+      | "active-route-endpoint-differs-from-onboarding"
+      | "active-route-already-matches-saved-default";
     stateScope: "openshell-active-route";
     mutatesSavedDefault: false;
     targetModel: string;
@@ -273,8 +278,15 @@ export function getLocalModelWorkflowActions(
   targetEndpoint: string | null = null,
   targetEndpointType: EndpointType | null = null,
   restoreReasonOverride?: string | null,
+  restoreReasonCodeOverride?:
+    | "active-route-provider-differs-from-onboarding"
+    | "active-route-endpoint-differs-from-onboarding"
+    | null,
 ): LocalModelWorkflowActions {
   const restoreEnabled = restoreReasonOverride ? true : activeModel !== defaultModel;
+  const restoreReasonCode = restoreEnabled
+    ? (restoreReasonCodeOverride ?? "active-route-differs-from-saved-default")
+    : "active-route-already-matches-saved-default";
   return {
     read: {
       command: "openclaw nemoclaw onboard-status --json",
@@ -312,6 +324,7 @@ export function getLocalModelWorkflowActions(
       reason: restoreEnabled
         ? (restoreReasonOverride ?? null)
         : "active route already matches the saved onboarding default.",
+      reasonCode: restoreReasonCode,
       stateScope: "openshell-active-route",
       mutatesSavedDefault: false,
       targetModel: defaultModel,
@@ -382,6 +395,13 @@ export function getLocalModelWorkflow(
       : drift.endpointDiffersFromOnboarding
         ? "active route endpoint differs from the saved onboarding endpoint."
         : null;
+  const restoreReasonCode = activeModel !== defaultModel
+    ? null
+    : drift.providerDiffersFromOnboarding
+      ? "active-route-provider-differs-from-onboarding"
+      : drift.endpointDiffersFromOnboarding
+        ? "active-route-endpoint-differs-from-onboarding"
+        : null;
 
   return {
     enabled: true,
@@ -417,6 +437,7 @@ export function getLocalModelWorkflow(
       targetEndpoint,
       targetEndpointType,
       restoreReason,
+      restoreReasonCode,
     ),
   };
 }
