@@ -104,6 +104,28 @@ describe("onboard config helpers", () => {
           requiresAllowOutsideCatalog: false,
         },
       ],
+      defaultChoice: {
+        model: "nemotron-3-nano:30b",
+        label: "nemotron-3-nano:30b",
+        isDefault: true,
+        isActive: true,
+        inCatalog: true,
+        source: "default",
+        command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
+        argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
+        requiresAllowOutsideCatalog: false,
+      },
+      activeChoice: {
+        model: "nemotron-3-nano:30b",
+        label: "nemotron-3-nano:30b",
+        isDefault: true,
+        isActive: true,
+        inCatalog: true,
+        source: "default",
+        command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
+        argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
+        requiresAllowOutsideCatalog: false,
+      },
       actions: {
         read: {
           command: "openclaw nemoclaw onboard-status --json",

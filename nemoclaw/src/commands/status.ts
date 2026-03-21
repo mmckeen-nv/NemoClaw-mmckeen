@@ -241,6 +241,26 @@ interface LocalModelWorkflowStatus {
     command: string;
     requiresAllowOutsideCatalog: boolean;
   }>;
+  defaultChoice: {
+    model: string;
+    label: string;
+    isDefault: boolean;
+    isActive: boolean;
+    inCatalog: boolean;
+    source: "default" | "catalog" | "active-route";
+    command: string;
+    requiresAllowOutsideCatalog: boolean;
+  } | null;
+  activeChoice: {
+    model: string;
+    label: string;
+    isDefault: boolean;
+    isActive: boolean;
+    inCatalog: boolean;
+    source: "default" | "catalog" | "active-route";
+    command: string;
+    requiresAllowOutsideCatalog: boolean;
+  } | null;
   actions: ReturnType<typeof getLocalModelWorkflowActions>;
 }
 

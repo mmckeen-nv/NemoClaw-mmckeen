@@ -32,6 +32,8 @@ interface SetLocalModelResult {
   activeModelInCatalog: boolean;
   catalog: string[];
   choices: ReturnType<typeof buildLocalModelChoices>;
+  defaultChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
+  activeChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
   actions: ReturnType<typeof getLocalModelWorkflowActions>;
 }
 
@@ -195,6 +197,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     return;
   }
 
+  const choices = buildLocalModelChoices(defaultModel, trimmedModel, catalog);
   const result: SetLocalModelResult = {
     ok: true,
     provider,
@@ -207,7 +210,9 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     activeModelMatchesDefault: trimmedModel === defaultModel,
     activeModelInCatalog: inCatalog,
     catalog,
-    choices: buildLocalModelChoices(defaultModel, trimmedModel, catalog),
+    choices,
+    defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
+    activeChoice: choices.find((choice) => choice.isActive) ?? null,
     actions: getLocalModelWorkflowActions(),
   };
 

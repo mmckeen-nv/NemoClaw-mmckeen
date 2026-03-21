@@ -125,6 +125,28 @@ describe("cliOnboardStatus", () => {
             requiresAllowOutsideCatalog: false,
           },
         ],
+        defaultChoice: {
+          model: "qwen3:32b",
+          label: "qwen3:32b",
+          isDefault: true,
+          isActive: true,
+          inCatalog: true,
+          source: "default",
+          command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
+          argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
+          requiresAllowOutsideCatalog: false,
+        },
+        activeChoice: {
+          model: "qwen3:32b",
+          label: "qwen3:32b",
+          isDefault: true,
+          isActive: true,
+          inCatalog: true,
+          source: "default",
+          command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
+          argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
+          requiresAllowOutsideCatalog: false,
+        },
         actions: {
           read: {
             command: "openclaw nemoclaw onboard-status --json",

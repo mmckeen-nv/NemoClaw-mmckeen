@@ -79,6 +79,8 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
     activeModelInCatalog: boolean;
     catalog: string[];
     choices: ReturnType<typeof buildLocalModelChoices>;
+    defaultChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
+    activeChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
     actions: ReturnType<typeof getLocalModelWorkflowActions>;
   } | null;
 }> {

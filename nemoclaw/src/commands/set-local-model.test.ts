@@ -315,6 +315,28 @@ describe("cliSetLocalModel", () => {
           requiresAllowOutsideCatalog: true,
         },
       ],
+      defaultChoice: {
+        model: "qwen3:32b",
+        label: "qwen3:32b",
+        isDefault: true,
+        isActive: false,
+        inCatalog: true,
+        source: "default",
+        command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
+        argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
+        requiresAllowOutsideCatalog: false,
+      },
+      activeChoice: {
+        model: "llama3.3:70b",
+        label: "llama3.3:70b",
+        isDefault: false,
+        isActive: true,
+        inCatalog: false,
+        source: "active-route",
+        command: 'openclaw nemoclaw set-local-model "llama3.3:70b" --json --allow-outside-catalog',
+        argv: ["openclaw", "nemoclaw", "set-local-model", "llama3.3:70b", "--json", "--allow-outside-catalog"],
+        requiresAllowOutsideCatalog: true,
+      },
       actions: {
         read: {
           command: "openclaw nemoclaw onboard-status --json",

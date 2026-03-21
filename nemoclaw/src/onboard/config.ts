@@ -72,6 +72,8 @@ export interface LocalModelWorkflow {
   activeModelInCatalog: boolean;
   catalog: string[];
   choices: LocalModelChoice[];
+  defaultChoice: LocalModelChoice | null;
+  activeChoice: LocalModelChoice | null;
   actions: LocalModelWorkflowActions;
 }
 
@@ -159,6 +161,7 @@ export function getLocalModelWorkflow(
   const defaultModel = config.model.trim();
   const inferenceModel = inference?.configured ? inference.model?.trim() ?? null : null;
   const activeModel = inferenceModel || defaultModel;
+  const choices = buildLocalModelChoices(defaultModel, activeModel, catalog);
 
   return {
     enabled: true,
@@ -172,7 +175,9 @@ export function getLocalModelWorkflow(
     activeModelMatchesDefault: activeModel === defaultModel,
     activeModelInCatalog: catalog.includes(activeModel),
     catalog,
-    choices: buildLocalModelChoices(defaultModel, activeModel, catalog),
+    choices,
+    defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
+    activeChoice: choices.find((choice) => choice.isActive) ?? null,
     actions: getLocalModelWorkflowActions(),
   };
 }
