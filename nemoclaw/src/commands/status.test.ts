@@ -262,6 +262,7 @@ describe("cliStatus", () => {
             inCatalog: true,
             source: "default",
             command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
+            argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
             requiresAllowOutsideCatalog: false,
           },
           {
@@ -272,6 +273,7 @@ describe("cliStatus", () => {
             inCatalog: true,
             source: "catalog",
             command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
+            argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
             requiresAllowOutsideCatalog: false,
           },
           {
@@ -282,16 +284,19 @@ describe("cliStatus", () => {
             inCatalog: false,
             source: "active-route",
             command: 'openclaw nemoclaw set-local-model "nemotron-3-super-120b" --json --allow-outside-catalog',
+            argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-super-120b", "--json", "--allow-outside-catalog"],
             requiresAllowOutsideCatalog: true,
           },
         ],
         actions: {
           read: {
             command: "openclaw nemoclaw onboard-status --json",
+            argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
             description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
           },
           setActiveModel: {
             command: "openclaw nemoclaw set-local-model <model> --json",
+            argvTemplate: ["openclaw", "nemoclaw", "set-local-model", "<model>", "--json"],
             description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
             supportsAllowOutsideCatalog: true,
             allowOutsideCatalogFlag: "--allow-outside-catalog",

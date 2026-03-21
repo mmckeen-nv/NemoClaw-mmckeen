@@ -40,16 +40,19 @@ export interface LocalModelChoice {
   inCatalog: boolean;
   source: "default" | "catalog" | "active-route";
   command: string;
+  argv: string[];
   requiresAllowOutsideCatalog: boolean;
 }
 
 export interface LocalModelWorkflowActions {
   read: {
     command: "openclaw nemoclaw onboard-status --json";
+    argv: ["openclaw", "nemoclaw", "onboard-status", "--json"];
     description: string;
   };
   setActiveModel: {
     command: "openclaw nemoclaw set-local-model <model> --json";
+    argvTemplate: ["openclaw", "nemoclaw", "set-local-model", "<model>", "--json"];
     description: string;
     supportsAllowOutsideCatalog: boolean;
     allowOutsideCatalogFlag: "--allow-outside-catalog";
@@ -101,6 +104,10 @@ export function buildLocalModelChoices(
     .map((model) => {
       const inCatalog = catalog.includes(model);
       const requiresAllowOutsideCatalog = !inCatalog;
+      const argv = ["openclaw", "nemoclaw", "set-local-model", model, "--json"];
+      if (requiresAllowOutsideCatalog) {
+        argv.push("--allow-outside-catalog");
+      }
       return {
         model,
         label: model,
@@ -113,6 +120,7 @@ export function buildLocalModelChoices(
             ? "default"
             : "catalog",
         command: `openclaw nemoclaw set-local-model ${JSON.stringify(model)} --json${requiresAllowOutsideCatalog ? " --allow-outside-catalog" : ""}`,
+        argv,
         requiresAllowOutsideCatalog,
       };
     });
@@ -122,10 +130,12 @@ export function getLocalModelWorkflowActions(): LocalModelWorkflowActions {
   return {
     read: {
       command: "openclaw nemoclaw onboard-status --json",
+      argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
       description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
     },
     setActiveModel: {
       command: "openclaw nemoclaw set-local-model <model> --json",
+      argvTemplate: ["openclaw", "nemoclaw", "set-local-model", "<model>", "--json"],
       description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
       supportsAllowOutsideCatalog: true,
       allowOutsideCatalogFlag: "--allow-outside-catalog",
