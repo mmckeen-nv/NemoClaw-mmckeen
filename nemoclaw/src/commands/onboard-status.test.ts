@@ -7,7 +7,8 @@ import * as onboardStatus from "./onboard-status.js";
 import type { PluginLogger } from "../index.js";
 
 vi.mock("../onboard/config.js", async () => {
-  const actual = await vi.importActual<typeof import("../onboard/config.js")>("../onboard/config.js");
+  const actual =
+    await vi.importActual<typeof import("../onboard/config.js")>("../onboard/config.js");
   return {
     ...actual,
     loadOnboardConfig: vi.fn(() => null),
@@ -34,21 +35,31 @@ describe("cliOnboardStatus", () => {
   });
 
   it("returns not-configured JSON when no onboarding config exists", async () => {
-    await expect(onboardStatus.getOnboardStatusData({
-      configured: false,
-      provider: null,
-      model: null,
-      endpoint: null,
-      query: { ok: false, code: "query-failed", message: null },
-    })).resolves.toEqual({
+    await expect(
+      onboardStatus.getOnboardStatusData({
+        configured: false,
+        provider: null,
+        model: null,
+        endpoint: null,
+        query: { ok: false, code: "query-failed", message: null },
+      }),
+    ).resolves.toEqual({
       configured: false,
       setup: {
         configure: {
           command: "openclaw nemoclaw onboard",
           argv: ["openclaw", "nemoclaw", "onboard"],
-          description: "Launch NemoClaw onboarding to create the first saved inference configuration.",
+          description:
+            "Launch NemoClaw onboarding to create the first saved inference configuration.",
           mode: "initial-setup",
         },
+      },
+      inference: {
+        configured: false,
+        provider: null,
+        model: null,
+        endpoint: null,
+        query: { ok: false, code: "query-failed", message: null },
       },
       onboarding: null,
       localModelWorkflow: null,
@@ -79,21 +90,31 @@ describe("cliOnboardStatus", () => {
       onboardedAt: "2026-03-20T22:00:00.000Z",
     });
 
-    await expect(onboardStatus.getOnboardStatusData({
-      configured: true,
-      provider: "ollama-local",
-      model: "qwen3:32b",
-      endpoint: "http://host.openshell.internal:11434/v1",
-      query: { ok: true, code: "ok", message: null },
-    })).resolves.toEqual({
+    await expect(
+      onboardStatus.getOnboardStatusData({
+        configured: true,
+        provider: "ollama-local",
+        model: "qwen3:32b",
+        endpoint: "http://host.openshell.internal:11434/v1",
+        query: { ok: true, code: "ok", message: null },
+      }),
+    ).resolves.toEqual({
       configured: true,
       setup: {
         configure: {
           command: "openclaw nemoclaw onboard",
           argv: ["openclaw", "nemoclaw", "onboard"],
-          description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+          description:
+            "Launch NemoClaw onboarding to create or update the saved inference configuration.",
           mode: "reconfigure",
         },
+      },
+      inference: {
+        configured: true,
+        provider: "ollama-local",
+        model: "qwen3:32b",
+        endpoint: "http://host.openshell.internal:11434/v1",
+        query: { ok: true, code: "ok", message: null },
       },
       onboarding: {
         endpoint: "ollama (http://host.openshell.internal:11434/v1)",
@@ -112,7 +133,8 @@ describe("cliOnboardStatus", () => {
           configure: {
             command: "openclaw nemoclaw onboard",
             argv: ["openclaw", "nemoclaw", "onboard"],
-            description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+            description:
+              "Launch NemoClaw onboarding to create or update the saved inference configuration.",
             mode: "reconfigure",
           },
         },
@@ -144,7 +166,7 @@ describe("cliOnboardStatus", () => {
             summary: "default, active",
             isDefault: true,
             isActive: true,
-          isSelectable: false,
+            isSelectable: false,
             inCatalog: true,
             source: "default",
             command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
@@ -158,7 +180,7 @@ describe("cliOnboardStatus", () => {
             summary: "catalog",
             isDefault: false,
             isActive: false,
-          isSelectable: true,
+            isSelectable: true,
             inCatalog: true,
             source: "catalog",
             command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
@@ -198,15 +220,25 @@ describe("cliOnboardStatus", () => {
           read: {
             command: "openclaw nemoclaw onboard-status --json",
             argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
-            description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
+            description:
+              "Read saved onboarding and local-model workflow state without querying sandbox health.",
             stateScope: "saved-onboarding-config",
           },
           setActiveModel: {
             command: "openclaw nemoclaw set-local-model <model> --json",
             argvTemplate: ["openclaw", "nemoclaw", "set-local-model", "<model>", "--json"],
-            commandAllowOutsideCatalog: "openclaw nemoclaw set-local-model <model> --json --allow-outside-catalog",
-            argvTemplateAllowOutsideCatalog: ["openclaw", "nemoclaw", "set-local-model", "<model>", "--json", "--allow-outside-catalog"],
-            description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
+            commandAllowOutsideCatalog:
+              "openclaw nemoclaw set-local-model <model> --json --allow-outside-catalog",
+            argvTemplateAllowOutsideCatalog: [
+              "openclaw",
+              "nemoclaw",
+              "set-local-model",
+              "<model>",
+              "--json",
+              "--allow-outside-catalog",
+            ],
+            description:
+              "Switch the active OpenShell local-model route without changing the saved onboarding default.",
             supportsAllowOutsideCatalog: true,
             allowOutsideCatalogFlag: "--allow-outside-catalog",
             stateScope: "openshell-active-route",
@@ -215,9 +247,10 @@ describe("cliOnboardStatus", () => {
             targetProviderLabel: "Local Ollama",
           },
           restoreDefaultModel: {
-            command: "openclaw nemoclaw set-local-model \"qwen3:32b\" --json",
+            command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
             argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
-            description: "Restore the active OpenShell local-model route to the saved onboarding default.",
+            description:
+              "Restore the active OpenShell local-model route to the saved onboarding default.",
             enabled: false,
             reason: "active route already matches the saved onboarding default.",
             stateScope: "openshell-active-route",
@@ -286,6 +319,13 @@ describe("cliOnboardStatus", () => {
       query: { ok: true, code: "ok", message: null },
     });
 
+    expect(data.inference).toEqual({
+      configured: true,
+      provider: "vllm-local",
+      model: "nemotron-3-nano:30b",
+      endpoint: "http://host.openshell.internal:8000/v1",
+      query: { ok: true, code: "ok", message: null },
+    });
     expect(data.localModelWorkflow).toMatchObject({
       provider: "vllm-local",
       providerLabel: "Local vLLM",
@@ -324,6 +364,12 @@ describe("cliOnboardStatus", () => {
 
     const data = JSON.parse(lines.join(""));
     expect(data.configured).toBe(true);
+    expect(data.inference).toMatchObject({
+      configured: false,
+      provider: null,
+      model: null,
+      endpoint: null,
+    });
     expect(data.onboarding.provider).toBe("NVIDIA Cloud API");
     expect(data.onboarding.providerName).toBe("nvidia");
     expect(data.onboarding.endpointUrl).toBe("https://integrate.api.nvidia.com/v1");

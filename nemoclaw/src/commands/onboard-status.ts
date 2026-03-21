@@ -60,9 +60,11 @@ export async function getInferenceStatus(): Promise<InferenceStatus> {
       },
     };
   } catch (error) {
-    const message = error instanceof Error
-      ? ("stderr" in error && typeof error.stderr === "string" && error.stderr.trim()) || error.message
-      : String(error);
+    const message =
+      error instanceof Error
+        ? ("stderr" in error && typeof error.stderr === "string" && error.stderr.trim()) ||
+          error.message
+        : String(error);
     return {
       configured: false,
       provider: null,
@@ -70,9 +72,10 @@ export async function getInferenceStatus(): Promise<InferenceStatus> {
       endpoint: null,
       query: {
         ok: false,
-        code: error instanceof Error && "code" in error && error.code === "ENOENT"
-          ? "openshell-unavailable"
-          : "query-failed",
+        code:
+          error instanceof Error && "code" in error && error.code === "ENOENT"
+            ? "openshell-unavailable"
+            : "query-failed",
         message: message.trim() || null,
       },
     };
@@ -135,12 +138,22 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
     activeChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
     actions: ReturnType<typeof getLocalModelWorkflowActions>;
   } | null;
+  inference: {
+    configured: boolean;
+    provider: string | null;
+    model: string | null;
+    endpoint: string | null;
+    query: {
+      ok: boolean;
+      code: "ok" | "inside-sandbox" | "openshell-unavailable" | "query-failed";
+      message: string | null;
+    };
+  };
 }> {
   const onboard = loadOnboardConfig();
-  const localModelCatalog = onboard && isLocalEndpointType(onboard.endpointType)
-    ? getConfiguredModelCatalog(onboard)
-    : [];
-  const inference = inferenceOverride ?? await getInferenceStatus();
+  const localModelCatalog =
+    onboard && isLocalEndpointType(onboard.endpointType) ? getConfiguredModelCatalog(onboard) : [];
+  const inference = inferenceOverride ?? (await getInferenceStatus());
   const configureAction = getSetupConfigureAction(!!onboard);
 
   return {
@@ -148,6 +161,7 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
     setup: {
       configure: configureAction,
     },
+    inference,
     onboarding: onboard
       ? {
           endpoint: describeOnboardEndpoint(onboard),
