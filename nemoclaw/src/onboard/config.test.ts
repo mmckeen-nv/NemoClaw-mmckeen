@@ -74,6 +74,8 @@ describe("onboard config helpers", () => {
         {
           model: "nemotron-3-nano:30b",
           label: "nemotron-3-nano:30b",
+          badges: ["default", "active"],
+          summary: "default, active",
           isDefault: true,
           isActive: true,
           inCatalog: true,
@@ -85,6 +87,8 @@ describe("onboard config helpers", () => {
         {
           model: "llama3.3:70b",
           label: "llama3.3:70b",
+          badges: [],
+          summary: "catalog",
           isDefault: false,
           isActive: false,
           inCatalog: true,
@@ -96,6 +100,8 @@ describe("onboard config helpers", () => {
         {
           model: "qwen2.5:32b",
           label: "qwen2.5:32b",
+          badges: [],
+          summary: "catalog",
           isDefault: false,
           isActive: false,
           inCatalog: true,
@@ -108,6 +114,8 @@ describe("onboard config helpers", () => {
       defaultChoice: {
         model: "nemotron-3-nano:30b",
         label: "nemotron-3-nano:30b",
+        badges: ["default", "active"],
+        summary: "default, active",
         isDefault: true,
         isActive: true,
         inCatalog: true,
@@ -119,6 +127,8 @@ describe("onboard config helpers", () => {
       activeChoice: {
         model: "nemotron-3-nano:30b",
         label: "nemotron-3-nano:30b",
+        badges: ["default", "active"],
+        summary: "default, active",
         isDefault: true,
         isActive: true,
         inCatalog: true,
@@ -152,6 +162,8 @@ describe("onboard config helpers", () => {
         {
           model: "qwen3:32b",
           label: "qwen3:32b",
+          badges: ["default"],
+          summary: "default",
           isDefault: true,
           isActive: false,
           inCatalog: true,
@@ -163,6 +175,8 @@ describe("onboard config helpers", () => {
         {
           model: "llama3.3:70b",
           label: "llama3.3:70b",
+          badges: [],
+          summary: "catalog",
           isDefault: false,
           isActive: false,
           inCatalog: true,
@@ -174,6 +188,8 @@ describe("onboard config helpers", () => {
         {
           model: "nemotron-3-super-120b",
           label: "nemotron-3-super-120b",
+          badges: ["active", "outside-catalog"],
+          summary: "active, outside-catalog",
           isDefault: false,
           isActive: true,
           inCatalog: false,

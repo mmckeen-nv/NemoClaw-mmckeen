@@ -167,6 +167,8 @@ describe("cliSetLocalModel", () => {
         {
           model: "qwen3:32b",
           label: "qwen3:32b",
+          badges: ["default", "active"],
+          summary: "default, active",
           isDefault: true,
           isActive: true,
           inCatalog: true,
@@ -178,6 +180,8 @@ describe("cliSetLocalModel", () => {
         {
           model: "nemotron-3-nano:30b",
           label: "nemotron-3-nano:30b",
+          badges: [],
+          summary: "catalog",
           isDefault: false,
           isActive: false,
           inCatalog: true,
@@ -286,6 +290,8 @@ describe("cliSetLocalModel", () => {
         {
           model: "qwen3:32b",
           label: "qwen3:32b",
+          badges: ["default"],
+          summary: "default",
           isDefault: true,
           isActive: false,
           inCatalog: true,
@@ -297,6 +303,8 @@ describe("cliSetLocalModel", () => {
         {
           model: "nemotron-3-nano:30b",
           label: "nemotron-3-nano:30b",
+          badges: [],
+          summary: "catalog",
           isDefault: false,
           isActive: false,
           inCatalog: true,
@@ -308,6 +316,8 @@ describe("cliSetLocalModel", () => {
         {
           model: "llama3.3:70b",
           label: "llama3.3:70b",
+          badges: ["active", "outside-catalog"],
+          summary: "active, outside-catalog",
           isDefault: false,
           isActive: true,
           inCatalog: false,
@@ -320,6 +330,8 @@ describe("cliSetLocalModel", () => {
       defaultChoice: {
         model: "qwen3:32b",
         label: "qwen3:32b",
+        badges: ["default"],
+        summary: "default",
         isDefault: true,
         isActive: false,
         inCatalog: true,
@@ -331,6 +343,8 @@ describe("cliSetLocalModel", () => {
       activeChoice: {
         model: "llama3.3:70b",
         label: "llama3.3:70b",
+        badges: ["active", "outside-catalog"],
+        summary: "active, outside-catalog",
         isDefault: false,
         isActive: true,
         inCatalog: false,

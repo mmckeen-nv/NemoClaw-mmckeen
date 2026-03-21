@@ -234,31 +234,40 @@ interface LocalModelWorkflowStatus {
   choices: Array<{
     model: string;
     label: string;
+    badges: Array<"default" | "active" | "outside-catalog">;
+    summary: string;
     isDefault: boolean;
     isActive: boolean;
     inCatalog: boolean;
     source: "default" | "catalog" | "active-route";
     command: string;
+    argv: string[];
     requiresAllowOutsideCatalog: boolean;
   }>;
   defaultChoice: {
     model: string;
     label: string;
+    badges: Array<"default" | "active" | "outside-catalog">;
+    summary: string;
     isDefault: boolean;
     isActive: boolean;
     inCatalog: boolean;
     source: "default" | "catalog" | "active-route";
     command: string;
+    argv: string[];
     requiresAllowOutsideCatalog: boolean;
   } | null;
   activeChoice: {
     model: string;
     label: string;
+    badges: Array<"default" | "active" | "outside-catalog">;
+    summary: string;
     isDefault: boolean;
     isActive: boolean;
     inCatalog: boolean;
     source: "default" | "catalog" | "active-route";
     command: string;
+    argv: string[];
     requiresAllowOutsideCatalog: boolean;
   } | null;
   actions: ReturnType<typeof getLocalModelWorkflowActions>;

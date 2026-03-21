@@ -35,6 +35,8 @@ export function getConfiguredModelCatalog(config: NemoClawOnboardConfig): string
 export interface LocalModelChoice {
   model: string;
   label: string;
+  badges: Array<"default" | "active" | "outside-catalog">;
+  summary: string;
   isDefault: boolean;
   isActive: boolean;
   inCatalog: boolean;
@@ -115,19 +117,33 @@ export function buildLocalModelChoices(
     .map((model) => {
       const inCatalog = catalog.includes(model);
       const requiresAllowOutsideCatalog = !inCatalog;
+      const isDefault = model === defaultModel;
+      const isActive = model === activeModel;
       const argv = ["openclaw", "nemoclaw", "set-local-model", model, "--json"];
       if (requiresAllowOutsideCatalog) {
         argv.push("--allow-outside-catalog");
       }
+      const badges: Array<"default" | "active" | "outside-catalog"> = [];
+      if (isDefault) {
+        badges.push("default");
+      }
+      if (isActive) {
+        badges.push("active");
+      }
+      if (!inCatalog) {
+        badges.push("outside-catalog");
+      }
       return {
         model,
         label: model,
-        isDefault: model === defaultModel,
-        isActive: model === activeModel,
+        badges,
+        summary: badges.length > 0 ? badges.join(", ") : "catalog",
+        isDefault,
+        isActive,
         inCatalog,
-        source: model === activeModel && !inCatalog
+        source: isActive && !inCatalog
           ? "active-route"
-          : model === defaultModel
+          : isDefault
             ? "default"
             : "catalog",
         command: `openclaw nemoclaw set-local-model ${JSON.stringify(model)} --json${requiresAllowOutsideCatalog ? " --allow-outside-catalog" : ""}`,

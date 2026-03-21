@@ -105,6 +105,8 @@ describe("cliOnboardStatus", () => {
           {
             model: "qwen3:32b",
             label: "qwen3:32b",
+            badges: ["default", "active"],
+            summary: "default, active",
             isDefault: true,
             isActive: true,
             inCatalog: true,
@@ -116,6 +118,8 @@ describe("cliOnboardStatus", () => {
           {
             model: "nemotron-3-nano:30b",
             label: "nemotron-3-nano:30b",
+            badges: [],
+            summary: "catalog",
             isDefault: false,
             isActive: false,
             inCatalog: true,
@@ -128,6 +132,8 @@ describe("cliOnboardStatus", () => {
         defaultChoice: {
           model: "qwen3:32b",
           label: "qwen3:32b",
+          badges: ["default", "active"],
+          summary: "default, active",
           isDefault: true,
           isActive: true,
           inCatalog: true,
@@ -139,6 +145,8 @@ describe("cliOnboardStatus", () => {
         activeChoice: {
           model: "qwen3:32b",
           label: "qwen3:32b",
+          badges: ["default", "active"],
+          summary: "default, active",
           isDefault: true,
           isActive: true,
           inCatalog: true,

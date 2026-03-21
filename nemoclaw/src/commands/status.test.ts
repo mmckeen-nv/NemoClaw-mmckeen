@@ -257,6 +257,8 @@ describe("cliStatus", () => {
           {
             model: "qwen3:32b",
             label: "qwen3:32b",
+            badges: ["default"],
+            summary: "default",
             isDefault: true,
             isActive: false,
             inCatalog: true,
@@ -268,6 +270,8 @@ describe("cliStatus", () => {
           {
             model: "nemotron-3-nano:30b",
             label: "nemotron-3-nano:30b",
+            badges: [],
+            summary: "catalog",
             isDefault: false,
             isActive: false,
             inCatalog: true,
@@ -279,6 +283,8 @@ describe("cliStatus", () => {
           {
             model: "nemotron-3-super-120b",
             label: "nemotron-3-super-120b",
+            badges: ["active", "outside-catalog"],
+            summary: "active, outside-catalog",
             isDefault: false,
             isActive: true,
             inCatalog: false,
@@ -291,6 +297,8 @@ describe("cliStatus", () => {
         defaultChoice: {
           model: "qwen3:32b",
           label: "qwen3:32b",
+          badges: ["default"],
+          summary: "default",
           isDefault: true,
           isActive: false,
           inCatalog: true,
@@ -302,6 +310,8 @@ describe("cliStatus", () => {
         activeChoice: {
           model: "nemotron-3-super-120b",
           label: "nemotron-3-super-120b",
+          badges: ["active", "outside-catalog"],
+          summary: "active, outside-catalog",
           isDefault: false,
           isActive: true,
           inCatalog: false,
