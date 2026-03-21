@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { handleSlashCommand } from "./slash.js";
 import { loadState } from "../blueprint/state.js";
 import { loadOnboardConfig } from "../onboard/config.js";
-import { getInferenceStatus } from "./onboard-status.js";
+import { getInferenceStatus, getOnboardStatusData } from "./onboard-status.js";
 import { cliSetLocalModel } from "./set-local-model.js";
 import { cliRestoreLocalModel } from "./restore-local-model.js";
 
@@ -23,6 +23,7 @@ vi.mock("../onboard/config.js", async () => {
 
 vi.mock("./onboard-status.js", () => ({
   getInferenceStatus: vi.fn(),
+  getOnboardStatusData: vi.fn(),
 }));
 
 vi.mock("./set-local-model.js", () => ({
@@ -52,6 +53,31 @@ describe("/nemoclaw slash command", () => {
       model: null,
       endpoint: null,
     });
+    vi.mocked(getOnboardStatusData).mockResolvedValue({
+      generatedAt: "2026-03-20T23:31:00.000Z",
+      configured: false,
+      setup: {
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create the first saved inference configuration.",
+          mode: "initial-setup",
+        },
+      },
+      onboarding: null,
+      localModelWorkflow: null,
+      inference: {
+        configured: false,
+        provider: null,
+        model: null,
+        endpoint: null,
+        query: {
+          ok: false,
+          code: "query-failed",
+          message: null,
+        },
+      },
+    });
   });
 
   it("includes local workflow metadata in status for local onboarding", async () => {
@@ -66,6 +92,48 @@ describe("/nemoclaw slash command", () => {
       providerLabel: "Local Ollama",
       availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
       onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+    vi.mocked(getOnboardStatusData).mockResolvedValue({
+      generatedAt: "2026-03-20T23:31:00.000Z",
+      configured: true,
+      setup: {
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+          mode: "reconfigure",
+        },
+      },
+      onboarding: {} as never,
+      localModelWorkflow: {
+        recommendedActions: [
+          {
+            kind: "read-state",
+            label: "Read workflow state",
+            description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
+            command: "openclaw nemoclaw onboard-status --json",
+            argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
+          },
+          {
+            kind: "set-active-model",
+            label: "Switch active route to nemotron-3-nano:30b",
+            description: "catalog",
+            command: "openclaw nemoclaw set-local-model \"nemotron-3-nano:30b\" --json",
+            argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
+          },
+        ],
+      } as never,
+      inference: {
+        configured: false,
+        provider: null,
+        model: null,
+        endpoint: null,
+        query: {
+          ok: false,
+          code: "query-failed",
+          message: null,
+        },
+      },
     });
 
     const result = await handleSlashCommand({ args: "status" }, {} as never);
@@ -83,6 +151,11 @@ describe("/nemoclaw slash command", () => {
     expect(result.text).toContain("Drift: none");
     expect(result.text).toContain("Catalog: active route is in saved catalog");
     expect(result.text).toContain("Saved Models: qwen3:32b, nemotron-3-nano:30b");
+    expect(result.text).toContain("**Actions**");
+    expect(result.text).toContain("Read workflow state: `openclaw nemoclaw onboard-status --json`");
+    expect(result.text).toContain(
+      'Switch active route to nemotron-3-nano:30b: `openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json`',
+    );
   });
 
   it("keeps cloud onboarding free of local workflow lines", async () => {
@@ -118,6 +191,41 @@ describe("/nemoclaw slash command", () => {
       availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
       onboardedAt: "2026-03-20T22:00:00.000Z",
     });
+    vi.mocked(getOnboardStatusData).mockResolvedValue({
+      generatedAt: "2026-03-20T23:31:00.000Z",
+      configured: true,
+      setup: {
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+          mode: "reconfigure",
+        },
+      },
+      onboarding: {} as never,
+      localModelWorkflow: {
+        recommendedActions: [
+          {
+            kind: "read-state",
+            label: "Read workflow state",
+            description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
+            command: "openclaw nemoclaw onboard-status --json",
+            argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
+          },
+        ],
+      } as never,
+      inference: {
+        configured: false,
+        provider: null,
+        model: null,
+        endpoint: null,
+        query: {
+          ok: false,
+          code: "query-failed",
+          message: null,
+        },
+      },
+    });
 
     const result = await handleSlashCommand({ args: "onboard" }, {} as never);
 
@@ -128,6 +236,8 @@ describe("/nemoclaw slash command", () => {
     expect(result.text).toContain("Endpoint: http://host.openshell.internal:11434/v1");
     expect(result.text).toContain("Catalog: active route is in saved catalog");
     expect(result.text).toContain("Saved Models: qwen3:32b, nemotron-3-nano:30b");
+    expect(result.text).toContain("**Actions**");
+    expect(result.text).toContain("Read workflow state: `openclaw nemoclaw onboard-status --json`");
   });
 
   it("shows live local route drift in slash status when OpenShell inference differs from the saved default", async () => {

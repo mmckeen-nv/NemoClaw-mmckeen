@@ -361,6 +361,23 @@ describe("cliOnboardStatus", () => {
           targetEndpointType: "ollama",
           },
         },
+        recommendedActions: [
+          {
+            kind: "read-state",
+            label: "Read workflow state",
+            description:
+              "Read saved onboarding and local-model workflow state without querying sandbox health.",
+            command: "openclaw nemoclaw onboard-status --json",
+            argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
+          },
+          {
+            kind: "set-active-model",
+            label: "Switch active route to nemotron-3-nano:30b",
+            description: "catalog",
+            command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
+            argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
+          },
+        ],
       },
     });
   });
@@ -388,6 +405,9 @@ describe("cliOnboardStatus", () => {
     expect(output).toContain("Local Model Workflow:");
     expect(output).toContain("Default:    qwen3:32b");
     expect(output).toContain("Active:     qwen3:32b");
+    expect(output).toContain("Actions:");
+    expect(output).toContain("- Read workflow state: openclaw nemoclaw onboard-status --json");
+    expect(output).toContain('- Switch active route to nemotron-3-nano:30b: openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json');
   });
 
   it("prints fallback guidance when live OpenShell inference query fails", async () => {
@@ -483,6 +503,20 @@ describe("cliOnboardStatus", () => {
           targetEndpointType: "ollama",
         },
       },
+      recommendedActions: [
+        {
+          kind: "read-state",
+          command: "openclaw nemoclaw onboard-status --json",
+        },
+        {
+          kind: "restore-default-model",
+          command: "openclaw nemoclaw restore-local-model --json",
+        },
+        {
+          kind: "set-active-model",
+          command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
+        },
+      ],
     });
   });
 

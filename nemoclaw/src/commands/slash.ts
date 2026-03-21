@@ -28,7 +28,7 @@ import {
   loadOnboardConfig,
   type NemoClawOnboardConfig,
 } from "../onboard/config.js";
-import { getInferenceStatus } from "./onboard-status.js";
+import { getInferenceStatus, getOnboardStatusData } from "./onboard-status.js";
 import { cliSetLocalModel } from "./set-local-model.js";
 import { cliRestoreLocalModel } from "./restore-local-model.js";
 
@@ -221,6 +221,17 @@ async function slashStatus(): Promise<PluginCommandResult> {
     if (localWorkflow.length > 0) {
       lines.push("", "**Local Model Workflow**", ...localWorkflow);
     }
+
+    const onboardStatus = await getOnboardStatusData();
+    if (onboardStatus.localModelWorkflow?.recommendedActions.length) {
+      lines.push(
+        "",
+        "**Actions**",
+        ...onboardStatus.localModelWorkflow.recommendedActions.map(
+          (action) => `- ${action.label}: \`${action.command}\``,
+        ),
+      );
+    }
   }
 
   return { text: lines.join("\n") };
@@ -231,6 +242,7 @@ async function slashOnboard(): Promise<PluginCommandResult> {
   if (config) {
     const catalog = getConfiguredModelCatalog(config);
     const localWorkflow = await formatLocalModelWorkflow(config, false);
+    const onboardStatus = await getOnboardStatusData();
     return {
       text: [
         "**NemoClaw Onboard Status**",
@@ -244,6 +256,15 @@ async function slashOnboard(): Promise<PluginCommandResult> {
         `Profile: ${config.profile}`,
         `Onboarded: ${config.onboardedAt}`,
         ...(localWorkflow.length > 0 ? ["", "**Local Model Workflow**", ...localWorkflow] : []),
+        ...(onboardStatus.localModelWorkflow?.recommendedActions.length
+          ? [
+              "",
+              "**Actions**",
+              ...onboardStatus.localModelWorkflow.recommendedActions.map(
+                (action) => `- ${action.label}: \`${action.command}\``,
+              ),
+            ]
+          : []),
         "",
         "To reconfigure, run: `openclaw nemoclaw onboard`",
       ]

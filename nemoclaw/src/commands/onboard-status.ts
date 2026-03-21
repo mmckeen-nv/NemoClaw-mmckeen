@@ -15,7 +15,11 @@ import {
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
-import type { buildLocalModelChoices, getLocalModelWorkflowActions } from "../onboard/config.js";
+import type {
+  buildLocalModelChoices,
+  getLocalModelWorkflowActions,
+  LocalModelWorkflow,
+} from "../onboard/config.js";
 
 const execAsync = promisify(exec);
 
@@ -41,6 +45,53 @@ interface InferenceStatusResponse {
   provider?: string;
   model?: string;
   endpoint?: string;
+}
+
+interface LocalModelWorkflowRecommendedAction {
+  kind: "read-state" | "set-active-model" | "restore-default-model";
+  label: string;
+  description: string;
+  command: string;
+  argv: string[];
+}
+
+function getLocalModelWorkflowRecommendedActions(
+  workflow: LocalModelWorkflow,
+): LocalModelWorkflowRecommendedAction[] {
+  const actions: LocalModelWorkflowRecommendedAction[] = [
+    {
+      kind: "read-state",
+      label: "Read workflow state",
+      description: workflow.actions.read.description,
+      command: workflow.actions.read.command,
+      argv: workflow.actions.read.argv,
+    },
+  ];
+
+  if (workflow.actions.restoreDefaultModel.enabled) {
+    actions.push({
+      kind: "restore-default-model",
+      label: `Restore saved default (${workflow.actions.restoreDefaultModel.targetModel})`,
+      description: workflow.actions.restoreDefaultModel.description,
+      command: workflow.actions.restoreDefaultModel.command,
+      argv: workflow.actions.restoreDefaultModel.argv,
+    });
+  }
+
+  const suggestedChoice =
+    workflow.choices.find((choice) => choice.isSelectable && choice.inCatalog) ??
+    workflow.choices.find((choice) => choice.isSelectable);
+  if (suggestedChoice) {
+    actions.push({
+      kind: "set-active-model",
+      label: `Switch active route to ${suggestedChoice.model}`,
+      description: suggestedChoice.summary,
+      command: suggestedChoice.command,
+      argv: suggestedChoice.argv,
+    });
+  }
+
+  return actions;
 }
 
 function isInsideSandbox(): boolean {
@@ -169,6 +220,7 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
     defaultChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
     activeChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
     actions: ReturnType<typeof getLocalModelWorkflowActions>;
+    recommendedActions: LocalModelWorkflowRecommendedAction[];
   } | null;
   inference: {
     configured: boolean;
@@ -188,6 +240,14 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
   const inference = inferenceOverride ?? (await getInferenceStatus());
   const configureAction = getSetupConfigureAction(!!onboard);
   const generatedAt = new Date().toISOString();
+  const localModelWorkflow = onboard
+    ? getLocalModelWorkflow(onboard, {
+        configured: inference.configured,
+        provider: inference.provider,
+        model: inference.model,
+        endpoint: inference.endpoint,
+      })
+    : null;
 
   return {
     generatedAt,
@@ -215,13 +275,11 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
           },
         }
       : null,
-    localModelWorkflow: onboard
-      ? getLocalModelWorkflow(onboard, {
-          configured: inference.configured,
-          provider: inference.provider,
-          model: inference.model,
-          endpoint: inference.endpoint,
-        })
+    localModelWorkflow: localModelWorkflow
+      ? {
+          ...localModelWorkflow,
+          recommendedActions: getLocalModelWorkflowRecommendedActions(localModelWorkflow),
+        }
       : null,
   };
 }
@@ -282,6 +340,12 @@ export async function cliOnboardStatus(opts: OnboardStatusOptions): Promise<void
       logger.info(
         `Saved Route: ${data.localModelWorkflow.savedProviderLabel}${data.localModelWorkflow.savedProvider ? ` (${data.localModelWorkflow.savedProvider})` : ""} -> ${data.localModelWorkflow.savedEndpoint}`,
       );
+    }
+    if (data.localModelWorkflow.recommendedActions.length > 0) {
+      logger.info("Actions:");
+      for (const action of data.localModelWorkflow.recommendedActions) {
+        logger.info(`- ${action.label}: ${action.command}`);
+      }
     }
     if (data.inference.query.ok) {
       logger.info("Live route: OpenShell inference query succeeded.");
