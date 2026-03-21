@@ -125,6 +125,14 @@ export interface LocalModelWorkflowDrift {
   endpointDiffersFromOnboarding: boolean;
 }
 
+export interface LocalModelWorkflowRecommendedAction {
+  kind: "read-state" | "set-active-model" | "restore-default-model";
+  label: string;
+  description: string;
+  command: string;
+  argv: string[];
+}
+
 export interface LocalModelWorkflow {
   enabled: true;
   liveRouteStatus: "live-openshell" | "saved-onboarding-fallback";
@@ -215,7 +223,10 @@ export function buildLocalModelChoices(
       const isDefault = model === defaultModel;
       const isActive = model === activeModel;
       const routeChange = {
-        any: model !== activeModel || activeProvider !== targetProvider || activeEndpoint !== targetEndpoint,
+        any:
+          model !== activeModel ||
+          activeProvider !== targetProvider ||
+          activeEndpoint !== targetEndpoint,
         model: model !== activeModel,
         provider: activeProvider !== targetProvider,
         endpoint: activeEndpoint !== targetEndpoint,
@@ -248,11 +259,7 @@ export function buildLocalModelChoices(
           : "already-active-on-target-route",
         routeChange,
         inCatalog,
-        source: isActive && !inCatalog
-          ? "active-route"
-          : isDefault
-            ? "default"
-            : "catalog",
+        source: isActive && !inCatalog ? "active-route" : isDefault ? "default" : "catalog",
         command: `openclaw nemoclaw set-local-model ${JSON.stringify(model)} --json${requiresAllowOutsideCatalog ? " --allow-outside-catalog" : ""}`,
         argv,
         requiresAllowOutsideCatalog,
@@ -277,6 +284,45 @@ export function getSetupConfigureAction(hasOnboardConfig: boolean): SetupConfigu
   };
 }
 
+export function getLocalModelWorkflowRecommendedActions(
+  workflow: LocalModelWorkflow,
+): LocalModelWorkflowRecommendedAction[] {
+  const actions: LocalModelWorkflowRecommendedAction[] = [
+    {
+      kind: "read-state",
+      label: "Read workflow state",
+      description: workflow.actions.read.description,
+      command: workflow.actions.read.command,
+      argv: workflow.actions.read.argv,
+    },
+  ];
+
+  if (workflow.actions.restoreDefaultModel.enabled) {
+    actions.push({
+      kind: "restore-default-model",
+      label: `Restore saved default (${workflow.actions.restoreDefaultModel.targetModel})`,
+      description: workflow.actions.restoreDefaultModel.description,
+      command: workflow.actions.restoreDefaultModel.command,
+      argv: workflow.actions.restoreDefaultModel.argv,
+    });
+  }
+
+  const suggestedChoice =
+    workflow.choices.find((choice) => choice.isSelectable && choice.inCatalog) ??
+    workflow.choices.find((choice) => choice.isSelectable);
+  if (suggestedChoice) {
+    actions.push({
+      kind: "set-active-model",
+      label: `Switch active route to ${suggestedChoice.model}`,
+      description: suggestedChoice.summary,
+      command: suggestedChoice.command,
+      argv: suggestedChoice.argv,
+    });
+  }
+
+  return actions;
+}
+
 export function getLocalModelWorkflowActions(
   defaultModel: string,
   activeModel: string = defaultModel,
@@ -298,13 +344,15 @@ export function getLocalModelWorkflowActions(
     read: {
       command: "openclaw nemoclaw onboard-status --json",
       argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
-      description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
+      description:
+        "Read saved onboarding and local-model workflow state without querying sandbox health.",
       stateScope: "saved-onboarding-config",
     },
     setActiveModel: {
       command: "openclaw nemoclaw set-local-model <model> --json",
       argvTemplate: ["openclaw", "nemoclaw", "set-local-model", "<model>", "--json"],
-      commandAllowOutsideCatalog: "openclaw nemoclaw set-local-model <model> --json --allow-outside-catalog",
+      commandAllowOutsideCatalog:
+        "openclaw nemoclaw set-local-model <model> --json --allow-outside-catalog",
       argvTemplateAllowOutsideCatalog: [
         "openclaw",
         "nemoclaw",
@@ -313,7 +361,8 @@ export function getLocalModelWorkflowActions(
         "--json",
         "--allow-outside-catalog",
       ],
-      description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
+      description:
+        "Switch the active OpenShell local-model route without changing the saved onboarding default.",
       supportsAllowOutsideCatalog: true,
       allowOutsideCatalogFlag: "--allow-outside-catalog",
       stateScope: "openshell-active-route",
@@ -326,7 +375,8 @@ export function getLocalModelWorkflowActions(
     restoreDefaultModel: {
       command: "openclaw nemoclaw restore-local-model --json",
       argv: ["openclaw", "nemoclaw", "restore-local-model", "--json"],
-      description: "Restore the active OpenShell local-model route to the saved onboarding default.",
+      description:
+        "Restore the active OpenShell local-model route to the saved onboarding default.",
       enabled: restoreEnabled,
       reason: restoreEnabled
         ? (restoreReasonOverride ?? null)
@@ -358,7 +408,7 @@ export function getLocalModelWorkflow(
 
   const catalog = getConfiguredModelCatalog(config);
   const defaultModel = config.model.trim();
-  const inferenceModel = inference?.configured ? inference.model?.trim() ?? null : null;
+  const inferenceModel = inference?.configured ? (inference.model?.trim() ?? null) : null;
   const activeModel = inferenceModel || defaultModel;
 
   const onboardingProvider = config.provider ?? null;
@@ -366,8 +416,12 @@ export function getLocalModelWorkflow(
   const targetProviderLabel = describeOnboardProvider(config);
   const targetEndpoint = config.endpointUrl;
   const targetEndpointType = config.endpointType;
-  const activeProvider = inference?.configured ? inference.provider ?? onboardingProvider : onboardingProvider;
-  const activeEndpoint = inference?.configured ? inference.endpoint?.trim() || config.endpointUrl : config.endpointUrl;
+  const activeProvider = inference?.configured
+    ? (inference.provider ?? onboardingProvider)
+    : onboardingProvider;
+  const activeEndpoint = inference?.configured
+    ? inference.endpoint?.trim() || config.endpointUrl
+    : config.endpointUrl;
   const choices = buildLocalModelChoices(
     defaultModel,
     activeModel,
@@ -395,20 +449,22 @@ export function getLocalModelWorkflow(
     endpointDiffersFromOnboarding: activeEndpoint !== config.endpointUrl,
   };
 
-  const restoreReason = activeModel !== defaultModel
-    ? null
-    : drift.providerDiffersFromOnboarding
-      ? "active route provider differs from the saved onboarding provider."
-      : drift.endpointDiffersFromOnboarding
-        ? "active route endpoint differs from the saved onboarding endpoint."
-        : null;
-  const restoreReasonCode = activeModel !== defaultModel
-    ? null
-    : drift.providerDiffersFromOnboarding
-      ? "active-route-provider-differs-from-onboarding"
-      : drift.endpointDiffersFromOnboarding
-        ? "active-route-endpoint-differs-from-onboarding"
-        : null;
+  const restoreReason =
+    activeModel !== defaultModel
+      ? null
+      : drift.providerDiffersFromOnboarding
+        ? "active route provider differs from the saved onboarding provider."
+        : drift.endpointDiffersFromOnboarding
+          ? "active route endpoint differs from the saved onboarding endpoint."
+          : null;
+  const restoreReasonCode =
+    activeModel !== defaultModel
+      ? null
+      : drift.providerDiffersFromOnboarding
+        ? "active-route-provider-differs-from-onboarding"
+        : drift.endpointDiffersFromOnboarding
+          ? "active-route-endpoint-differs-from-onboarding"
+          : null;
 
   return {
     enabled: true,
@@ -456,7 +512,9 @@ export function getLocalModelWorkflow(
   };
 }
 
-export function getSavedLocalModelWorkflow(config: NemoClawOnboardConfig): SavedLocalModelWorkflow | null {
+export function getSavedLocalModelWorkflow(
+  config: NemoClawOnboardConfig,
+): SavedLocalModelWorkflow | null {
   const workflow = getLocalModelWorkflow(config);
   if (!workflow) {
     return null;

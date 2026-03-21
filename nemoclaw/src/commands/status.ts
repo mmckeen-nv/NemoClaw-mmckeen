@@ -12,11 +12,11 @@ import {
   describeOnboardProvider,
   getConfiguredModelCatalog,
   getLocalModelWorkflow,
+  getLocalModelWorkflowRecommendedActions,
   getSetupConfigureAction,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
-import type { buildLocalModelChoices, getLocalModelWorkflowActions } from "../onboard/config.js";
 
 const execAsync = promisify(exec);
 
@@ -48,10 +48,15 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     getInferenceStatus(insideSandbox),
   ]);
 
-  const localModelCatalog = onboard && isLocalEndpointType(onboard.endpointType)
-    ? getConfiguredModelCatalog(onboard)
-    : [];
+  const localModelCatalog =
+    onboard && isLocalEndpointType(onboard.endpointType) ? getConfiguredModelCatalog(onboard) : [];
   const localModelWorkflow = getLocalModelWorkflowStatus(onboard, inference);
+  const localModelWorkflowWithRecommendations = localModelWorkflow
+    ? {
+        ...localModelWorkflow,
+        recommendedActions: getLocalModelWorkflowRecommendedActions(localModelWorkflow),
+      }
+    : null;
 
   const configureAction = getSetupConfigureAction(!!onboard);
 
@@ -89,7 +94,7 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
           },
         }
       : null,
-    localModelWorkflow,
+    localModelWorkflow: localModelWorkflowWithRecommendations,
     insideSandbox,
   };
 
@@ -149,7 +154,9 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     logger.info(`  Model:     ${onboard.model}`);
     if (localModelCatalog.length > 0) {
       logger.info(`  Catalog:   ${localModelCatalog.join(", ")}`);
-      logger.info("  Note:      Saved as the local default/catalog for future dashboard control-plane reads.");
+      logger.info(
+        "  Note:      Saved as the local default/catalog for future dashboard control-plane reads.",
+      );
     }
     logger.info(`  Onboarded: ${onboard.onboardedAt}`);
     logger.info("");
@@ -157,10 +164,10 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
 
   if (localModelWorkflow) {
     logger.info("Local Model Workflow:");
-    logger.info(`  Default:   ${localModelWorkflow.defaultModel ?? "unknown"}`);
-    logger.info(`  Active:    ${localModelWorkflow.activeModel ?? "unknown"}`);
-    logger.info(`  Source:    ${localModelWorkflow.activeModelSource ?? "unknown"}`);
-    logger.info(`  Live:      ${localModelWorkflow.liveRouteStatus ?? "unknown"}`);
+    logger.info(`  Default:   ${localModelWorkflow.defaultModel}`);
+    logger.info(`  Active:    ${localModelWorkflow.activeModel}`);
+    logger.info(`  Source:    ${localModelWorkflow.activeModelSource}`);
+    logger.info(`  Live:      ${localModelWorkflow.liveRouteStatus}`);
     logger.info(`  Drift:     ${describeLocalModelWorkflowDrift(localModelWorkflow)}`);
     logger.info(
       `  Catalog:   ${localModelWorkflow.activeModelInCatalog ? "active route is in saved catalog" : "active route is outside saved catalog"}`,
@@ -168,7 +175,10 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     if (localModelWorkflow.catalog.length > 0) {
       logger.info(`            ${localModelWorkflow.catalog.join(", ")}`);
     }
-    if (localModelWorkflow.drift.providerDiffersFromOnboarding || localModelWorkflow.drift.endpointDiffersFromOnboarding) {
+    if (
+      localModelWorkflow.drift.providerDiffersFromOnboarding ||
+      localModelWorkflow.drift.endpointDiffersFromOnboarding
+    ) {
       logger.info(
         `  Saved:     ${localModelWorkflow.savedProviderLabel}${localModelWorkflow.savedProvider ? ` (${localModelWorkflow.savedProvider})` : ""} -> ${localModelWorkflow.savedEndpoint}`,
       );
@@ -225,7 +235,10 @@ interface SandboxStatusResponse {
   uptime?: string;
 }
 
-async function getSandboxStatus(sandboxName: string, insideSandbox: boolean): Promise<SandboxStatus> {
+async function getSandboxStatus(
+  sandboxName: string,
+  insideSandbox: boolean,
+): Promise<SandboxStatus> {
   if (insideSandbox) {
     return {
       name: sandboxName,
@@ -256,9 +269,11 @@ async function getSandboxStatus(sandboxName: string, insideSandbox: boolean): Pr
       },
     };
   } catch (error) {
-    const message = error instanceof Error
-      ? ("stderr" in error && typeof error.stderr === "string" && error.stderr.trim()) || error.message
-      : String(error);
+    const message =
+      error instanceof Error
+        ? ("stderr" in error && typeof error.stderr === "string" && error.stderr.trim()) ||
+          error.message
+        : String(error);
     return {
       name: sandboxName,
       running: false,
@@ -266,9 +281,10 @@ async function getSandboxStatus(sandboxName: string, insideSandbox: boolean): Pr
       insideSandbox: false,
       query: {
         ok: false,
-        code: error instanceof Error && "code" in error && error.code === "ENOENT"
-          ? "openshell-unavailable"
-          : "query-failed",
+        code:
+          error instanceof Error && "code" in error && error.code === "ENOENT"
+            ? "openshell-unavailable"
+            : "query-failed",
         message: message.trim() || null,
       },
     };
@@ -345,9 +361,11 @@ async function getInferenceStatus(insideSandbox: boolean): Promise<InferenceStat
       },
     };
   } catch (error) {
-    const message = error instanceof Error
-      ? ("stderr" in error && typeof error.stderr === "string" && error.stderr.trim()) || error.message
-      : String(error);
+    const message =
+      error instanceof Error
+        ? ("stderr" in error && typeof error.stderr === "string" && error.stderr.trim()) ||
+          error.message
+        : String(error);
     return {
       configured: false,
       provider: null,
@@ -356,9 +374,10 @@ async function getInferenceStatus(insideSandbox: boolean): Promise<InferenceStat
       insideSandbox: false,
       query: {
         ok: false,
-        code: error instanceof Error && "code" in error && error.code === "ENOENT"
-          ? "openshell-unavailable"
-          : "query-failed",
+        code:
+          error instanceof Error && "code" in error && error.code === "ENOENT"
+            ? "openshell-unavailable"
+            : "query-failed",
         message: message.trim() || null,
       },
     };

@@ -11,6 +11,7 @@ import {
   describeOnboardProvider,
   getConfiguredModelCatalog,
   getLocalModelWorkflow,
+  getLocalModelWorkflowRecommendedActions,
   getSetupConfigureAction,
   isLocalEndpointType,
   loadOnboardConfig,
@@ -18,7 +19,7 @@ import {
 import type {
   buildLocalModelChoices,
   getLocalModelWorkflowActions,
-  LocalModelWorkflow,
+  LocalModelWorkflowRecommendedAction,
 } from "../onboard/config.js";
 
 const execAsync = promisify(exec);
@@ -45,53 +46,6 @@ interface InferenceStatusResponse {
   provider?: string;
   model?: string;
   endpoint?: string;
-}
-
-interface LocalModelWorkflowRecommendedAction {
-  kind: "read-state" | "set-active-model" | "restore-default-model";
-  label: string;
-  description: string;
-  command: string;
-  argv: string[];
-}
-
-function getLocalModelWorkflowRecommendedActions(
-  workflow: LocalModelWorkflow,
-): LocalModelWorkflowRecommendedAction[] {
-  const actions: LocalModelWorkflowRecommendedAction[] = [
-    {
-      kind: "read-state",
-      label: "Read workflow state",
-      description: workflow.actions.read.description,
-      command: workflow.actions.read.command,
-      argv: workflow.actions.read.argv,
-    },
-  ];
-
-  if (workflow.actions.restoreDefaultModel.enabled) {
-    actions.push({
-      kind: "restore-default-model",
-      label: `Restore saved default (${workflow.actions.restoreDefaultModel.targetModel})`,
-      description: workflow.actions.restoreDefaultModel.description,
-      command: workflow.actions.restoreDefaultModel.command,
-      argv: workflow.actions.restoreDefaultModel.argv,
-    });
-  }
-
-  const suggestedChoice =
-    workflow.choices.find((choice) => choice.isSelectable && choice.inCatalog) ??
-    workflow.choices.find((choice) => choice.isSelectable);
-  if (suggestedChoice) {
-    actions.push({
-      kind: "set-active-model",
-      label: `Switch active route to ${suggestedChoice.model}`,
-      description: suggestedChoice.summary,
-      command: suggestedChoice.command,
-      argv: suggestedChoice.argv,
-    });
-  }
-
-  return actions;
 }
 
 function isInsideSandbox(): boolean {

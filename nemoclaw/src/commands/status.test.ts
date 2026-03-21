@@ -448,6 +448,29 @@ describe("cliStatus", () => {
           targetEndpointType: "ollama",
           },
         },
+        recommendedActions: [
+          {
+            kind: "read-state",
+            label: "Read workflow state",
+            description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
+            command: "openclaw nemoclaw onboard-status --json",
+            argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
+          },
+          {
+            kind: "restore-default-model",
+            label: "Restore saved default (qwen3:32b)",
+            description: "Restore the active OpenShell local-model route to the saved onboarding default.",
+            command: "openclaw nemoclaw restore-local-model --json",
+            argv: ["openclaw", "nemoclaw", "restore-local-model", "--json"],
+          },
+          {
+            kind: "set-active-model",
+            label: "Switch active route to qwen3:32b",
+            description: "default",
+            command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
+            argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
+          },
+        ],
       });
     });
 
