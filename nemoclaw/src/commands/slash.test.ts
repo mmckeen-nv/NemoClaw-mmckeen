@@ -72,6 +72,8 @@ describe("/nemoclaw slash command", () => {
     expect(result.text).toContain("**Local Model Workflow**");
     expect(result.text).toContain("Default: qwen3:32b");
     expect(result.text).toContain("Active: qwen3:32b (saved default)");
+    expect(result.text).toContain("Provider: Local Ollama (ollama-local)");
+    expect(result.text).toContain("Endpoint: http://host.openshell.internal:11434/v1");
     expect(result.text).toContain("Source: onboarding");
     expect(result.text).toContain("Drift: none");
     expect(result.text).toContain("Catalog: active route is in saved catalog");
@@ -117,6 +119,8 @@ describe("/nemoclaw slash command", () => {
     expect(result.text).toContain("**NemoClaw Onboard Status**");
     expect(result.text).toContain("**Local Model Workflow**");
     expect(result.text).toContain("Default: qwen3:32b");
+    expect(result.text).toContain("Provider: Local Ollama (ollama-local)");
+    expect(result.text).toContain("Endpoint: http://host.openshell.internal:11434/v1");
     expect(result.text).toContain("Catalog: active route is in saved catalog");
     expect(result.text).toContain("Saved Models: qwen3:32b, nemotron-3-nano:30b");
   });
@@ -136,15 +140,17 @@ describe("/nemoclaw slash command", () => {
     });
     vi.mocked(getInferenceStatus).mockResolvedValue({
       configured: true,
-      provider: "ollama-local",
+      provider: "vllm-local",
       model: "nemotron-3-nano:30b",
-      endpoint: "http://host.openshell.internal:11434/v1",
+      endpoint: "http://host.openshell.internal:8000/v1",
     });
 
     const result = await handleSlashCommand({ args: "status" }, {} as never);
 
     expect(result.text).toContain("Active: nemotron-3-nano:30b");
     expect(result.text).not.toContain("Active: nemotron-3-nano:30b (saved default)");
+    expect(result.text).toContain("Provider: Local vLLM (vllm-local)");
+    expect(result.text).toContain("Endpoint: http://host.openshell.internal:8000/v1");
     expect(result.text).toContain("Source: inference");
     expect(result.text).toContain("Drift: active route differs from saved default");
   });

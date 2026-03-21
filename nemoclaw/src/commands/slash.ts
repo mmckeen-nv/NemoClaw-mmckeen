@@ -21,6 +21,7 @@ import {
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
+  getLocalModelWorkflow,
   getSavedLocalModelWorkflow,
   isLocalEndpointType,
   loadOnboardConfig,
@@ -251,6 +252,8 @@ async function formatLocalModelWorkflow(
   return [
     `Default: ${workflow.defaultModel}`,
     `Active: ${workflow.activeModel}${workflow.activeModelSource === "onboarding" ? " (saved default)" : ""}`,
+    `Provider: ${workflow.providerLabel}${workflow.provider ? ` (${workflow.provider})` : ""}`,
+    `Endpoint: ${workflow.endpoint}`,
     `Source: ${workflow.activeModelSource}`,
     `Drift: ${workflow.activeModelMatchesDefault ? "none" : "active route differs from saved default"}`,
     `Catalog: ${workflow.activeModelInCatalog ? "active route is in saved catalog" : "active route is outside saved catalog"}`,
@@ -266,19 +269,12 @@ async function getInferenceAwareLocalModelWorkflow(config: NemoClawOnboardConfig
 
   try {
     const inference = await getInferenceStatus();
-    if (!inference.configured || !inference.model) {
-      return savedWorkflow;
-    }
-
-    const activeModel = inference.model.trim() || savedWorkflow.defaultModel;
-    return {
-      ...savedWorkflow,
-      provider: config.provider ?? inference.provider,
-      activeModel,
-      activeModelSource: "inference" as const,
-      activeModelMatchesDefault: activeModel === savedWorkflow.defaultModel,
-      activeModelInCatalog: savedWorkflow.catalog.includes(activeModel),
-    };
+    return getLocalModelWorkflow(config, {
+      configured: inference.configured,
+      provider: inference.provider,
+      model: inference.model,
+      endpoint: inference.endpoint,
+    }) ?? savedWorkflow;
   } catch {
     return savedWorkflow;
   }
