@@ -156,6 +156,8 @@ describe("onboard config helpers", () => {
           description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
           supportsAllowOutsideCatalog: true,
           allowOutsideCatalogFlag: "--allow-outside-catalog",
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
         restoreDefaultModel: {
           command: "openclaw nemoclaw set-local-model \"nemotron-3-nano:30b\" --json",
@@ -163,6 +165,9 @@ describe("onboard config helpers", () => {
           description: "Restore the active OpenShell local-model route to the saved onboarding default.",
           enabled: false,
           reason: "active route already matches the saved onboarding default.",
+          targetModel: "nemotron-3-nano:30b",
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
       },
     });

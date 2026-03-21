@@ -207,6 +207,8 @@ describe("cliSetLocalModel", () => {
           description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
           supportsAllowOutsideCatalog: true,
           allowOutsideCatalogFlag: "--allow-outside-catalog",
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
         restoreDefaultModel: {
           command: "openclaw nemoclaw set-local-model \"qwen3:32b\" --json",
@@ -214,6 +216,9 @@ describe("cliSetLocalModel", () => {
           description: "Restore the active OpenShell local-model route to the saved onboarding default.",
           enabled: false,
           reason: "active route already matches the saved onboarding default.",
+          targetModel: "qwen3:32b",
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
       },
       hint: "Saved catalog: qwen3:32b, nemotron-3-nano:30b\nUse --allow-outside-catalog to force a one-off route change.",
@@ -381,6 +386,8 @@ describe("cliSetLocalModel", () => {
           description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
           supportsAllowOutsideCatalog: true,
           allowOutsideCatalogFlag: "--allow-outside-catalog",
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
         restoreDefaultModel: {
           command: "openclaw nemoclaw set-local-model \"qwen3:32b\" --json",
@@ -388,6 +395,9 @@ describe("cliSetLocalModel", () => {
           description: "Restore the active OpenShell local-model route to the saved onboarding default.",
           enabled: true,
           reason: null,
+          targetModel: "qwen3:32b",
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
       },
     });

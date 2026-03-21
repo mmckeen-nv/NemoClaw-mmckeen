@@ -68,6 +68,8 @@ export interface LocalModelWorkflowActions {
     description: string;
     supportsAllowOutsideCatalog: boolean;
     allowOutsideCatalogFlag: "--allow-outside-catalog";
+    targetProvider: string | null;
+    targetProviderLabel: string;
   };
   restoreDefaultModel: {
     command: string;
@@ -75,6 +77,9 @@ export interface LocalModelWorkflowActions {
     description: string;
     enabled: boolean;
     reason: string | null;
+    targetModel: string;
+    targetProvider: string | null;
+    targetProviderLabel: string;
   };
 }
 
@@ -165,6 +170,8 @@ export function buildLocalModelChoices(
 export function getLocalModelWorkflowActions(
   defaultModel: string,
   activeModel: string = defaultModel,
+  provider: string | null = null,
+  providerLabel = "Saved local provider",
 ): LocalModelWorkflowActions {
   const restoreEnabled = activeModel !== defaultModel;
   return {
@@ -188,6 +195,8 @@ export function getLocalModelWorkflowActions(
       description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
       supportsAllowOutsideCatalog: true,
       allowOutsideCatalogFlag: "--allow-outside-catalog",
+      targetProvider: provider,
+      targetProviderLabel: providerLabel,
     },
     restoreDefaultModel: {
       command: `openclaw nemoclaw set-local-model ${JSON.stringify(defaultModel)} --json`,
@@ -195,6 +204,9 @@ export function getLocalModelWorkflowActions(
       description: "Restore the active OpenShell local-model route to the saved onboarding default.",
       enabled: restoreEnabled,
       reason: restoreEnabled ? null : "active route already matches the saved onboarding default.",
+      targetModel: defaultModel,
+      targetProvider: provider,
+      targetProviderLabel: providerLabel,
     },
   };
 }
@@ -245,7 +257,7 @@ export function getLocalModelWorkflow(
     choices,
     defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
     activeChoice: choices.find((choice) => choice.isActive) ?? null,
-    actions: getLocalModelWorkflowActions(defaultModel, activeModel),
+    actions: getLocalModelWorkflowActions(defaultModel, activeModel, activeProvider, providerLabelOverride ?? describeOnboardProvider(config)),
   };
 }
 
