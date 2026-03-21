@@ -417,21 +417,24 @@ describe("cliOnboardStatus", () => {
       availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
       onboardedAt: "2026-03-20T22:00:00.000Z",
     });
-    vi.spyOn(onboardStatus, "getInferenceStatus").mockResolvedValue({
+    const inferenceOverride = {
       configured: true,
       provider: "vllm-local",
       model: "nemotron-3-nano:30b",
       endpoint: "http://host.openshell.internal:8000/v1",
-      query: { ok: true, code: "ok", message: null },
-    });
+      query: { ok: true, code: "ok", message: null } as const,
+    };
 
-    const data = await onboardStatus.getOnboardStatusData({
-      configured: true,
-      provider: "vllm-local",
-      model: "nemotron-3-nano:30b",
-      endpoint: "http://host.openshell.internal:8000/v1",
-      query: { ok: true, code: "ok", message: null },
-    });
+    const { lines, logger } = captureLogger();
+    await onboardStatus.cliOnboardStatus({ json: false, logger, inferenceOverride });
+
+    const output = lines.join("\n");
+    expect(output).toContain("Active:     nemotron-3-nano:30b");
+    expect(output).toContain("Drift:      active model differs from saved default; provider differs from saved onboarding provider; endpoint differs from saved onboarding endpoint");
+    expect(output).toContain("Saved Route: Local Ollama (ollama-local) -> http://host.openshell.internal:11434/v1");
+    expect(output).toContain("Live route: OpenShell inference query succeeded.");
+
+    const data = await onboardStatus.getOnboardStatusData(inferenceOverride);
 
     expect(data.inference).toEqual({
       configured: true,

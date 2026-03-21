@@ -510,6 +510,7 @@ describe("cliStatus", () => {
       );
       expect(output).toContain("Catalog:   active route is outside saved catalog");
       expect(output).toContain("            qwen3:32b, nemotron-3-nano:30b");
+      expect(output).toContain("Saved:     Local Ollama (ollama-local) -> http://host.openshell.internal:11434/v1");
     });
 
     it("shows active route membership in saved catalog when inference matches onboarding catalog", async () => {

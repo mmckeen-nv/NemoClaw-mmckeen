@@ -167,6 +167,11 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     if (localModelWorkflow.catalog.length > 0) {
       logger.info(`            ${localModelWorkflow.catalog.join(", ")}`);
     }
+    if (localModelWorkflow.drift.providerDiffersFromOnboarding || localModelWorkflow.drift.endpointDiffersFromOnboarding) {
+      logger.info(
+        `  Saved:     ${localModelWorkflow.savedProviderLabel}${localModelWorkflow.savedProvider ? ` (${localModelWorkflow.savedProvider})` : ""} -> ${localModelWorkflow.savedEndpoint}`,
+      );
+    }
     logger.info("");
   }
 

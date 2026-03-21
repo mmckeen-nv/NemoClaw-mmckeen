@@ -22,6 +22,7 @@ const execAsync = promisify(exec);
 export interface OnboardStatusOptions {
   json: boolean;
   logger: PluginLogger;
+  inferenceOverride?: InferenceStatus;
 }
 
 export interface InferenceStatus {
@@ -216,8 +217,8 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
 }
 
 export async function cliOnboardStatus(opts: OnboardStatusOptions): Promise<void> {
-  const { json, logger } = opts;
-  const data = await getOnboardStatusData();
+  const { json, logger, inferenceOverride } = opts;
+  const data = await getOnboardStatusData(inferenceOverride);
 
   if (json) {
     logger.info(JSON.stringify(data, null, 2));
@@ -263,6 +264,14 @@ export async function cliOnboardStatus(opts: OnboardStatusOptions): Promise<void
     );
     if (data.localModelWorkflow.catalog.length > 0) {
       logger.info(`            ${data.localModelWorkflow.catalog.join(", ")}`);
+    }
+    if (
+      data.localModelWorkflow.drift.providerDiffersFromOnboarding ||
+      data.localModelWorkflow.drift.endpointDiffersFromOnboarding
+    ) {
+      logger.info(
+        `Saved Route: ${data.localModelWorkflow.savedProviderLabel}${data.localModelWorkflow.savedProvider ? ` (${data.localModelWorkflow.savedProvider})` : ""} -> ${data.localModelWorkflow.savedEndpoint}`,
+      );
     }
     if (data.inference.query.ok) {
       logger.info("Live route: OpenShell inference query succeeded.");
