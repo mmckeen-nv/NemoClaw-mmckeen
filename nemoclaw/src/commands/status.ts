@@ -21,6 +21,14 @@ import {
 
 const execAsync = promisify(exec);
 
+function isOpenShellUnavailable(error: unknown, message: string): boolean {
+  if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+    return true;
+  }
+
+  return /(?:^|\b)(?:openshell: )?(?:command not found|not found)\b/i.test(message);
+}
+
 /**
  * Detect whether the plugin is running inside an OpenShell sandbox.
  * Inside sandboxes the root filesystem is mounted at /sandbox and openshell
@@ -310,10 +318,9 @@ async function getSandboxStatus(
       insideSandbox: false,
       query: {
         ok: false,
-        code:
-          error instanceof Error && "code" in error && error.code === "ENOENT"
-            ? "openshell-unavailable"
-            : "query-failed",
+        code: isOpenShellUnavailable(error, message)
+          ? "openshell-unavailable"
+          : "query-failed",
         message: message.trim() || null,
       },
     };
@@ -403,10 +410,9 @@ async function getInferenceStatus(insideSandbox: boolean): Promise<InferenceStat
       insideSandbox: false,
       query: {
         ok: false,
-        code:
-          error instanceof Error && "code" in error && error.code === "ENOENT"
-            ? "openshell-unavailable"
-            : "query-failed",
+        code: isOpenShellUnavailable(error, message)
+          ? "openshell-unavailable"
+          : "query-failed",
         message: message.trim() || null,
       },
     };

@@ -139,8 +139,7 @@ describe("cliStatus", () => {
       await cliStatus({ json: false, logger, pluginConfig: defaultConfig });
 
       const output = lines.join("\n");
-      expect(output).toContain("Status:  unable to query live sandbox state");
-      expect(output).toContain("Status:  unable to query live route");
+      expect(output).toContain("Status:  OpenShell CLI unavailable");
       expect(output).toContain("command not found: openshell sandbox status openclaw --json");
       expect(output).toContain("command not found: openshell inference get --json");
       expect(output).not.toContain("inside sandbox");
@@ -166,7 +165,7 @@ describe("cliStatus", () => {
       expect(data.insideSandbox).toBe(false);
       expect(data.sandbox.insideSandbox).toBe(false);
       expect(data.sandbox.running).toBe(false);
-      expect(data.sandbox.query.code).toBe("query-failed");
+      expect(data.sandbox.query.code).toBe("openshell-unavailable");
       expect(data.inference.insideSandbox).toBe(false);
       expect(data.inference.configured).toBe(false);
     });

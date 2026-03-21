@@ -3,6 +3,7 @@
 
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { existsSync } from "node:fs";
+import { exec } from "node:child_process";
 import { loadOnboardConfig } from "../onboard/config.js";
 import * as onboardStatus from "./onboard-status.js";
 import type { PluginLogger } from "../index.js";
@@ -14,6 +15,10 @@ vi.mock("node:fs", async () => {
     existsSync: vi.fn(() => false),
   };
 });
+
+vi.mock("node:child_process", () => ({
+  exec: vi.fn(),
+}));
 
 vi.mock("../onboard/config.js", async () => {
   const actual =
@@ -42,6 +47,9 @@ describe("cliOnboardStatus", () => {
     vi.resetAllMocks();
     vi.mocked(existsSync).mockReturnValue(false);
     vi.mocked(loadOnboardConfig).mockReturnValue(null);
+    vi.mocked(exec).mockImplementation(((_cmd: string, _opts: unknown, callback?: (err: Error | null, result: { stdout: string; stderr: string }) => void) => {
+      callback?.(new Error("command not mocked"), { stdout: "", stderr: "" });
+    }) as typeof exec);
   });
 
   it("returns not-configured JSON when no onboarding config exists", async () => {
@@ -107,6 +115,28 @@ describe("cliOnboardStatus", () => {
         ok: false,
         code: "inside-sandbox",
         message: "Run 'openshell inference get' on the host to query the live inference route.",
+      },
+    });
+  });
+
+  it("detects a missing openshell binary from shell stderr", async () => {
+    const execError = Object.assign(new Error("Command failed: openshell inference get --json"), {
+      code: 127,
+      stderr: "/bin/sh: 1: openshell: not found\n",
+    });
+    vi.mocked(exec).mockImplementation(((_cmd: string, _opts: unknown, callback?: (err: Error | null, result: { stdout: string; stderr: string }) => void) => {
+      callback?.(execError, { stdout: "", stderr: execError.stderr });
+    }) as typeof exec);
+
+    await expect(onboardStatus.getInferenceStatus()).resolves.toEqual({
+      configured: false,
+      provider: null,
+      model: null,
+      endpoint: null,
+      query: {
+        ok: false,
+        code: "openshell-unavailable",
+        message: "/bin/sh: 1: openshell: not found",
       },
     });
   });
