@@ -156,6 +156,8 @@ describe("cliOnboardStatus", () => {
           setActiveModel: {
             command: "openclaw nemoclaw set-local-model <model> --json",
             argvTemplate: ["openclaw", "nemoclaw", "set-local-model", "<model>", "--json"],
+            commandAllowOutsideCatalog: "openclaw nemoclaw set-local-model <model> --json --allow-outside-catalog",
+            argvTemplateAllowOutsideCatalog: ["openclaw", "nemoclaw", "set-local-model", "<model>", "--json", "--allow-outside-catalog"],
             description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
             supportsAllowOutsideCatalog: true,
             allowOutsideCatalogFlag: "--allow-outside-catalog",
