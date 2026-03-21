@@ -79,6 +79,26 @@ describe("cliSetLocalModel", () => {
     expect(execFileSync).not.toHaveBeenCalled();
   });
 
+  it("returns structured JSON when onboarding is missing", async () => {
+    const { lines, logger } = captureLogger();
+
+    await cliSetLocalModel({
+      model: "qwen3:32b",
+      allowOutsideCatalog: false,
+      json: true,
+      logger,
+    });
+
+    expect(JSON.parse(lines.join(""))).toEqual({
+      ok: false,
+      code: "ONBOARDING_REQUIRED",
+      message: "No onboarding configuration found. Run 'openclaw nemoclaw onboard' first.",
+      model: "qwen3:32b",
+      hint: "Run 'openclaw nemoclaw onboard' first.",
+    });
+    expect(execFileSync).not.toHaveBeenCalled();
+  });
+
   it("rejects models outside the saved catalog by default", async () => {
     vi.mocked(loadOnboardConfig).mockReturnValue({
       endpointType: "ollama",
@@ -104,7 +124,65 @@ describe("cliSetLocalModel", () => {
 
     const output = lines.join("\n");
     expect(output).toContain("outside the saved local catalog");
+    expect(output).toContain("Saved catalog: qwen3:32b, nemotron-3-nano:30b");
     expect(output).toContain("Use --allow-outside-catalog");
+    expect(execFileSync).not.toHaveBeenCalled();
+  });
+
+  it("returns structured JSON when the requested model is outside the saved catalog", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["qwen3:32b", "nemotron-3-nano:30b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+
+    const { lines, logger } = captureLogger();
+
+    await cliSetLocalModel({
+      model: "llama3.3:70b",
+      allowOutsideCatalog: false,
+      json: true,
+      logger,
+    });
+
+    expect(JSON.parse(lines.join(""))).toEqual({
+      ok: false,
+      code: "MODEL_OUTSIDE_CATALOG",
+      message: "Model 'llama3.3:70b' is outside the saved local catalog.",
+      model: "llama3.3:70b",
+      endpointType: "ollama",
+      endpoint: "http://host.openshell.internal:11434/v1",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      defaultModel: "qwen3:32b",
+      catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
+      choices: [
+        {
+          model: "qwen3:32b",
+          label: "qwen3:32b",
+          isDefault: true,
+          isActive: true,
+          inCatalog: true,
+          source: "default",
+        },
+        {
+          model: "nemotron-3-nano:30b",
+          label: "nemotron-3-nano:30b",
+          isDefault: false,
+          isActive: false,
+          inCatalog: true,
+          source: "catalog",
+        },
+      ],
+      hint: "Saved catalog: qwen3:32b, nemotron-3-nano:30b\nUse --allow-outside-catalog to force a one-off route change.",
+    });
     expect(execFileSync).not.toHaveBeenCalled();
   });
 

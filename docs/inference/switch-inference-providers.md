@@ -72,6 +72,8 @@ $ openclaw nemoclaw onboard-status --json
 
 This returns the saved endpoint/provider/model configuration plus any local-model catalog metadata without requiring OpenShell sandbox status reads.
 
+For write actions, `openclaw nemoclaw set-local-model --json` now also returns structured JSON on rejected writes (for example `ONBOARDING_REQUIRED` or `MODEL_OUTSIDE_CATALOG`) so a local dashboard can surface the failure without scraping human-oriented stderr.
+
 ## Available Models
 
 The following table lists the models registered with the `nvidia-nim` provider.

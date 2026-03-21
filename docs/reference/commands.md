@@ -100,7 +100,7 @@ $ openclaw nemoclaw set-local-model <model> [--json] [--allow-outside-catalog]
 ```
 
 `--json`
-: Output the resulting active-route summary as JSON.
+: Output the resulting active-route summary as JSON. When the write is rejected (for example, missing onboarding or a model outside the saved catalog), the command now returns a structured JSON error payload with `ok: false`, a stable `code`, and the saved catalog/default metadata that a local dashboard can use to recover.
 
 `--allow-outside-catalog`
 : Permit a one-off route change to a model that is not in the saved onboarding catalog.

@@ -19,7 +19,7 @@ export interface SetLocalModelOptions {
 }
 
 interface SetLocalModelResult {
-  ok: boolean;
+  ok: true;
   provider: string;
   providerLabel: string;
   endpointType: string;
@@ -31,6 +31,54 @@ interface SetLocalModelResult {
   activeModelInCatalog: boolean;
   catalog: string[];
   choices: ReturnType<typeof buildLocalModelChoices>;
+}
+
+interface SetLocalModelErrorResult {
+  ok: false;
+  code:
+    | "MODEL_REQUIRED"
+    | "ONBOARDING_REQUIRED"
+    | "NON_LOCAL_WORKFLOW"
+    | "MODEL_OUTSIDE_CATALOG"
+    | "INFERENCE_SET_FAILED";
+  message: string;
+  model?: string;
+  endpointType?: string;
+  endpoint?: string;
+  provider?: string;
+  providerLabel?: string;
+  defaultModel?: string;
+  catalog?: string[];
+  choices?: ReturnType<typeof buildLocalModelChoices>;
+  hint?: string;
+  details?: string;
+}
+
+function emitError(
+  logger: PluginLogger,
+  json: boolean,
+  message: string,
+  payload: Omit<SetLocalModelErrorResult, "ok" | "message">,
+): void {
+  if (json) {
+    logger.info(
+      JSON.stringify(
+        {
+          ok: false,
+          message,
+          ...payload,
+        } satisfies SetLocalModelErrorResult,
+        null,
+        2,
+      ),
+    );
+    return;
+  }
+
+  logger.error(message);
+  if (payload.hint) {
+    logger.info(payload.hint);
+  }
 }
 
 function resolveProviderName(config: ReturnType<typeof loadOnboardConfig>): string {
@@ -66,49 +114,86 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
   const trimmedModel = model.trim();
 
   if (!trimmedModel) {
-    logger.error("Model is required.");
+    emitError(logger, json, "Model is required.", {
+      code: "MODEL_REQUIRED",
+    });
     return;
   }
 
   const onboard = loadOnboardConfig();
   if (!onboard) {
-    logger.error("No onboarding configuration found. Run 'openclaw nemoclaw onboard' first.");
+    emitError(logger, json, "No onboarding configuration found. Run 'openclaw nemoclaw onboard' first.", {
+      code: "ONBOARDING_REQUIRED",
+      model: trimmedModel,
+      hint: "Run 'openclaw nemoclaw onboard' first.",
+    });
     return;
   }
 
   if (!isLocalEndpointType(onboard.endpointType)) {
-    logger.error(
+    emitError(
+      logger,
+      json,
       `Saved onboarding uses '${onboard.endpointType}', not a local endpoint. This command only supports local workflows.`,
+      {
+        code: "NON_LOCAL_WORKFLOW",
+        model: trimmedModel,
+        endpointType: onboard.endpointType,
+        endpoint: onboard.endpointUrl,
+        provider: onboard.provider,
+        providerLabel: describeOnboardProvider(onboard),
+      },
     );
     return;
   }
 
   const catalog = getConfiguredModelCatalog(onboard);
+  const defaultModel = onboard.model.trim();
+  const provider = resolveProviderName(onboard);
+  const providerLabel = describeOnboardProvider(onboard);
   const inCatalog = catalog.includes(trimmedModel);
   if (!inCatalog && !allowOutsideCatalog) {
-    logger.error(`Model '${trimmedModel}' is outside the saved local catalog.`);
-    if (catalog.length > 0) {
-      logger.info(`Saved catalog: ${catalog.join(", ")}`);
-      logger.info("Use --allow-outside-catalog to force a one-off route change.");
-    }
+    emitError(logger, json, `Model '${trimmedModel}' is outside the saved local catalog.`, {
+      code: "MODEL_OUTSIDE_CATALOG",
+      model: trimmedModel,
+      endpointType: onboard.endpointType,
+      endpoint: onboard.endpointUrl,
+      provider,
+      providerLabel,
+      defaultModel,
+      catalog,
+      choices: buildLocalModelChoices(defaultModel, defaultModel, catalog),
+      hint: catalog.length > 0
+        ? `Saved catalog: ${catalog.join(", ")}\nUse --allow-outside-catalog to force a one-off route change.`
+        : "Use --allow-outside-catalog to force a one-off route change.",
+    });
     return;
   }
 
-  const provider = resolveProviderName(onboard);
   try {
     setInferenceRoute(provider, trimmedModel);
   } catch (err) {
     const stderr =
       err instanceof Error && "stderr" in err ? String((err as { stderr: unknown }).stderr) : "";
-    logger.error(`Failed to set inference route: ${stderr || String(err)}`);
+    emitError(logger, json, `Failed to set inference route: ${stderr || String(err)}`, {
+      code: "INFERENCE_SET_FAILED",
+      model: trimmedModel,
+      endpointType: onboard.endpointType,
+      endpoint: onboard.endpointUrl,
+      provider,
+      providerLabel,
+      defaultModel,
+      catalog,
+      choices: buildLocalModelChoices(defaultModel, trimmedModel, catalog),
+      details: stderr || String(err),
+    });
     return;
   }
 
-  const defaultModel = onboard.model.trim();
   const result: SetLocalModelResult = {
     ok: true,
     provider,
-    providerLabel: describeOnboardProvider(onboard),
+    providerLabel,
     endpointType: onboard.endpointType,
     endpoint: onboard.endpointUrl,
     defaultModel,
