@@ -11,6 +11,7 @@
  * time.
  */
 
+import { execFileSync } from "node:child_process";
 import type { Command } from "commander";
 import { registerCliCommands } from "./cli.js";
 import { handleSlashCommand } from "./commands/slash.js";
@@ -18,6 +19,7 @@ import {
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
+  getLocalModelWorkflow,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "./onboard/config.js";
@@ -149,6 +151,31 @@ export interface NemoClawConfig {
   inferenceProvider: string;
 }
 
+function getLiveInferenceRouteSync(): { provider: string | null; model: string | null; endpoint: string | null } | null {
+  try {
+    const stdout = execFileSync("openshell", ["inference", "get", "--json"], {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    const parsed = JSON.parse(stdout) as {
+      provider?: string;
+      model?: string;
+      endpoint?: string;
+    };
+    return {
+      provider: parsed.provider ?? null,
+      model: parsed.model ?? null,
+      endpoint: parsed.endpoint ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function formatWorkflowModelLabel(label: string, badges: string[]): string {
+  return badges.length > 0 ? `${label} (${badges.join(", ")})` : label;
+}
+
 function activeModelEntries(
   onboardCfg: ReturnType<typeof loadOnboardConfig>,
 ): ModelProviderEntry[] {
@@ -181,13 +208,41 @@ function activeModelEntries(
     ];
   }
 
-  const catalog = getConfiguredModelCatalog(onboardCfg);
-  return catalog.map((modelId) => ({
-    id: `inference/${modelId}`,
-    label:
-      isLocalEndpointType(onboardCfg.endpointType) && modelId === onboardCfg.model
-        ? `${modelId} (default)`
-        : modelId,
+  if (!isLocalEndpointType(onboardCfg.endpointType)) {
+    const catalog = getConfiguredModelCatalog(onboardCfg);
+    return catalog.map((modelId) => ({
+      id: `inference/${modelId}`,
+      label: modelId,
+      contextWindow: 131072,
+      maxOutput: 8192,
+    }));
+  }
+
+  const liveRoute = getLiveInferenceRouteSync();
+  const workflow = getLocalModelWorkflow(
+    onboardCfg,
+    liveRoute
+      ? {
+          configured: true,
+          provider: liveRoute.provider,
+          model: liveRoute.model,
+          endpoint: liveRoute.endpoint,
+        }
+      : undefined,
+  );
+  if (!workflow) {
+    const catalog = getConfiguredModelCatalog(onboardCfg);
+    return catalog.map((modelId) => ({
+      id: `inference/${modelId}`,
+      label: modelId,
+      contextWindow: 131072,
+      maxOutput: 8192,
+    }));
+  }
+
+  return workflow.choices.map((choice) => ({
+    id: `inference/${choice.model}`,
+    label: formatWorkflowModelLabel(choice.label, choice.badges),
     contextWindow: 131072,
     maxOutput: 8192,
   }));
