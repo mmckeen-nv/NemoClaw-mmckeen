@@ -90,6 +90,14 @@ export interface LocalModelWorkflowActions {
   };
 }
 
+export interface LocalModelWorkflowDrift {
+  any: boolean;
+  activeModelDiffersFromDefault: boolean;
+  activeModelOutsideCatalog: boolean;
+  providerDiffersFromOnboarding: boolean;
+  endpointDiffersFromOnboarding: boolean;
+}
+
 export interface LocalModelWorkflow {
   enabled: true;
   provider: string | null;
@@ -101,6 +109,7 @@ export interface LocalModelWorkflow {
   activeModelSource: "inference" | "onboarding";
   activeModelMatchesDefault: boolean;
   activeModelInCatalog: boolean;
+  drift: LocalModelWorkflowDrift;
   catalog: string[];
   choices: LocalModelChoice[];
   defaultChoice: LocalModelChoice | null;
@@ -259,6 +268,12 @@ export function getLocalModelWorkflow(
           ? "Local NIM"
           : activeProvider
     : null;
+  const drift = {
+    activeModelDiffersFromDefault: activeModel !== defaultModel,
+    activeModelOutsideCatalog: !catalog.includes(activeModel),
+    providerDiffersFromOnboarding: activeProvider !== (config.provider ?? null),
+    endpointDiffersFromOnboarding: activeEndpoint !== config.endpointUrl,
+  };
 
   return {
     enabled: true,
@@ -271,6 +286,10 @@ export function getLocalModelWorkflow(
     activeModelSource: inferenceModel ? "inference" : "onboarding",
     activeModelMatchesDefault: activeModel === defaultModel,
     activeModelInCatalog: catalog.includes(activeModel),
+    drift: {
+      ...drift,
+      any: Object.values(drift).some(Boolean),
+    },
     catalog,
     choices,
     defaultChoice: choices.find((choice) => choice.isDefault) ?? null,

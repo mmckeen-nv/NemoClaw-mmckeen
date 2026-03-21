@@ -69,6 +69,13 @@ describe("onboard config helpers", () => {
       activeModelSource: "onboarding",
       activeModelMatchesDefault: true,
       activeModelInCatalog: true,
+      drift: {
+        any: false,
+        activeModelDiffersFromDefault: false,
+        activeModelOutsideCatalog: false,
+        providerDiffersFromOnboarding: false,
+        endpointDiffersFromOnboarding: false,
+      },
       catalog: ["nemotron-3-nano:30b", "llama3.3:70b", "qwen2.5:32b"],
       choices: [
         {
@@ -244,6 +251,13 @@ describe("onboard config helpers", () => {
       endpoint: "http://host.openshell.internal:8000/v1",
       activeModel: "qwen3:32b",
       activeModelSource: "inference",
+      drift: {
+        any: true,
+        activeModelDiffersFromDefault: true,
+        activeModelOutsideCatalog: false,
+        providerDiffersFromOnboarding: true,
+        endpointDiffersFromOnboarding: true,
+      },
     });
   });
 

@@ -276,6 +276,13 @@ describe("cliStatus", () => {
         activeModelSource: "inference",
         activeModelMatchesDefault: false,
         activeModelInCatalog: false,
+        drift: {
+          any: true,
+          activeModelDiffersFromDefault: true,
+          activeModelOutsideCatalog: true,
+          providerDiffersFromOnboarding: true,
+          endpointDiffersFromOnboarding: true,
+        },
         catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
         choices: [
           {

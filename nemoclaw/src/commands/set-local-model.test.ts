@@ -323,6 +323,13 @@ describe("cliSetLocalModel", () => {
       activeModelSource: "inference",
       activeModelMatchesDefault: false,
       activeModelInCatalog: false,
+      drift: {
+        any: true,
+        activeModelDiffersFromDefault: true,
+        activeModelOutsideCatalog: true,
+        providerDiffersFromOnboarding: false,
+        endpointDiffersFromOnboarding: false,
+      },
       catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
       choices: [
         {

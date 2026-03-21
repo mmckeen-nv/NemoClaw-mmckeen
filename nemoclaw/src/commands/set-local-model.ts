@@ -11,6 +11,7 @@ import {
   getSetupConfigureAction,
   isLocalEndpointType,
   loadOnboardConfig,
+  type LocalModelWorkflowDrift,
 } from "../onboard/config.js";
 
 export interface SetLocalModelOptions {
@@ -34,6 +35,7 @@ interface SetLocalModelResult {
   activeModelSource: "inference";
   activeModelMatchesDefault: boolean;
   activeModelInCatalog: boolean;
+  drift: LocalModelWorkflowDrift;
   catalog: string[];
   choices: ReturnType<typeof buildLocalModelChoices>;
   defaultChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
@@ -213,6 +215,13 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
   }
 
   const choices = buildLocalModelChoices(defaultModel, trimmedModel, catalog);
+  const drift: LocalModelWorkflowDrift = {
+    any: trimmedModel !== defaultModel,
+    activeModelDiffersFromDefault: trimmedModel !== defaultModel,
+    activeModelOutsideCatalog: !inCatalog,
+    providerDiffersFromOnboarding: false,
+    endpointDiffersFromOnboarding: false,
+  };
   const result: SetLocalModelResult = {
     ok: true,
     setup,
@@ -225,6 +234,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     activeModelSource: "inference",
     activeModelMatchesDefault: trimmedModel === defaultModel,
     activeModelInCatalog: inCatalog,
+    drift,
     catalog,
     choices,
     defaultChoice: choices.find((choice) => choice.isDefault) ?? null,

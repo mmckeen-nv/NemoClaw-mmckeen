@@ -124,6 +124,13 @@ describe("cliOnboardStatus", () => {
         activeModelSource: "inference",
         activeModelMatchesDefault: true,
         activeModelInCatalog: true,
+        drift: {
+          any: false,
+          activeModelDiffersFromDefault: false,
+          activeModelOutsideCatalog: false,
+          providerDiffersFromOnboarding: false,
+          endpointDiffersFromOnboarding: false,
+        },
         catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
         choices: [
           {
@@ -277,6 +284,13 @@ describe("cliOnboardStatus", () => {
       activeModelSource: "inference",
       activeModelMatchesDefault: false,
       activeModelInCatalog: true,
+      drift: {
+        any: true,
+        activeModelDiffersFromDefault: true,
+        activeModelOutsideCatalog: false,
+        providerDiffersFromOnboarding: true,
+        endpointDiffersFromOnboarding: true,
+      },
     });
   });
 
