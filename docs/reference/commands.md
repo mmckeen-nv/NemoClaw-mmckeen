@@ -89,6 +89,7 @@ $ openclaw nemoclaw onboard-status [--json]
 
 For local inference onboarding, the output includes the saved local model catalog, default model, dashboard-friendly `localModelWorkflow` metadata, an `actions` block describing the supported read/write commands for single-user local dashboards, and per-choice `command` / `requiresAllowOutsideCatalog` fields so a local dashboard can wire model-picker buttons without inventing CLI strings.
 Unlike `status`, this command does not depend on OpenShell sandbox introspection.
+The richer `status --json` payload now also includes the same `localModelWorkflow.actions` block for local workflows, but `onboard-status --json` remains the narrower control-plane read when you do not need sandbox health.
 
 ### `openclaw nemoclaw set-local-model`
 

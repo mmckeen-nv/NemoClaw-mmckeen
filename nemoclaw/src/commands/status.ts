@@ -11,6 +11,7 @@ import {
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
+  getLocalModelWorkflowActions,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
@@ -239,6 +240,7 @@ interface LocalModelWorkflowStatus {
     command: string;
     requiresAllowOutsideCatalog: boolean;
   }>;
+  actions: ReturnType<typeof getLocalModelWorkflowActions>;
 }
 
 function getLocalModelWorkflowStatus(
@@ -267,6 +269,7 @@ function getLocalModelWorkflowStatus(
     activeModelInCatalog: catalog.includes(activeModel),
     catalog,
     choices: buildLocalModelChoices(defaultModel, activeModel, catalog),
+    actions: getLocalModelWorkflowActions(),
   };
 }
 
