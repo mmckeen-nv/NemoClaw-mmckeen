@@ -2,9 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { existsSync } from "node:fs";
 import { loadOnboardConfig } from "../onboard/config.js";
 import * as onboardStatus from "./onboard-status.js";
 import type { PluginLogger } from "../index.js";
+
+vi.mock("node:fs", async () => {
+  const actual = await vi.importActual<typeof import("node:fs")>("node:fs");
+  return {
+    ...actual,
+    existsSync: vi.fn(() => false),
+  };
+});
 
 vi.mock("../onboard/config.js", async () => {
   const actual =
@@ -31,6 +40,7 @@ function captureLogger(): { lines: string[]; logger: PluginLogger } {
 describe("cliOnboardStatus", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(existsSync).mockReturnValue(false);
     vi.mocked(loadOnboardConfig).mockReturnValue(null);
   });
 
@@ -74,6 +84,46 @@ describe("cliOnboardStatus", () => {
     const output = lines.join("\n");
     expect(output).toContain("No onboarding configuration found.");
     expect(output).toContain("openclaw nemoclaw onboard");
+  });
+
+  it("reports inside-sandbox inference reads as saved-state fallback", async () => {
+    vi.mocked(existsSync).mockImplementation((path) => path === "/sandbox/.openclaw");
+
+    await expect(onboardStatus.getInferenceStatus()).resolves.toEqual({
+      configured: false,
+      provider: null,
+      model: null,
+      endpoint: null,
+      query: {
+        ok: false,
+        code: "inside-sandbox",
+        message: "Run 'openshell inference get' on the host to query the live inference route.",
+      },
+    });
+  });
+
+  it("prints an inside-sandbox fallback hint for local workflow text output", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+    vi.mocked(existsSync).mockImplementation((path) => path === "/sandbox/.openclaw");
+
+    const { lines, logger } = captureLogger();
+
+    await onboardStatus.cliOnboardStatus({ json: false, logger });
+
+    const output = lines.join("\n");
+    expect(output).toContain("Live route: inside sandbox; showing saved onboarding state.");
+    expect(output).toContain("Run 'openshell inference get' on the host to query the live inference route.");
   });
 
   it("returns dashboard-friendly onboarding JSON for local workflows", async () => {

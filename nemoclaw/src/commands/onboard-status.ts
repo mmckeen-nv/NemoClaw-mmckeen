@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { exec } from "node:child_process";
+import { existsSync } from "node:fs";
 import { promisify } from "node:util";
 import type { PluginLogger } from "../index.js";
 import {
@@ -42,7 +43,25 @@ interface InferenceStatusResponse {
   endpoint?: string;
 }
 
+function isInsideSandbox(): boolean {
+  return existsSync("/sandbox/.openclaw") || existsSync("/sandbox/.nemoclaw");
+}
+
 export async function getInferenceStatus(): Promise<InferenceStatus> {
+  if (isInsideSandbox()) {
+    return {
+      configured: false,
+      provider: null,
+      model: null,
+      endpoint: null,
+      query: {
+        ok: false,
+        code: "inside-sandbox",
+        message: "Run 'openshell inference get' on the host to query the live inference route.",
+      },
+    };
+  }
+
   try {
     const { stdout } = await execAsync("openshell inference get --json", {
       timeout: 5000,
@@ -242,6 +261,11 @@ export async function cliOnboardStatus(opts: OnboardStatusOptions): Promise<void
     }
     if (data.inference.query.ok) {
       logger.info("Live route: OpenShell inference query succeeded.");
+    } else if (data.inference.query.code === "inside-sandbox") {
+      logger.info("Live route: inside sandbox; showing saved onboarding state.");
+      if (data.inference.query.message) {
+        logger.info(`Reason:     ${data.inference.query.message}`);
+      }
     } else if (data.inference.query.code === "openshell-unavailable") {
       logger.info("Live route: OpenShell CLI unavailable; showing saved onboarding state.");
     } else if (data.inference.query.code === "query-failed") {
