@@ -240,5 +240,15 @@ export async function cliOnboardStatus(opts: OnboardStatusOptions): Promise<void
     if (data.localModelWorkflow.catalog.length > 0) {
       logger.info(`            ${data.localModelWorkflow.catalog.join(", ")}`);
     }
+    if (data.inference.query.ok) {
+      logger.info("Live route: OpenShell inference query succeeded.");
+    } else if (data.inference.query.code === "openshell-unavailable") {
+      logger.info("Live route: OpenShell CLI unavailable; showing saved onboarding state.");
+    } else if (data.inference.query.code === "query-failed") {
+      logger.info("Live route: unable to query OpenShell; showing saved onboarding state.");
+      if (data.inference.query.message) {
+        logger.info(`Reason:     ${data.inference.query.message}`);
+      }
+    }
   }
 }

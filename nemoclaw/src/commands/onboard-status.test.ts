@@ -277,7 +277,6 @@ describe("cliOnboardStatus", () => {
       availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
       onboardedAt: "2026-03-20T22:00:00.000Z",
     });
-
     const { lines, logger } = captureLogger();
 
     await onboardStatus.cliOnboardStatus({ json: false, logger });
@@ -288,6 +287,30 @@ describe("cliOnboardStatus", () => {
     expect(output).toContain("Local Model Workflow:");
     expect(output).toContain("Default:    qwen3:32b");
     expect(output).toContain("Active:     qwen3:32b");
+  });
+
+  it("prints fallback guidance when live OpenShell inference query fails", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+    const { lines, logger } = captureLogger();
+
+    await onboardStatus.cliOnboardStatus({ json: false, logger });
+
+    const output = lines.join("\n");
+    expect(output).toContain("Active:     qwen3:32b");
+    expect(output).toContain("Source:     onboarding");
+    expect(output).toContain("Live route: unable to query OpenShell; showing saved onboarding state.");
+    expect(output).toContain("Reason:     ");
   });
 
   it("surfaces live local route drift when inference differs from onboarding default", async () => {
