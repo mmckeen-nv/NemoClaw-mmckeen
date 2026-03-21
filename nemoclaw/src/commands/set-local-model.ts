@@ -225,7 +225,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       catalog,
       choices: buildLocalModelChoices(
         defaultModel,
-        trimmedModel,
+        defaultModel,
         catalog,
         provider,
         providerLabel,
@@ -234,13 +234,14 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       ),
       actions: getLocalModelWorkflowActions(
         defaultModel,
-        trimmedModel,
+        defaultModel,
         provider,
         providerLabel,
         onboard.endpointUrl,
         onboard.endpointType,
       ),
       details: stderr || String(err),
+      hint: `Requested model '${trimmedModel}' was not applied; active route is reported from the saved onboarding default.`,
       setup,
     });
     return;

@@ -305,6 +305,140 @@ describe("cliSetLocalModel", () => {
     expect(output).toContain("active route is in saved catalog");
   });
 
+  it("returns conservative JSON when applying the requested route fails", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["qwen3:32b", "nemotron-3-nano:30b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+    vi.mocked(execFileSync).mockImplementation(() => {
+      const error = new Error("route write failed") as Error & { stderr: string };
+      error.stderr = "permission denied";
+      throw error;
+    });
+
+    const { lines, logger } = captureLogger();
+
+    await cliSetLocalModel({
+      model: "llama3.3:70b",
+      allowOutsideCatalog: true,
+      json: true,
+      logger,
+    });
+
+    expect(JSON.parse(lines.join(""))).toEqual({
+      ok: false,
+      code: "INFERENCE_SET_FAILED",
+      message: "Failed to set inference route: permission denied",
+      model: "llama3.3:70b",
+      endpointType: "ollama",
+      endpoint: "http://host.openshell.internal:11434/v1",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      defaultModel: "qwen3:32b",
+      catalog: ["qwen3:32b", "nemotron-3-nano:30b"],
+      choices: [
+        {
+          model: "qwen3:32b",
+          label: "qwen3:32b",
+          badges: ["default", "active"],
+          summary: "default, active",
+          isDefault: true,
+          isActive: true,
+          isSelectable: false,
+          selectableReason: "already-active-on-target-route",
+          routeChange: { any: false, model: false, provider: false, endpoint: false },
+          inCatalog: true,
+          source: "default",
+          command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
+          argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
+          requiresAllowOutsideCatalog: false,
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
+        },
+        {
+          model: "nemotron-3-nano:30b",
+          label: "nemotron-3-nano:30b",
+          badges: [],
+          summary: "catalog",
+          isDefault: false,
+          isActive: false,
+          isSelectable: true,
+          selectableReason: "would-change-target-route",
+          routeChange: { any: true, model: true, provider: false, endpoint: false },
+          inCatalog: true,
+          source: "catalog",
+          command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
+          argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
+          requiresAllowOutsideCatalog: false,
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
+        },
+      ],
+      actions: {
+        read: {
+          command: "openclaw nemoclaw onboard-status --json",
+          argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
+          description: "Read saved onboarding and local-model workflow state without querying sandbox health.",
+          stateScope: "saved-onboarding-config",
+        },
+        setActiveModel: {
+          command: "openclaw nemoclaw set-local-model <model> --json",
+          argvTemplate: ["openclaw", "nemoclaw", "set-local-model", "<model>", "--json"],
+          commandAllowOutsideCatalog: "openclaw nemoclaw set-local-model <model> --json --allow-outside-catalog",
+          argvTemplateAllowOutsideCatalog: ["openclaw", "nemoclaw", "set-local-model", "<model>", "--json", "--allow-outside-catalog"],
+          description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
+          supportsAllowOutsideCatalog: true,
+          allowOutsideCatalogFlag: "--allow-outside-catalog",
+          stateScope: "openshell-active-route",
+          mutatesSavedDefault: false,
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
+        },
+        restoreDefaultModel: {
+          command: "openclaw nemoclaw restore-local-model --json",
+          argv: ["openclaw", "nemoclaw", "restore-local-model", "--json"],
+          description: "Restore the active OpenShell local-model route to the saved onboarding default.",
+          enabled: false,
+          reason: "active route already matches the saved onboarding default.",
+          reasonCode: "active-route-already-matches-saved-default",
+          stateScope: "openshell-active-route",
+          mutatesSavedDefault: false,
+          targetModel: "qwen3:32b",
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
+        },
+      },
+      details: "permission denied",
+      hint: "Requested model 'llama3.3:70b' was not applied; active route is reported from the saved onboarding default.",
+      setup: {
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+          mode: "reconfigure",
+          stateScope: "saved-onboarding-config",
+          mutatesSavedDefault: true,
+        },
+      },
+    });
+  });
+
   it("allows one-off routes outside the saved catalog when forced and returns JSON", async () => {
     vi.mocked(loadOnboardConfig).mockReturnValue({
       endpointType: "ollama",
