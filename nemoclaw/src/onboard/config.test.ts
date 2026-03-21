@@ -78,6 +78,8 @@ describe("onboard config helpers", () => {
     ).toEqual({
       enabled: true,
       liveRouteStatus: "saved-onboarding-fallback",
+      selectionScope: "sandbox-global",
+      selectionMode: "single-active-route",
       provider: "ollama-local",
       providerLabel: "Local Ollama",
       savedProvider: "ollama-local",

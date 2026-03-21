@@ -198,6 +198,8 @@ describe("cliOnboardStatus", () => {
       localModelWorkflow: {
         enabled: true,
         liveRouteStatus: "live-openshell",
+        selectionScope: "sandbox-global",
+        selectionMode: "single-active-route",
         provider: "ollama-local",
         providerLabel: "Local Ollama",
         savedProvider: "ollama-local",

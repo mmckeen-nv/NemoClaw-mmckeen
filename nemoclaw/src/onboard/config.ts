@@ -123,6 +123,8 @@ export interface LocalModelWorkflowDrift {
 export interface LocalModelWorkflow {
   enabled: true;
   liveRouteStatus: "live-openshell" | "saved-onboarding-fallback";
+  selectionScope: "sandbox-global";
+  selectionMode: "single-active-route";
   provider: string | null;
   providerLabel: string;
   savedProvider: string | null;
@@ -384,6 +386,8 @@ export function getLocalModelWorkflow(
   return {
     enabled: true,
     liveRouteStatus: inferenceModel ? "live-openshell" : "saved-onboarding-fallback",
+    selectionScope: "sandbox-global",
+    selectionMode: "single-active-route",
     provider: activeProvider,
     providerLabel: providerLabelOverride ?? targetProviderLabel,
     savedProvider: targetProvider,

@@ -278,6 +278,8 @@ describe("cliStatus", () => {
       expect(data.localModelWorkflow).toEqual({
         enabled: true,
         liveRouteStatus: "live-openshell",
+        selectionScope: "sandbox-global",
+        selectionMode: "single-active-route",
         provider: "nvidia",
         providerLabel: "nvidia",
         savedProvider: "ollama-local",
