@@ -1,19 +1,46 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { execFileSync } from "node:child_process";
 import type { PluginLogger } from "../index.js";
 import {
+  buildLocalModelChoices,
   describeOnboardProvider,
   getConfiguredModelCatalog,
+  getLocalModelWorkflowActions,
   getSetupConfigureAction,
   isLocalEndpointType,
   loadOnboardConfig,
+  type LocalModelWorkflowDrift,
 } from "../onboard/config.js";
 import { cliSetLocalModel } from "./set-local-model.js";
 
 export interface RestoreLocalModelOptions {
   json: boolean;
   logger: PluginLogger;
+}
+
+interface RestoreLocalModelResult {
+  ok: true;
+  noop: boolean;
+  setup: {
+    configure: ReturnType<typeof getSetupConfigureAction>;
+  };
+  provider: string;
+  providerLabel: string;
+  endpointType: string;
+  endpoint: string;
+  defaultModel: string;
+  activeModel: string;
+  activeModelSource: "inference";
+  activeModelMatchesDefault: boolean;
+  activeModelInCatalog: boolean;
+  drift: LocalModelWorkflowDrift;
+  catalog: string[];
+  choices: ReturnType<typeof buildLocalModelChoices>;
+  defaultChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
+  activeChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
+  actions: ReturnType<typeof getLocalModelWorkflowActions>;
 }
 
 interface RestoreLocalModelErrorResult {
@@ -59,6 +86,60 @@ function emitError(
   }
 }
 
+function resolveProviderName(config: NonNullable<ReturnType<typeof loadOnboardConfig>>): string {
+  if (config.provider) {
+    return config.provider;
+  }
+
+  switch (config.endpointType) {
+    case "ollama":
+      return "ollama-local";
+    case "vllm":
+      return "vllm-local";
+    case "nim-local":
+      return "nim-local";
+    default:
+      return "inference";
+  }
+}
+
+function getCurrentInferenceRoute(): { provider: string | null; model: string | null; endpoint: string | null } | null {
+  try {
+    const stdout = execFileSync("openshell", ["inference", "get", "--json"], {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    const parsed = JSON.parse(stdout) as {
+      provider?: string;
+      model?: string;
+      endpoint?: string;
+    };
+    return {
+      provider: parsed.provider ?? null,
+      model: parsed.model ?? null,
+      endpoint: parsed.endpoint ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function emitSuccess(logger: PluginLogger, json: boolean, result: RestoreLocalModelResult): void {
+  if (json) {
+    logger.info(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  logger.info("NemoClaw Local Model Route");
+  logger.info("=========================");
+  logger.info("");
+  logger.info(`Provider: ${result.providerLabel} (${result.provider})`);
+  logger.info(`Endpoint: ${result.endpointType} (${result.endpoint})`);
+  logger.info(`Default:  ${result.defaultModel}`);
+  logger.info(`Active:   ${result.activeModel}`);
+  logger.info(`Drift:    ${result.noop ? "none (already matches saved default)" : "none"}`);
+}
+
 export function cliRestoreLocalModel(opts: RestoreLocalModelOptions): void {
   const onboard = loadOnboardConfig();
   const setup = {
@@ -90,6 +171,46 @@ export function cliRestoreLocalModel(opts: RestoreLocalModelOptions): void {
         setup,
       },
     );
+    return;
+  }
+
+  const provider = resolveProviderName(onboard);
+  const providerLabel = describeOnboardProvider(onboard);
+  const defaultModel = onboard.model.trim();
+  const catalog = getConfiguredModelCatalog(onboard);
+  const liveRoute = getCurrentInferenceRoute();
+  if (
+    liveRoute?.provider === provider &&
+    liveRoute.model?.trim() === defaultModel &&
+    liveRoute.endpoint?.trim() === onboard.endpointUrl
+  ) {
+    const choices = buildLocalModelChoices(defaultModel, defaultModel, catalog, provider, providerLabel);
+    emitSuccess(opts.logger, opts.json, {
+      ok: true,
+      noop: true,
+      setup,
+      provider,
+      providerLabel,
+      endpointType: onboard.endpointType,
+      endpoint: onboard.endpointUrl,
+      defaultModel,
+      activeModel: defaultModel,
+      activeModelSource: "inference",
+      activeModelMatchesDefault: true,
+      activeModelInCatalog: catalog.includes(defaultModel),
+      drift: {
+        any: false,
+        activeModelDiffersFromDefault: false,
+        activeModelOutsideCatalog: false,
+        providerDiffersFromOnboarding: false,
+        endpointDiffersFromOnboarding: false,
+      },
+      catalog,
+      choices,
+      defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
+      activeChoice: choices.find((choice) => choice.isActive) ?? null,
+      actions: getLocalModelWorkflowActions(defaultModel, defaultModel, provider, providerLabel),
+    });
     return;
   }
 
