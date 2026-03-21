@@ -289,7 +289,8 @@ export function getLocalModelWorkflow(
   const activeModel = inferenceModel || defaultModel;
   const choices = buildLocalModelChoices(defaultModel, activeModel, catalog);
 
-  const activeProvider = inference?.configured ? inference.provider ?? config.provider ?? null : config.provider ?? null;
+  const onboardingProvider = config.provider ?? null;
+  const activeProvider = inference?.configured ? inference.provider ?? onboardingProvider : onboardingProvider;
   const activeEndpoint = inference?.configured ? inference.endpoint?.trim() || config.endpointUrl : config.endpointUrl;
   const providerLabelOverride = inference?.configured
     ? activeProvider === "ollama-local"
@@ -300,6 +301,8 @@ export function getLocalModelWorkflow(
           ? "Local NIM"
           : activeProvider
     : null;
+  const targetProvider = onboardingProvider;
+  const targetProviderLabel = describeOnboardProvider(config);
   const drift = {
     activeModelDiffersFromDefault: activeModel !== defaultModel,
     activeModelOutsideCatalog: !catalog.includes(activeModel),
@@ -318,7 +321,7 @@ export function getLocalModelWorkflow(
   return {
     enabled: true,
     provider: activeProvider,
-    providerLabel: providerLabelOverride ?? describeOnboardProvider(config),
+    providerLabel: providerLabelOverride ?? targetProviderLabel,
     endpointType: config.endpointType,
     endpoint: activeEndpoint,
     defaultModel,
@@ -337,8 +340,8 @@ export function getLocalModelWorkflow(
     actions: getLocalModelWorkflowActions(
       defaultModel,
       activeModel,
-      activeProvider,
-      providerLabelOverride ?? describeOnboardProvider(config),
+      targetProvider,
+      targetProviderLabel,
       restoreReason,
     ),
   };

@@ -365,6 +365,16 @@ describe("cliOnboardStatus", () => {
         providerDiffersFromOnboarding: true,
         endpointDiffersFromOnboarding: true,
       },
+      actions: {
+        setActiveModel: {
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
+        },
+        restoreDefaultModel: {
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
+        },
+      },
     });
   });
 

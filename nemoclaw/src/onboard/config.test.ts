@@ -315,8 +315,12 @@ describe("onboard config helpers", () => {
           enabled: true,
           reason: "active route provider differs from the saved onboarding provider.",
           targetModel: "qwen3:32b",
-          targetProvider: "vllm-local",
-          targetProviderLabel: "Local vLLM",
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
+        },
+        setActiveModel: {
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
       },
     });
