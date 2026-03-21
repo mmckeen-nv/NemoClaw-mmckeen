@@ -47,6 +47,8 @@ export interface LocalModelChoice {
   requiresAllowOutsideCatalog: boolean;
   targetProvider: string | null;
   targetProviderLabel: string;
+  targetEndpoint: string | null;
+  targetEndpointType: EndpointType | null;
 }
 
 export interface SetupConfigureAction {
@@ -82,6 +84,8 @@ export interface LocalModelWorkflowActions {
     mutatesSavedDefault: false;
     targetProvider: string | null;
     targetProviderLabel: string;
+    targetEndpoint: string | null;
+    targetEndpointType: EndpointType | null;
   };
   restoreDefaultModel: {
     command: "openclaw nemoclaw restore-local-model --json";
@@ -94,6 +98,8 @@ export interface LocalModelWorkflowActions {
     targetModel: string;
     targetProvider: string | null;
     targetProviderLabel: string;
+    targetEndpoint: string | null;
+    targetEndpointType: EndpointType | null;
   };
 }
 
@@ -154,6 +160,8 @@ export function buildLocalModelChoices(
   catalog: string[],
   targetProvider: string | null = null,
   targetProviderLabel = "Saved local provider",
+  targetEndpoint: string | null = null,
+  targetEndpointType: EndpointType | null = null,
 ): LocalModelChoice[] {
   const ordered = [defaultModel, ...catalog];
   if (!catalog.includes(activeModel)) {
@@ -209,6 +217,8 @@ export function buildLocalModelChoices(
         requiresAllowOutsideCatalog,
         targetProvider,
         targetProviderLabel,
+        targetEndpoint,
+        targetEndpointType,
       };
     });
 }
@@ -229,6 +239,8 @@ export function getLocalModelWorkflowActions(
   activeModel: string = defaultModel,
   provider: string | null = null,
   providerLabel = "Saved local provider",
+  targetEndpoint: string | null = null,
+  targetEndpointType: EndpointType | null = null,
   restoreReasonOverride?: string | null,
 ): LocalModelWorkflowActions {
   const restoreEnabled = restoreReasonOverride ? true : activeModel !== defaultModel;
@@ -258,6 +270,8 @@ export function getLocalModelWorkflowActions(
       mutatesSavedDefault: false,
       targetProvider: provider,
       targetProviderLabel: providerLabel,
+      targetEndpoint,
+      targetEndpointType,
     },
     restoreDefaultModel: {
       command: "openclaw nemoclaw restore-local-model --json",
@@ -272,6 +286,8 @@ export function getLocalModelWorkflowActions(
       targetModel: defaultModel,
       targetProvider: provider,
       targetProviderLabel: providerLabel,
+      targetEndpoint,
+      targetEndpointType,
     },
   };
 }
@@ -297,7 +313,17 @@ export function getLocalModelWorkflow(
   const onboardingProvider = config.provider ?? null;
   const targetProvider = onboardingProvider;
   const targetProviderLabel = describeOnboardProvider(config);
-  const choices = buildLocalModelChoices(defaultModel, activeModel, catalog, targetProvider, targetProviderLabel);
+  const targetEndpoint = config.endpointUrl;
+  const targetEndpointType = config.endpointType;
+  const choices = buildLocalModelChoices(
+    defaultModel,
+    activeModel,
+    catalog,
+    targetProvider,
+    targetProviderLabel,
+    targetEndpoint,
+    targetEndpointType,
+  );
 
   const activeProvider = inference?.configured ? inference.provider ?? onboardingProvider : onboardingProvider;
   const activeEndpoint = inference?.configured ? inference.endpoint?.trim() || config.endpointUrl : config.endpointUrl;
@@ -349,6 +375,8 @@ export function getLocalModelWorkflow(
       activeModel,
       targetProvider,
       targetProviderLabel,
+      targetEndpoint,
+      targetEndpointType,
       restoreReason,
     ),
   };

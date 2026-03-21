@@ -184,7 +184,15 @@ export function cliRestoreLocalModel(opts: RestoreLocalModelOptions): void {
     liveRoute.model?.trim() === defaultModel &&
     liveRoute.endpoint?.trim() === onboard.endpointUrl
   ) {
-    const choices = buildLocalModelChoices(defaultModel, defaultModel, catalog, provider, providerLabel);
+    const choices = buildLocalModelChoices(
+      defaultModel,
+      defaultModel,
+      catalog,
+      provider,
+      providerLabel,
+      onboard.endpointUrl,
+      onboard.endpointType,
+    );
     emitSuccess(opts.logger, opts.json, {
       ok: true,
       noop: true,
@@ -209,7 +217,14 @@ export function cliRestoreLocalModel(opts: RestoreLocalModelOptions): void {
       choices,
       defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
       activeChoice: choices.find((choice) => choice.isActive) ?? null,
-      actions: getLocalModelWorkflowActions(defaultModel, defaultModel, provider, providerLabel),
+      actions: getLocalModelWorkflowActions(
+        defaultModel,
+        defaultModel,
+        provider,
+        providerLabel,
+        onboard.endpointUrl,
+        onboard.endpointType,
+      ),
     });
     return;
   }

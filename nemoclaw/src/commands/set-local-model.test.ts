@@ -187,6 +187,8 @@ describe("cliSetLocalModel", () => {
           requiresAllowOutsideCatalog: false,
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         {
           model: "nemotron-3-nano:30b",
@@ -203,6 +205,8 @@ describe("cliSetLocalModel", () => {
           requiresAllowOutsideCatalog: false,
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
       ],
       setup: {
@@ -232,6 +236,8 @@ describe("cliSetLocalModel", () => {
           mutatesSavedDefault: false,
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         restoreDefaultModel: {
           command: "openclaw nemoclaw restore-local-model --json",
@@ -244,6 +250,8 @@ describe("cliSetLocalModel", () => {
           targetModel: "qwen3:32b",
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
       },
       hint: "Saved catalog: qwen3:32b, nemotron-3-nano:30b\nUse --allow-outside-catalog to force a one-off route change.",
@@ -356,6 +364,8 @@ describe("cliSetLocalModel", () => {
           requiresAllowOutsideCatalog: false,
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         {
           model: "nemotron-3-nano:30b",
@@ -372,6 +382,8 @@ describe("cliSetLocalModel", () => {
           requiresAllowOutsideCatalog: false,
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         {
           model: "llama3.3:70b",
@@ -388,6 +400,8 @@ describe("cliSetLocalModel", () => {
           requiresAllowOutsideCatalog: true,
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
       ],
       defaultChoice: {
@@ -405,6 +419,8 @@ describe("cliSetLocalModel", () => {
         requiresAllowOutsideCatalog: false,
         targetProvider: "ollama-local",
         targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
       },
       activeChoice: {
         model: "llama3.3:70b",
@@ -421,6 +437,8 @@ describe("cliSetLocalModel", () => {
         requiresAllowOutsideCatalog: true,
         targetProvider: "ollama-local",
         targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
       },
       actions: {
         read: {
@@ -441,6 +459,8 @@ describe("cliSetLocalModel", () => {
           mutatesSavedDefault: false,
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         restoreDefaultModel: {
           command: "openclaw nemoclaw restore-local-model --json",
@@ -453,6 +473,8 @@ describe("cliSetLocalModel", () => {
           targetModel: "qwen3:32b",
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
       },
     });

@@ -224,6 +224,8 @@ describe("cliOnboardStatus", () => {
             requiresAllowOutsideCatalog: false,
             targetProvider: "ollama-local",
             targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
           },
           {
             model: "nemotron-3-nano:30b",
@@ -240,6 +242,8 @@ describe("cliOnboardStatus", () => {
             requiresAllowOutsideCatalog: false,
             targetProvider: "ollama-local",
             targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
           },
         ],
         defaultChoice: {
@@ -257,6 +261,8 @@ describe("cliOnboardStatus", () => {
           requiresAllowOutsideCatalog: false,
             targetProvider: "ollama-local",
             targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         activeChoice: {
           model: "qwen3:32b",
@@ -273,6 +279,8 @@ describe("cliOnboardStatus", () => {
           requiresAllowOutsideCatalog: false,
             targetProvider: "ollama-local",
             targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         actions: {
           read: {
@@ -303,6 +311,8 @@ describe("cliOnboardStatus", () => {
             mutatesSavedDefault: false,
             targetProvider: "ollama-local",
             targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
           },
           restoreDefaultModel: {
             command: "openclaw nemoclaw restore-local-model --json",
@@ -316,6 +326,8 @@ describe("cliOnboardStatus", () => {
             targetModel: "qwen3:32b",
             targetProvider: "ollama-local",
             targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
           },
         },
       },
@@ -427,10 +439,14 @@ describe("cliOnboardStatus", () => {
         setActiveModel: {
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         restoreDefaultModel: {
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
       },
     });

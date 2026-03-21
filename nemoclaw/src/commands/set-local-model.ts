@@ -182,8 +182,23 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       providerLabel,
       defaultModel,
       catalog,
-      choices: buildLocalModelChoices(defaultModel, defaultModel, catalog, provider, providerLabel),
-      actions: getLocalModelWorkflowActions(defaultModel, defaultModel, provider, providerLabel),
+      choices: buildLocalModelChoices(
+        defaultModel,
+        defaultModel,
+        catalog,
+        provider,
+        providerLabel,
+        onboard.endpointUrl,
+        onboard.endpointType,
+      ),
+      actions: getLocalModelWorkflowActions(
+        defaultModel,
+        defaultModel,
+        provider,
+        providerLabel,
+        onboard.endpointUrl,
+        onboard.endpointType,
+      ),
       setup,
       hint: catalog.length > 0
         ? `Saved catalog: ${catalog.join(", ")}\nUse --allow-outside-catalog to force a one-off route change.`
@@ -206,15 +221,38 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       providerLabel,
       defaultModel,
       catalog,
-      choices: buildLocalModelChoices(defaultModel, trimmedModel, catalog, provider, providerLabel),
-      actions: getLocalModelWorkflowActions(defaultModel, trimmedModel, provider, providerLabel),
+      choices: buildLocalModelChoices(
+        defaultModel,
+        trimmedModel,
+        catalog,
+        provider,
+        providerLabel,
+        onboard.endpointUrl,
+        onboard.endpointType,
+      ),
+      actions: getLocalModelWorkflowActions(
+        defaultModel,
+        trimmedModel,
+        provider,
+        providerLabel,
+        onboard.endpointUrl,
+        onboard.endpointType,
+      ),
       details: stderr || String(err),
       setup,
     });
     return;
   }
 
-  const choices = buildLocalModelChoices(defaultModel, trimmedModel, catalog, provider, providerLabel);
+  const choices = buildLocalModelChoices(
+    defaultModel,
+    trimmedModel,
+    catalog,
+    provider,
+    providerLabel,
+    onboard.endpointUrl,
+    onboard.endpointType,
+  );
   const drift: LocalModelWorkflowDrift = {
     any: trimmedModel !== defaultModel,
     activeModelDiffersFromDefault: trimmedModel !== defaultModel,
@@ -239,7 +277,14 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     choices,
     defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
     activeChoice: choices.find((choice) => choice.isActive) ?? null,
-    actions: getLocalModelWorkflowActions(defaultModel, trimmedModel, provider, providerLabel),
+    actions: getLocalModelWorkflowActions(
+      defaultModel,
+      trimmedModel,
+      provider,
+      providerLabel,
+      onboard.endpointUrl,
+      onboard.endpointType,
+    ),
   };
 
   if (json) {

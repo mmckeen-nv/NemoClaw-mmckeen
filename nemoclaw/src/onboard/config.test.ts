@@ -110,6 +110,8 @@ describe("onboard config helpers", () => {
           requiresAllowOutsideCatalog: false,
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         {
           model: "llama3.3:70b",
@@ -126,6 +128,8 @@ describe("onboard config helpers", () => {
           requiresAllowOutsideCatalog: false,
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         {
           model: "qwen2.5:32b",
@@ -142,6 +146,8 @@ describe("onboard config helpers", () => {
           requiresAllowOutsideCatalog: false,
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
       ],
       defaultChoice: {
@@ -159,6 +165,8 @@ describe("onboard config helpers", () => {
         requiresAllowOutsideCatalog: false,
         targetProvider: "ollama-local",
         targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
       },
       activeChoice: {
         model: "nemotron-3-nano:30b",
@@ -175,6 +183,8 @@ describe("onboard config helpers", () => {
         requiresAllowOutsideCatalog: false,
         targetProvider: "ollama-local",
         targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
       },
       actions: {
         read: {
@@ -195,6 +205,8 @@ describe("onboard config helpers", () => {
           mutatesSavedDefault: false,
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         restoreDefaultModel: {
           command: "openclaw nemoclaw restore-local-model --json",
@@ -207,6 +219,8 @@ describe("onboard config helpers", () => {
           targetModel: "nemotron-3-nano:30b",
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
       },
     });
@@ -230,6 +244,8 @@ describe("onboard config helpers", () => {
           requiresAllowOutsideCatalog: false,
           targetProvider: null,
           targetProviderLabel: "Saved local provider",
+          targetEndpoint: null,
+          targetEndpointType: null,
         },
         {
           model: "llama3.3:70b",
@@ -246,6 +262,8 @@ describe("onboard config helpers", () => {
           requiresAllowOutsideCatalog: false,
           targetProvider: null,
           targetProviderLabel: "Saved local provider",
+          targetEndpoint: null,
+          targetEndpointType: null,
         },
         {
           model: "nemotron-3-super-120b",
@@ -262,6 +280,8 @@ describe("onboard config helpers", () => {
           requiresAllowOutsideCatalog: true,
           targetProvider: null,
           targetProviderLabel: "Saved local provider",
+          targetEndpoint: null,
+          targetEndpointType: null,
         },
       ]);
   });
@@ -333,10 +353,14 @@ describe("onboard config helpers", () => {
           targetModel: "qwen3:32b",
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
         setActiveModel: {
           targetProvider: "ollama-local",
           targetProviderLabel: "Local Ollama",
+          targetEndpoint: "http://host.openshell.internal:11434/v1",
+          targetEndpointType: "ollama",
         },
       },
     });
