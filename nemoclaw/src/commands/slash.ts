@@ -10,7 +10,12 @@
  *   /nemoclaw          - show help
  */
 
-import type { PluginCommandContext, PluginCommandResult, OpenClawPluginApi } from "../index.js";
+import type {
+  PluginCommandContext,
+  PluginCommandResult,
+  OpenClawPluginApi,
+  PluginLogger,
+} from "../index.js";
 import { loadState } from "../blueprint/state.js";
 import {
   describeOnboardEndpoint,
@@ -22,6 +27,7 @@ import {
   type NemoClawOnboardConfig,
 } from "../onboard/config.js";
 import { getInferenceStatus } from "./onboard-status.js";
+import { cliSetLocalModel } from "./set-local-model.js";
 
 export async function handleSlashCommand(
   ctx: PluginCommandContext,
@@ -36,6 +42,8 @@ export async function handleSlashCommand(
       return slashEject();
     case "onboard":
       return await slashOnboard();
+    case "set-local-model":
+      return slashSetLocalModel(ctx.args ?? "");
     default:
       return slashHelp();
   }
@@ -49,17 +57,89 @@ function slashHelp(): PluginCommandResult {
       "Usage: `/nemoclaw <subcommand>`",
       "",
       "Subcommands:",
-      "  `status`  - Show sandbox, blueprint, and inference state",
-      "  `eject`   - Show rollback instructions",
-      "  `onboard` - Show onboarding status and instructions",
+      "  `status`          - Show sandbox, blueprint, and inference state",
+      "  `eject`           - Show rollback instructions",
+      "  `onboard`         - Show onboarding status and instructions",
+      "  `set-local-model` - Switch the active OpenShell local model route",
+      "",
+      "Examples:",
+      "  `/nemoclaw set-local-model qwen3:32b`",
+      "  `/nemoclaw set-local-model nemotron-3-nano:30b --allow-outside-catalog`",
       "",
       "For full management use the CLI:",
       "  `openclaw nemoclaw status`",
       "  `openclaw nemoclaw migrate`",
       "  `openclaw nemoclaw launch`",
       "  `openclaw nemoclaw connect`",
+      "  `openclaw nemoclaw set-local-model <model>`",
       "  `openclaw nemoclaw eject --confirm`",
     ].join("\n"),
+  };
+}
+
+function slashSetLocalModel(args: string): PluginCommandResult {
+  const parsed = parseSetLocalModelArgs(args);
+  if (!parsed.model) {
+    return {
+      text: [
+        "**NemoClaw Local Model Route**",
+        "",
+        "Usage: `/nemoclaw set-local-model <model> [--allow-outside-catalog]`",
+        "",
+        "Example:",
+        "  `/nemoclaw set-local-model qwen3:32b`",
+      ].join("\n"),
+    };
+  }
+
+  const capture = createCapturedLogger();
+  cliSetLocalModel({
+    model: parsed.model,
+    allowOutsideCatalog: parsed.allowOutsideCatalog,
+    json: false,
+    logger: capture.logger,
+  });
+
+  return { text: capture.flush() };
+}
+
+function parseSetLocalModelArgs(args: string): { model: string; allowOutsideCatalog: boolean } {
+  const tokens = args
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  const [, ...rest] = tokens;
+  let allowOutsideCatalog = false;
+  const modelParts: string[] = [];
+
+  for (const token of rest) {
+    if (token === "--allow-outside-catalog") {
+      allowOutsideCatalog = true;
+      continue;
+    }
+    modelParts.push(token);
+  }
+
+  return {
+    model: modelParts.join(" ").trim(),
+    allowOutsideCatalog,
+  };
+}
+
+function createCapturedLogger(): { logger: PluginLogger; flush: () => string } {
+  const lines: string[] = [];
+  const push = (message: string) => {
+    lines.push(message);
+  };
+
+  return {
+    logger: {
+      info: push,
+      warn: push,
+      error: push,
+      debug: () => undefined,
+    },
+    flush: () => lines.join("\n").trim(),
   };
 }
 

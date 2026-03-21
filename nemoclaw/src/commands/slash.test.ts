@@ -6,6 +6,7 @@ import { handleSlashCommand } from "./slash.js";
 import { loadState } from "../blueprint/state.js";
 import { loadOnboardConfig } from "../onboard/config.js";
 import { getInferenceStatus } from "./onboard-status.js";
+import { cliSetLocalModel } from "./set-local-model.js";
 
 vi.mock("../blueprint/state.js", () => ({
   loadState: vi.fn(),
@@ -21,6 +22,10 @@ vi.mock("../onboard/config.js", async () => {
 
 vi.mock("./onboard-status.js", () => ({
   getInferenceStatus: vi.fn(),
+}));
+
+vi.mock("./set-local-model.js", () => ({
+  cliSetLocalModel: vi.fn(),
 }));
 
 describe("/nemoclaw slash command", () => {
@@ -142,5 +147,34 @@ describe("/nemoclaw slash command", () => {
     expect(result.text).not.toContain("Active: nemotron-3-nano:30b (saved default)");
     expect(result.text).toContain("Source: inference");
     expect(result.text).toContain("Drift: active route differs from saved default");
+  });
+
+  it("routes slash set-local-model through the local model command", async () => {
+    vi.mocked(cliSetLocalModel).mockImplementation(({ logger }) => {
+      logger.info("NemoClaw Local Model Route");
+      logger.info("Active:   nemotron-3-nano:30b");
+    });
+
+    const result = await handleSlashCommand(
+      { args: "set-local-model nemotron-3-nano:30b --allow-outside-catalog" },
+      {} as never,
+    );
+
+    expect(cliSetLocalModel).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "nemotron-3-nano:30b",
+        allowOutsideCatalog: true,
+        json: false,
+      }),
+    );
+    expect(result.text).toContain("NemoClaw Local Model Route");
+    expect(result.text).toContain("Active:   nemotron-3-nano:30b");
+  });
+
+  it("shows usage when slash set-local-model is missing the model argument", async () => {
+    const result = await handleSlashCommand({ args: "set-local-model" }, {} as never);
+
+    expect(cliSetLocalModel).not.toHaveBeenCalled();
+    expect(result.text).toContain("Usage: `/nemoclaw set-local-model <model> [--allow-outside-catalog]`");
   });
 });
