@@ -170,6 +170,18 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
   } else if (inference.insideSandbox) {
     logger.info("  Status:  unable to query from inside sandbox");
     logger.info("  Note:    Run 'openshell inference get' on the host to check.");
+  } else if (inference.query.code === "openshell-unavailable") {
+    logger.info("  Status:  OpenShell CLI unavailable");
+    if (inference.query.message) {
+      logger.info(`  Error:   ${inference.query.message}`);
+    }
+  } else if (inference.query.code === "query-failed" && inference.query.message) {
+    if (/no inference configured/i.test(inference.query.message)) {
+      logger.info("  Not configured");
+    } else {
+      logger.info("  Status:  unable to query live route");
+      logger.info(`  Error:   ${inference.query.message}`);
+    }
   } else {
     logger.info("  Not configured");
   }
@@ -220,6 +232,11 @@ interface InferenceStatus {
   model: string | null;
   endpoint: string | null;
   insideSandbox: boolean;
+  query: {
+    ok: boolean;
+    code: "ok" | "inside-sandbox" | "openshell-unavailable" | "query-failed";
+    message: string | null;
+  };
 }
 
 interface InferenceStatusResponse {
@@ -248,7 +265,18 @@ function getLocalModelWorkflowStatus(
 
 async function getInferenceStatus(insideSandbox: boolean): Promise<InferenceStatus> {
   if (insideSandbox) {
-    return { configured: false, provider: null, model: null, endpoint: null, insideSandbox: true };
+    return {
+      configured: false,
+      provider: null,
+      model: null,
+      endpoint: null,
+      insideSandbox: true,
+      query: {
+        ok: false,
+        code: "inside-sandbox",
+        message: "Run 'openshell inference get' on the host to query the live route.",
+      },
+    };
   }
   try {
     const { stdout } = await execAsync("openshell inference get --json", {
@@ -261,8 +289,29 @@ async function getInferenceStatus(insideSandbox: boolean): Promise<InferenceStat
       model: parsed.model ?? null,
       endpoint: parsed.endpoint ?? null,
       insideSandbox: false,
+      query: {
+        ok: true,
+        code: "ok",
+        message: null,
+      },
     };
-  } catch {
-    return { configured: false, provider: null, model: null, endpoint: null, insideSandbox: false };
+  } catch (error) {
+    const message = error instanceof Error
+      ? ("stderr" in error && typeof error.stderr === "string" && error.stderr.trim()) || error.message
+      : String(error);
+    return {
+      configured: false,
+      provider: null,
+      model: null,
+      endpoint: null,
+      insideSandbox: false,
+      query: {
+        ok: false,
+        code: error instanceof Error && "code" in error && error.code === "ENOENT"
+          ? "openshell-unavailable"
+          : "query-failed",
+        message: message.trim() || null,
+      },
+    };
   }
 }

@@ -133,14 +133,15 @@ describe("cliStatus", () => {
   // Scenario 1: Host — no openshell, blank state
   // =========================================================================
   describe("host — no openshell, blank state", () => {
-    it("shows 'not running' and 'Not configured' in text output", async () => {
+    it("shows OpenShell CLI availability issues in text output", async () => {
       const { lines, logger } = captureLogger();
 
       await cliStatus({ json: false, logger, pluginConfig: defaultConfig });
 
       const output = lines.join("\n");
       expect(output).toContain("Status:  not running");
-      expect(output).toContain("Not configured");
+      expect(output).toContain("Status:  unable to query live route");
+      expect(output).toContain("command not found: openshell inference get --json");
       expect(output).not.toContain("inside sandbox");
       expect(output).not.toContain("active (inside sandbox)");
     });

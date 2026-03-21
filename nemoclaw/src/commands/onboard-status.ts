@@ -24,11 +24,16 @@ export interface OnboardStatusOptions {
   logger: PluginLogger;
 }
 
-interface InferenceStatus {
+export interface InferenceStatus {
   configured: boolean;
   provider: string | null;
   model: string | null;
   endpoint: string | null;
+  query: {
+    ok: boolean;
+    code: "ok" | "inside-sandbox" | "openshell-unavailable" | "query-failed";
+    message: string | null;
+  };
 }
 
 interface InferenceStatusResponse {
@@ -48,9 +53,29 @@ export async function getInferenceStatus(): Promise<InferenceStatus> {
       provider: parsed.provider ?? null,
       model: parsed.model ?? null,
       endpoint: parsed.endpoint ?? null,
+      query: {
+        ok: true,
+        code: "ok",
+        message: null,
+      },
     };
-  } catch {
-    return { configured: false, provider: null, model: null, endpoint: null };
+  } catch (error) {
+    const message = error instanceof Error
+      ? ("stderr" in error && typeof error.stderr === "string" && error.stderr.trim()) || error.message
+      : String(error);
+    return {
+      configured: false,
+      provider: null,
+      model: null,
+      endpoint: null,
+      query: {
+        ok: false,
+        code: error instanceof Error && "code" in error && error.code === "ENOENT"
+          ? "openshell-unavailable"
+          : "query-failed",
+        message: message.trim() || null,
+      },
+    };
   }
 }
 

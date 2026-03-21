@@ -39,6 +39,7 @@ describe("cliOnboardStatus", () => {
       provider: null,
       model: null,
       endpoint: null,
+      query: { ok: false, code: "query-failed", message: null },
     })).resolves.toEqual({
       configured: false,
       setup: {
@@ -83,6 +84,7 @@ describe("cliOnboardStatus", () => {
       provider: "ollama-local",
       model: "qwen3:32b",
       endpoint: "http://host.openshell.internal:11434/v1",
+      query: { ok: true, code: "ok", message: null },
     })).resolves.toEqual({
       configured: true,
       setup: {
@@ -273,6 +275,7 @@ describe("cliOnboardStatus", () => {
       provider: "vllm-local",
       model: "nemotron-3-nano:30b",
       endpoint: "http://host.openshell.internal:8000/v1",
+      query: { ok: true, code: "ok", message: null },
     });
 
     const data = await onboardStatus.getOnboardStatusData({
@@ -280,6 +283,7 @@ describe("cliOnboardStatus", () => {
       provider: "vllm-local",
       model: "nemotron-3-nano:30b",
       endpoint: "http://host.openshell.internal:8000/v1",
+      query: { ok: true, code: "ok", message: null },
     });
 
     expect(data.localModelWorkflow).toMatchObject({
