@@ -174,7 +174,76 @@ describe("cliOnboardStatus", () => {
               "Live OpenShell route changes must run on the host because this command is inside the sandbox.",
             reasonCode: "inside-sandbox",
           },
+          restoreDefaultModel: {
+            enabled: false,
+            reason:
+              "Live OpenShell route changes must run on the host because this command is inside the sandbox.",
+            reasonCode: "inside-sandbox",
+          },
         },
+        recommendedActions: [
+          {
+            kind: "read-state",
+            command: "openclaw nemoclaw onboard-status --json",
+          },
+        ],
+      },
+    });
+  });
+
+  it("suppresses live-route mutation recommendations when OpenShell CLI is unavailable", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+
+    await expect(
+      onboardStatus.getOnboardStatusData({
+        configured: false,
+        provider: null,
+        model: null,
+        endpoint: null,
+        query: {
+          ok: false,
+          code: "openshell-unavailable",
+          message: "openshell: command not found",
+        },
+      }),
+    ).resolves.toMatchObject({
+      executionContext: {
+        insideSandbox: false,
+        openshellCliAvailable: false,
+        canMutateLiveInferenceRoute: false,
+      },
+      localModelWorkflow: {
+        actions: {
+          setActiveModel: {
+            enabled: false,
+            reason:
+              "OpenShell CLI is unavailable, so NemoClaw cannot retarget the live local-model route from this context.",
+            reasonCode: "openshell-cli-unavailable",
+          },
+          restoreDefaultModel: {
+            enabled: false,
+            reason:
+              "OpenShell CLI is unavailable, so NemoClaw cannot retarget the live local-model route from this context.",
+            reasonCode: "openshell-cli-unavailable",
+          },
+        },
+        recommendedActions: [
+          {
+            kind: "read-state",
+            command: "openclaw nemoclaw onboard-status --json",
+          },
+        ],
       },
     });
   });

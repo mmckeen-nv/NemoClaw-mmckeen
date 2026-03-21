@@ -115,7 +115,9 @@ export interface LocalModelWorkflowActions {
       | "active-route-differs-from-saved-default"
       | "active-route-provider-differs-from-onboarding"
       | "active-route-endpoint-differs-from-onboarding"
-      | "active-route-already-matches-saved-default";
+      | "active-route-already-matches-saved-default"
+      | "inside-sandbox"
+      | "openshell-cli-unavailable";
     stateScope: "openshell-active-route";
     mutatesSavedDefault: false;
     targetModel: string;
@@ -328,18 +330,20 @@ export function getLocalModelWorkflowRecommendedActions(
     });
   }
 
-  const suggestedChoice =
-    workflow.choices.find((choice) => choice.isSelectable && choice.inCatalog) ??
-    workflow.choices.find((choice) => choice.isSelectable);
-  if (suggestedChoice) {
-    actions.push({
-      id: `set-active-model:${suggestedChoice.model}`,
-      kind: "set-active-model",
-      label: `Switch active route to ${suggestedChoice.model}`,
-      description: suggestedChoice.summary,
-      command: suggestedChoice.command,
-      argv: suggestedChoice.argv,
-    });
+  if (workflow.actions.setActiveModel.enabled) {
+    const suggestedChoice =
+      workflow.choices.find((choice) => choice.isSelectable && choice.inCatalog) ??
+      workflow.choices.find((choice) => choice.isSelectable);
+    if (suggestedChoice) {
+      actions.push({
+        id: `set-active-model:${suggestedChoice.model}`,
+        kind: "set-active-model",
+        label: `Switch active route to ${suggestedChoice.model}`,
+        description: suggestedChoice.summary,
+        command: suggestedChoice.command,
+        argv: suggestedChoice.argv,
+      });
+    }
   }
 
   return actions;
@@ -438,6 +442,16 @@ export function withLocalModelWorkflowMutationAvailability(
         reason: availability.enabled ? null : availability.reason,
         reasonCode: availability.enabled
           ? "live-route-mutation-available"
+          : availability.reasonCode,
+      },
+      restoreDefaultModel: {
+        ...workflow.actions.restoreDefaultModel,
+        enabled: availability.enabled && workflow.actions.restoreDefaultModel.enabled,
+        reason: availability.enabled
+          ? workflow.actions.restoreDefaultModel.reason
+          : availability.reason,
+        reasonCode: availability.enabled
+          ? workflow.actions.restoreDefaultModel.reasonCode
           : availability.reasonCode,
       },
     },
