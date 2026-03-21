@@ -21,13 +21,13 @@ vi.mock("./set-local-model.js", () => ({
   cliSetLocalModel: vi.fn(),
 }));
 
-function createLogger(): PluginLogger {
+function createLogger() {
   return {
-    info: () => undefined,
-    warn: () => undefined,
-    error: () => undefined,
-    debug: () => undefined,
-  };
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+  } satisfies PluginLogger;
 }
 
 describe("cliRestoreLocalModel", () => {
@@ -60,18 +60,31 @@ describe("cliRestoreLocalModel", () => {
     });
   });
 
-  it("falls back to the shared local-model error path when onboarding is missing", () => {
-    cliRestoreLocalModel({ json: false, logger: createLogger() });
+  it("returns a restore-specific onboarding error when onboarding is missing", () => {
+    const logger = createLogger();
 
-    expect(cliSetLocalModel).toHaveBeenCalledWith({
-      model: "",
-      allowOutsideCatalog: false,
-      json: false,
-      logger: expect.any(Object),
+    cliRestoreLocalModel({ json: true, logger });
+
+    expect(cliSetLocalModel).not.toHaveBeenCalled();
+    expect(logger.info).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(vi.mocked(logger.info).mock.calls[0]?.[0] as string)).toEqual({
+      ok: false,
+      code: "ONBOARDING_REQUIRED",
+      message: "No onboarding configuration found. Run 'openclaw nemoclaw onboard' first.",
+      hint: "Run 'openclaw nemoclaw onboard' first.",
+      setup: {
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create the first saved inference configuration.",
+          mode: "initial-setup",
+        },
+      },
     });
   });
 
-  it("falls back to the shared local-model error path for non-local onboarding", () => {
+  it("returns a restore-specific non-local workflow error", () => {
+    const logger = createLogger();
     vi.mocked(loadOnboardConfig).mockReturnValue({
       endpointType: "build",
       endpointUrl: "https://integrate.api.nvidia.com/v1",
@@ -84,13 +97,28 @@ describe("cliRestoreLocalModel", () => {
       onboardedAt: "2026-03-20T22:00:00.000Z",
     });
 
-    cliRestoreLocalModel({ json: false, logger: createLogger() });
+    cliRestoreLocalModel({ json: true, logger });
 
-    expect(cliSetLocalModel).toHaveBeenCalledWith({
-      model: "",
-      allowOutsideCatalog: false,
-      json: false,
-      logger: expect.any(Object),
+    expect(cliSetLocalModel).not.toHaveBeenCalled();
+    expect(logger.info).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(vi.mocked(logger.info).mock.calls[0]?.[0] as string)).toEqual({
+      ok: false,
+      code: "NON_LOCAL_WORKFLOW",
+      message: "Saved onboarding uses 'build', not a local endpoint. This command only supports local workflows.",
+      endpointType: "build",
+      endpoint: "https://integrate.api.nvidia.com/v1",
+      provider: "nvidia",
+      providerLabel: "NVIDIA Cloud API",
+      defaultModel: "nvidia/nemotron-3-super-120b-a12b",
+      catalog: ["nvidia/nemotron-3-super-120b-a12b"],
+      setup: {
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+          mode: "reconfigure",
+        },
+      },
     });
   });
 });
