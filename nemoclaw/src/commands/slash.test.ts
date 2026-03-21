@@ -210,4 +210,26 @@ describe("/nemoclaw slash command", () => {
     expect(cliSetLocalModel).not.toHaveBeenCalled();
     expect(result.text).toContain("Usage: `/nemoclaw set-local-model <model> [--allow-outside-catalog]`");
   });
+
+  it("returns a readable slash error when set-local-model throws", async () => {
+    vi.mocked(cliSetLocalModel).mockImplementation(() => {
+      throw new Error("openshell unavailable");
+    });
+
+    const result = await handleSlashCommand({ args: "set-local-model qwen3:32b" }, {} as never);
+
+    expect(result.text).toContain("Command failed: openshell unavailable");
+    expect(result.text).toContain("openclaw nemoclaw status");
+  });
+
+  it("returns a readable slash error when restore-local-model throws", async () => {
+    vi.mocked(cliRestoreLocalModel).mockImplementation(() => {
+      throw new Error("restore failed");
+    });
+
+    const result = await handleSlashCommand({ args: "restore-local-model" }, {} as never);
+
+    expect(result.text).toContain("Command failed: restore failed");
+    expect(result.text).toContain("openclaw nemoclaw status");
+  });
 });

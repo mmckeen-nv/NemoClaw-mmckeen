@@ -38,19 +38,30 @@ export async function handleSlashCommand(
 ): Promise<PluginCommandResult> {
   const subcommand = ctx.args?.trim().split(/\s+/)[0] ?? "";
 
-  switch (subcommand) {
-    case "status":
-      return await slashStatus();
-    case "eject":
-      return slashEject();
-    case "onboard":
-      return await slashOnboard();
-    case "set-local-model":
-      return slashSetLocalModel(ctx.args ?? "");
-    case "restore-local-model":
-      return slashRestoreLocalModel();
-    default:
-      return slashHelp();
+  try {
+    switch (subcommand) {
+      case "status":
+        return await slashStatus();
+      case "eject":
+        return slashEject();
+      case "onboard":
+        return await slashOnboard();
+      case "set-local-model":
+        return slashSetLocalModel(ctx.args ?? "");
+      case "restore-local-model":
+        return slashRestoreLocalModel();
+      default:
+        return slashHelp();
+    }
+  } catch (error) {
+    return {
+      text: [
+        "**NemoClaw**",
+        "",
+        `Command failed: ${formatSlashError(error)}`,
+        "Try the CLI for fuller diagnostics: `openclaw nemoclaw status`.",
+      ].join("\n"),
+    };
   }
 }
 
@@ -158,6 +169,14 @@ function createCapturedLogger(): { logger: PluginLogger; flush: () => string } {
     },
     flush: () => lines.join("\n").trim(),
   };
+}
+
+function formatSlashError(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return String(error);
 }
 
 async function slashStatus(): Promise<PluginCommandResult> {
