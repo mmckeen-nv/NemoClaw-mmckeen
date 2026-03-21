@@ -185,6 +185,8 @@ describe("cliSetLocalModel", () => {
           command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
           argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
           requiresAllowOutsideCatalog: false,
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
         {
           model: "nemotron-3-nano:30b",
@@ -199,6 +201,8 @@ describe("cliSetLocalModel", () => {
           command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
           argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
           requiresAllowOutsideCatalog: false,
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
       ],
       setup: {
@@ -350,6 +354,8 @@ describe("cliSetLocalModel", () => {
           command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
           argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
           requiresAllowOutsideCatalog: false,
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
         {
           model: "nemotron-3-nano:30b",
@@ -364,6 +370,8 @@ describe("cliSetLocalModel", () => {
           command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
           argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
           requiresAllowOutsideCatalog: false,
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
         {
           model: "llama3.3:70b",
@@ -378,6 +386,8 @@ describe("cliSetLocalModel", () => {
           command: 'openclaw nemoclaw set-local-model "llama3.3:70b" --json --allow-outside-catalog',
           argv: ["openclaw", "nemoclaw", "set-local-model", "llama3.3:70b", "--json", "--allow-outside-catalog"],
           requiresAllowOutsideCatalog: true,
+          targetProvider: "ollama-local",
+          targetProviderLabel: "Local Ollama",
         },
       ],
       defaultChoice: {
@@ -393,6 +403,8 @@ describe("cliSetLocalModel", () => {
         command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
         argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
         requiresAllowOutsideCatalog: false,
+        targetProvider: "ollama-local",
+        targetProviderLabel: "Local Ollama",
       },
       activeChoice: {
         model: "llama3.3:70b",
@@ -407,6 +419,8 @@ describe("cliSetLocalModel", () => {
         command: 'openclaw nemoclaw set-local-model "llama3.3:70b" --json --allow-outside-catalog',
         argv: ["openclaw", "nemoclaw", "set-local-model", "llama3.3:70b", "--json", "--allow-outside-catalog"],
         requiresAllowOutsideCatalog: true,
+        targetProvider: "ollama-local",
+        targetProviderLabel: "Local Ollama",
       },
       actions: {
         read: {

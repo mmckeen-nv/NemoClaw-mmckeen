@@ -182,7 +182,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       providerLabel,
       defaultModel,
       catalog,
-      choices: buildLocalModelChoices(defaultModel, defaultModel, catalog),
+      choices: buildLocalModelChoices(defaultModel, defaultModel, catalog, provider, providerLabel),
       actions: getLocalModelWorkflowActions(defaultModel, defaultModel, provider, providerLabel),
       setup,
       hint: catalog.length > 0
@@ -206,7 +206,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       providerLabel,
       defaultModel,
       catalog,
-      choices: buildLocalModelChoices(defaultModel, trimmedModel, catalog),
+      choices: buildLocalModelChoices(defaultModel, trimmedModel, catalog, provider, providerLabel),
       actions: getLocalModelWorkflowActions(defaultModel, trimmedModel, provider, providerLabel),
       details: stderr || String(err),
       setup,
@@ -214,7 +214,7 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     return;
   }
 
-  const choices = buildLocalModelChoices(defaultModel, trimmedModel, catalog);
+  const choices = buildLocalModelChoices(defaultModel, trimmedModel, catalog, provider, providerLabel);
   const drift: LocalModelWorkflowDrift = {
     any: trimmedModel !== defaultModel,
     activeModelDiffersFromDefault: trimmedModel !== defaultModel,

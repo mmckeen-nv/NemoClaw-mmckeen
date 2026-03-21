@@ -302,6 +302,8 @@ describe("cliStatus", () => {
             command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
             argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
             requiresAllowOutsideCatalog: false,
+            targetProvider: "ollama-local",
+            targetProviderLabel: "Local Ollama",
           },
           {
             model: "nemotron-3-nano:30b",
@@ -316,6 +318,8 @@ describe("cliStatus", () => {
             command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
             argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
             requiresAllowOutsideCatalog: false,
+            targetProvider: "ollama-local",
+            targetProviderLabel: "Local Ollama",
           },
           {
             model: "nemotron-3-super-120b",
@@ -330,6 +334,8 @@ describe("cliStatus", () => {
             command: 'openclaw nemoclaw set-local-model "nemotron-3-super-120b" --json --allow-outside-catalog',
             argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-super-120b", "--json", "--allow-outside-catalog"],
             requiresAllowOutsideCatalog: true,
+            targetProvider: "ollama-local",
+            targetProviderLabel: "Local Ollama",
           },
         ],
         defaultChoice: {
@@ -345,6 +351,8 @@ describe("cliStatus", () => {
           command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
           argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
           requiresAllowOutsideCatalog: false,
+            targetProvider: "ollama-local",
+            targetProviderLabel: "Local Ollama",
         },
         activeChoice: {
           model: "nemotron-3-super-120b",
@@ -359,6 +367,8 @@ describe("cliStatus", () => {
           command: 'openclaw nemoclaw set-local-model "nemotron-3-super-120b" --json --allow-outside-catalog',
           argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-super-120b", "--json", "--allow-outside-catalog"],
           requiresAllowOutsideCatalog: true,
+            targetProvider: "ollama-local",
+            targetProviderLabel: "Local Ollama",
         },
         actions: {
           read: {

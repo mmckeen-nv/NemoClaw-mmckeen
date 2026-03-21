@@ -45,6 +45,8 @@ export interface LocalModelChoice {
   command: string;
   argv: string[];
   requiresAllowOutsideCatalog: boolean;
+  targetProvider: string | null;
+  targetProviderLabel: string;
 }
 
 export interface SetupConfigureAction {
@@ -150,6 +152,8 @@ export function buildLocalModelChoices(
   defaultModel: string,
   activeModel: string,
   catalog: string[],
+  targetProvider: string | null = null,
+  targetProviderLabel = "Saved local provider",
 ): LocalModelChoice[] {
   const ordered = [defaultModel, ...catalog];
   if (!catalog.includes(activeModel)) {
@@ -203,6 +207,8 @@ export function buildLocalModelChoices(
         command: `openclaw nemoclaw set-local-model ${JSON.stringify(model)} --json${requiresAllowOutsideCatalog ? " --allow-outside-catalog" : ""}`,
         argv,
         requiresAllowOutsideCatalog,
+        targetProvider,
+        targetProviderLabel,
       };
     });
 }
@@ -287,9 +293,12 @@ export function getLocalModelWorkflow(
   const defaultModel = config.model.trim();
   const inferenceModel = inference?.configured ? inference.model?.trim() ?? null : null;
   const activeModel = inferenceModel || defaultModel;
-  const choices = buildLocalModelChoices(defaultModel, activeModel, catalog);
 
   const onboardingProvider = config.provider ?? null;
+  const targetProvider = onboardingProvider;
+  const targetProviderLabel = describeOnboardProvider(config);
+  const choices = buildLocalModelChoices(defaultModel, activeModel, catalog, targetProvider, targetProviderLabel);
+
   const activeProvider = inference?.configured ? inference.provider ?? onboardingProvider : onboardingProvider;
   const activeEndpoint = inference?.configured ? inference.endpoint?.trim() || config.endpointUrl : config.endpointUrl;
   const providerLabelOverride = inference?.configured
@@ -301,8 +310,6 @@ export function getLocalModelWorkflow(
           ? "Local NIM"
           : activeProvider
     : null;
-  const targetProvider = onboardingProvider;
-  const targetProviderLabel = describeOnboardProvider(config);
   const drift = {
     activeModelDiffersFromDefault: activeModel !== defaultModel,
     activeModelOutsideCatalog: !catalog.includes(activeModel),
