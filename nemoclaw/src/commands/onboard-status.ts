@@ -9,6 +9,7 @@ import {
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
+  getLocalModelWorkflow,
   getLocalModelWorkflowActions,
   isLocalEndpointType,
   loadOnboardConfig,
@@ -103,27 +104,12 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
           onboardedAt: onboard.onboardedAt,
         }
       : null,
-    localModelWorkflow: onboard && isLocalEndpointType(onboard.endpointType)
-      ? (() => {
-          const catalog = getConfiguredModelCatalog(onboard);
-          const defaultModel = onboard.model.trim();
-          const activeModel = inference.configured ? inference.model?.trim() || defaultModel : defaultModel;
-          return {
-            enabled: true,
-            provider: onboard.provider ?? inference.provider,
-            providerLabel: describeOnboardProvider(onboard),
-            endpointType: onboard.endpointType,
-            endpoint: onboard.endpointUrl,
-            defaultModel,
-            activeModel,
-            activeModelSource: inference.configured && inference.model ? "inference" : "onboarding",
-            activeModelMatchesDefault: activeModel === defaultModel,
-            activeModelInCatalog: catalog.includes(activeModel),
-            catalog,
-            choices: buildLocalModelChoices(defaultModel, activeModel, catalog),
-            actions: getLocalModelWorkflowActions(),
-          };
-        })()
+    localModelWorkflow: onboard
+      ? getLocalModelWorkflow(onboard, {
+          configured: inference.configured,
+          provider: inference.provider,
+          model: inference.model,
+        })
       : null,
   };
 }

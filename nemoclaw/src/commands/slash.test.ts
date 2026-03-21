@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { handleSlashCommand } from "./slash.js";
 import { loadState } from "../blueprint/state.js";
 import { loadOnboardConfig } from "../onboard/config.js";
+import { getInferenceStatus } from "./onboard-status.js";
 
 vi.mock("../blueprint/state.js", () => ({
   loadState: vi.fn(),
@@ -17,6 +18,10 @@ vi.mock("../onboard/config.js", async () => {
     loadOnboardConfig: vi.fn(),
   };
 });
+
+vi.mock("./onboard-status.js", () => ({
+  getInferenceStatus: vi.fn(),
+}));
 
 describe("/nemoclaw slash command", () => {
   beforeEach(() => {
@@ -31,9 +36,15 @@ describe("/nemoclaw slash command", () => {
       updatedAt: "2026-03-20T23:31:00.000Z",
     });
     vi.mocked(loadOnboardConfig).mockReturnValue(null);
+    vi.mocked(getInferenceStatus).mockResolvedValue({
+      configured: false,
+      provider: null,
+      model: null,
+      endpoint: null,
+    });
   });
 
-  it("includes local workflow metadata in status for local onboarding", () => {
+  it("includes local workflow metadata in status for local onboarding", async () => {
     vi.mocked(loadOnboardConfig).mockReturnValue({
       endpointType: "ollama",
       endpointUrl: "http://host.openshell.internal:11434/v1",
@@ -47,7 +58,7 @@ describe("/nemoclaw slash command", () => {
       onboardedAt: "2026-03-20T22:00:00.000Z",
     });
 
-    const result = handleSlashCommand({ args: "status" }, {} as never);
+    const result = await handleSlashCommand({ args: "status" }, {} as never);
 
     expect(result.text).toContain("**Onboarding**");
     expect(result.text).toContain("Endpoint: ollama (http://host.openshell.internal:11434/v1)");
@@ -62,7 +73,7 @@ describe("/nemoclaw slash command", () => {
     expect(result.text).toContain("Saved Models: qwen3:32b, nemotron-3-nano:30b");
   });
 
-  it("keeps cloud onboarding free of local workflow lines", () => {
+  it("keeps cloud onboarding free of local workflow lines", async () => {
     vi.mocked(loadOnboardConfig).mockReturnValue({
       endpointType: "build",
       endpointUrl: "https://integrate.api.nvidia.com/v1",
@@ -75,14 +86,14 @@ describe("/nemoclaw slash command", () => {
       onboardedAt: "2026-03-20T22:00:00.000Z",
     });
 
-    const result = handleSlashCommand({ args: "status" }, {} as never);
+    const result = await handleSlashCommand({ args: "status" }, {} as never);
 
     expect(result.text).toContain("**Onboarding**");
     expect(result.text).not.toContain("**Local Model Workflow**");
     expect(result.text).not.toContain("Drift:");
   });
 
-  it("includes local workflow metadata in onboard status for local onboarding", () => {
+  it("includes local workflow metadata in onboard status for local onboarding", async () => {
     vi.mocked(loadOnboardConfig).mockReturnValue({
       endpointType: "ollama",
       endpointUrl: "http://host.openshell.internal:11434/v1",
@@ -96,12 +107,40 @@ describe("/nemoclaw slash command", () => {
       onboardedAt: "2026-03-20T22:00:00.000Z",
     });
 
-    const result = handleSlashCommand({ args: "onboard" }, {} as never);
+    const result = await handleSlashCommand({ args: "onboard" }, {} as never);
 
     expect(result.text).toContain("**NemoClaw Onboard Status**");
     expect(result.text).toContain("**Local Model Workflow**");
     expect(result.text).toContain("Default: qwen3:32b");
     expect(result.text).toContain("Catalog: active route is in saved catalog");
     expect(result.text).toContain("Saved Models: qwen3:32b, nemotron-3-nano:30b");
+  });
+
+  it("shows live local route drift in slash status when OpenShell inference differs from the saved default", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+    vi.mocked(getInferenceStatus).mockResolvedValue({
+      configured: true,
+      provider: "ollama-local",
+      model: "nemotron-3-nano:30b",
+      endpoint: "http://host.openshell.internal:11434/v1",
+    });
+
+    const result = await handleSlashCommand({ args: "status" }, {} as never);
+
+    expect(result.text).toContain("Active: nemotron-3-nano:30b");
+    expect(result.text).not.toContain("Active: nemotron-3-nano:30b (saved default)");
+    expect(result.text).toContain("Source: inference");
+    expect(result.text).toContain("Drift: active route differs from saved default");
   });
 });

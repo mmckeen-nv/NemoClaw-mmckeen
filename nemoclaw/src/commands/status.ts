@@ -11,6 +11,7 @@ import {
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
+  getLocalModelWorkflow,
   getLocalModelWorkflowActions,
   isLocalEndpointType,
   loadOnboardConfig,
@@ -247,30 +248,15 @@ function getLocalModelWorkflowStatus(
   onboard: ReturnType<typeof loadOnboardConfig>,
   inference: InferenceStatus,
 ): LocalModelWorkflowStatus | null {
-  if (!onboard || !isLocalEndpointType(onboard.endpointType)) {
+  if (!onboard) {
     return null;
   }
 
-  const catalog = getConfiguredModelCatalog(onboard);
-  const inferenceModel = inference.configured ? inference.model?.trim() ?? null : null;
-  const defaultModel = onboard.model.trim();
-  const activeModel = inferenceModel || defaultModel;
-
-  return {
-    enabled: true,
-    provider: onboard.provider ?? inference.provider,
-    providerLabel: describeOnboardProvider(onboard),
-    endpointType: onboard.endpointType,
-    endpoint: onboard.endpointUrl,
-    defaultModel,
-    activeModel,
-    activeModelSource: inferenceModel ? "inference" : "onboarding",
-    activeModelMatchesDefault: activeModel === defaultModel,
-    activeModelInCatalog: catalog.includes(activeModel),
-    catalog,
-    choices: buildLocalModelChoices(defaultModel, activeModel, catalog),
-    actions: getLocalModelWorkflowActions(),
-  };
+  return getLocalModelWorkflow(onboard, {
+    configured: inference.configured,
+    provider: inference.provider,
+    model: inference.model,
+  });
 }
 
 async function getInferenceStatus(insideSandbox: boolean): Promise<InferenceStatus> {

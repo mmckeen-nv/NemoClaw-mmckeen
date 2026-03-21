@@ -56,7 +56,7 @@ export interface LocalModelWorkflowActions {
   };
 }
 
-export interface SavedLocalModelWorkflow {
+export interface LocalModelWorkflow {
   enabled: true;
   provider: string | null;
   providerLabel: string;
@@ -64,12 +64,17 @@ export interface SavedLocalModelWorkflow {
   endpoint: string;
   defaultModel: string;
   activeModel: string;
-  activeModelSource: "onboarding";
-  activeModelMatchesDefault: true;
+  activeModelSource: "inference" | "onboarding";
+  activeModelMatchesDefault: boolean;
   activeModelInCatalog: boolean;
   catalog: string[];
   choices: LocalModelChoice[];
   actions: LocalModelWorkflowActions;
+}
+
+export interface SavedLocalModelWorkflow extends LocalModelWorkflow {
+  activeModelSource: "onboarding";
+  activeModelMatchesDefault: true;
 }
 
 export function buildLocalModelChoices(
@@ -128,28 +133,50 @@ export function getLocalModelWorkflowActions(): LocalModelWorkflowActions {
   };
 }
 
-export function getSavedLocalModelWorkflow(config: NemoClawOnboardConfig): SavedLocalModelWorkflow | null {
+export function getLocalModelWorkflow(
+  config: NemoClawOnboardConfig,
+  inference?: {
+    configured: boolean;
+    provider: string | null;
+    model: string | null;
+  },
+): LocalModelWorkflow | null {
   if (!isLocalEndpointType(config.endpointType)) {
     return null;
   }
 
   const catalog = getConfiguredModelCatalog(config);
   const defaultModel = config.model.trim();
+  const inferenceModel = inference?.configured ? inference.model?.trim() ?? null : null;
+  const activeModel = inferenceModel || defaultModel;
 
   return {
     enabled: true,
-    provider: config.provider ?? null,
+    provider: config.provider ?? inference?.provider ?? null,
     providerLabel: describeOnboardProvider(config),
     endpointType: config.endpointType,
     endpoint: config.endpointUrl,
     defaultModel,
-    activeModel: defaultModel,
+    activeModel,
+    activeModelSource: inferenceModel ? "inference" : "onboarding",
+    activeModelMatchesDefault: activeModel === defaultModel,
+    activeModelInCatalog: catalog.includes(activeModel),
+    catalog,
+    choices: buildLocalModelChoices(defaultModel, activeModel, catalog),
+    actions: getLocalModelWorkflowActions(),
+  };
+}
+
+export function getSavedLocalModelWorkflow(config: NemoClawOnboardConfig): SavedLocalModelWorkflow | null {
+  const workflow = getLocalModelWorkflow(config);
+  if (!workflow) {
+    return null;
+  }
+
+  return {
+    ...workflow,
     activeModelSource: "onboarding",
     activeModelMatchesDefault: true,
-    activeModelInCatalog: catalog.includes(defaultModel),
-    catalog,
-    choices: buildLocalModelChoices(defaultModel, defaultModel, catalog),
-    actions: getLocalModelWorkflowActions(),
   };
 }
 

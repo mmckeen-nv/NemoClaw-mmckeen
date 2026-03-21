@@ -21,20 +21,21 @@ import {
   loadOnboardConfig,
   type NemoClawOnboardConfig,
 } from "../onboard/config.js";
+import { getInferenceStatus } from "./onboard-status.js";
 
-export function handleSlashCommand(
+export async function handleSlashCommand(
   ctx: PluginCommandContext,
   _api: OpenClawPluginApi,
-): PluginCommandResult {
+): Promise<PluginCommandResult> {
   const subcommand = ctx.args?.trim().split(/\s+/)[0] ?? "";
 
   switch (subcommand) {
     case "status":
-      return slashStatus();
+      return await slashStatus();
     case "eject":
       return slashEject();
     case "onboard":
-      return slashOnboard();
+      return await slashOnboard();
     default:
       return slashHelp();
   }
@@ -62,7 +63,7 @@ function slashHelp(): PluginCommandResult {
   };
 }
 
-function slashStatus(): PluginCommandResult {
+async function slashStatus(): Promise<PluginCommandResult> {
   const state = loadState();
   const config = loadOnboardConfig();
 
@@ -100,7 +101,7 @@ function slashStatus(): PluginCommandResult {
       lines.push(`Catalog: ${catalog.join(", ")}`);
     }
 
-    const localWorkflow = formatLocalModelWorkflow(config);
+    const localWorkflow = await formatLocalModelWorkflow(config, true);
     if (localWorkflow.length > 0) {
       lines.push("", "**Local Model Workflow**", ...localWorkflow);
     }
@@ -109,11 +110,11 @@ function slashStatus(): PluginCommandResult {
   return { text: lines.join("\n") };
 }
 
-function slashOnboard(): PluginCommandResult {
+async function slashOnboard(): Promise<PluginCommandResult> {
   const config = loadOnboardConfig();
   if (config) {
     const catalog = getConfiguredModelCatalog(config);
-    const localWorkflow = formatLocalModelWorkflow(config);
+    const localWorkflow = await formatLocalModelWorkflow(config, false);
     return {
       text: [
         "**NemoClaw Onboard Status**",
@@ -152,24 +153,55 @@ function slashOnboard(): PluginCommandResult {
   };
 }
 
-function formatLocalModelWorkflow(config: NemoClawOnboardConfig): string[] {
+async function formatLocalModelWorkflow(
+  config: NemoClawOnboardConfig,
+  includeLiveInference: boolean,
+): Promise<string[]> {
   if (!isLocalEndpointType(config.endpointType)) {
     return [];
   }
 
-  const workflow = getSavedLocalModelWorkflow(config);
+  const workflow = includeLiveInference
+    ? await getInferenceAwareLocalModelWorkflow(config)
+    : getSavedLocalModelWorkflow(config);
   if (!workflow) {
     return [];
   }
 
   return [
     `Default: ${workflow.defaultModel}`,
-    `Active: ${workflow.activeModel} (saved default)`,
+    `Active: ${workflow.activeModel}${workflow.activeModelSource === "onboarding" ? " (saved default)" : ""}`,
     `Source: ${workflow.activeModelSource}`,
     `Drift: ${workflow.activeModelMatchesDefault ? "none" : "active route differs from saved default"}`,
     `Catalog: ${workflow.activeModelInCatalog ? "active route is in saved catalog" : "active route is outside saved catalog"}`,
     ...(workflow.catalog.length > 0 ? [`Saved Models: ${workflow.catalog.join(", ")}`] : []),
   ];
+}
+
+async function getInferenceAwareLocalModelWorkflow(config: NemoClawOnboardConfig) {
+  const savedWorkflow = getSavedLocalModelWorkflow(config);
+  if (!savedWorkflow) {
+    return null;
+  }
+
+  try {
+    const inference = await getInferenceStatus();
+    if (!inference.configured || !inference.model) {
+      return savedWorkflow;
+    }
+
+    const activeModel = inference.model.trim() || savedWorkflow.defaultModel;
+    return {
+      ...savedWorkflow,
+      provider: config.provider ?? inference.provider,
+      activeModel,
+      activeModelSource: "inference" as const,
+      activeModelMatchesDefault: activeModel === savedWorkflow.defaultModel,
+      activeModelInCatalog: savedWorkflow.catalog.includes(activeModel),
+    };
+  } catch {
+    return savedWorkflow;
+  }
 }
 
 function slashEject(): PluginCommandResult {
