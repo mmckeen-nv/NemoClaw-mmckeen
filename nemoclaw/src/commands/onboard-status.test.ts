@@ -135,6 +135,50 @@ describe("cliOnboardStatus", () => {
     expect(output).toContain("Run 'openshell inference get' on the host to query the live inference route.");
   });
 
+  it("marks local-model write actions unavailable inside the sandbox", async () => {
+    vi.mocked(loadOnboardConfig).mockReturnValue({
+      endpointType: "ollama",
+      endpointUrl: "http://host.openshell.internal:11434/v1",
+      ncpPartner: null,
+      model: "qwen3:32b",
+      profile: "ollama",
+      credentialEnv: "OPENAI_API_KEY",
+      provider: "ollama-local",
+      providerLabel: "Local Ollama",
+      availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+      onboardedAt: "2026-03-20T22:00:00.000Z",
+    });
+
+    await expect(
+      onboardStatus.getOnboardStatusData({
+        configured: false,
+        provider: null,
+        model: null,
+        endpoint: null,
+        query: {
+          ok: false,
+          code: "inside-sandbox",
+          message: "Run 'openshell inference get' on the host to query the live inference route.",
+        },
+      }),
+    ).resolves.toMatchObject({
+      executionContext: {
+        insideSandbox: true,
+        canMutateLiveInferenceRoute: false,
+      },
+      localModelWorkflow: {
+        actions: {
+          setActiveModel: {
+            enabled: false,
+            reason:
+              "Live OpenShell route changes must run on the host because this command is inside the sandbox.",
+            reasonCode: "inside-sandbox",
+          },
+        },
+      },
+    });
+  });
+
   it("types the local workflow selection semantics for dashboard consumers", async () => {
     vi.mocked(loadOnboardConfig).mockReturnValue({
       endpointType: "ollama",
@@ -378,6 +422,9 @@ describe("cliOnboardStatus", () => {
               "Switch the active OpenShell local-model route without changing the saved onboarding default.",
             supportsAllowOutsideCatalog: true,
             allowOutsideCatalogFlag: "--allow-outside-catalog",
+            enabled: true,
+            reason: null,
+            reasonCode: "live-route-mutation-available",
             stateScope: "openshell-active-route",
             mutatesSavedDefault: false,
             targetProvider: "ollama-local",

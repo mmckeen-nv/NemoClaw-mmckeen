@@ -430,6 +430,9 @@ describe("cliStatus", () => {
             description: "Switch the active OpenShell local-model route without changing the saved onboarding default.",
             supportsAllowOutsideCatalog: true,
             allowOutsideCatalogFlag: "--allow-outside-catalog",
+            enabled: true,
+            reason: null,
+            reasonCode: "live-route-mutation-available",
             stateScope: "openshell-active-route",
             mutatesSavedDefault: false,
             targetProvider: "ollama-local",
@@ -718,6 +721,29 @@ describe("cliStatus", () => {
       expect(data.sandbox.query.code).toBe("inside-sandbox");
       expect(data.inference.insideSandbox).toBe(true);
       expect(data.inference.configured).toBe(false);
+    });
+
+    it("disables local-model write actions in JSON when running inside the sandbox", async () => {
+      vi.mocked(loadOnboardConfig).mockReturnValue({
+        endpointType: "ollama",
+        endpointUrl: "http://host.openshell.internal:11434/v1",
+        ncpPartner: null,
+        model: "qwen3:32b",
+        profile: "ollama",
+        credentialEnv: "OPENAI_API_KEY",
+        provider: "ollama-local",
+        providerLabel: "Local Ollama",
+        availableModels: ["nemotron-3-nano:30b", "qwen3:32b"],
+        onboardedAt: "2026-03-20T22:00:00.000Z",
+      });
+      const { lines, logger } = captureLogger();
+
+      await cliStatus({ json: true, logger, pluginConfig: defaultConfig });
+
+      const data = JSON.parse(lines.join(""));
+      expect(data.executionContext.canMutateLiveInferenceRoute).toBe(false);
+      expect(data.localModelWorkflow.actions.setActiveModel.enabled).toBe(false);
+      expect(data.localModelWorkflow.actions.setActiveModel.reasonCode).toBe("inside-sandbox");
     });
   });
 

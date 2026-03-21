@@ -14,6 +14,7 @@ import {
   getLocalModelWorkflow,
   getLocalModelWorkflowRecommendedActions,
   getSetupConfigureAction,
+  withLocalModelWorkflowMutationAvailability,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
@@ -50,7 +51,27 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
 
   const localModelCatalog =
     onboard && isLocalEndpointType(onboard.endpointType) ? getConfiguredModelCatalog(onboard) : [];
-  const localModelWorkflow = getLocalModelWorkflowStatus(onboard, inference);
+  const localModelWorkflowBase = getLocalModelWorkflowStatus(onboard, inference);
+  const localModelWorkflow = localModelWorkflowBase
+    ? withLocalModelWorkflowMutationAvailability(
+        localModelWorkflowBase,
+        insideSandbox
+          ? {
+              enabled: false,
+              reason:
+                "Live OpenShell route changes must run on the host because this command is inside the sandbox.",
+              reasonCode: "inside-sandbox",
+            }
+          : inference.query.code === "openshell-unavailable"
+            ? {
+                enabled: false,
+                reason:
+                  "OpenShell CLI is unavailable, so NemoClaw cannot retarget the live local-model route from this context.",
+                reasonCode: "openshell-cli-unavailable",
+              }
+            : { enabled: true },
+      )
+    : null;
   const localModelWorkflowWithRecommendations = localModelWorkflow
     ? {
         ...localModelWorkflow,

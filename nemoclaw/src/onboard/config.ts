@@ -92,6 +92,12 @@ export interface LocalModelWorkflowActions {
     description: string;
     supportsAllowOutsideCatalog: boolean;
     allowOutsideCatalogFlag: "--allow-outside-catalog";
+    enabled: boolean;
+    reason: string | null;
+    reasonCode:
+      | "live-route-mutation-available"
+      | "inside-sandbox"
+      | "openshell-cli-unavailable";
     stateScope: "openshell-active-route";
     mutatesSavedDefault: false;
     targetProvider: string | null;
@@ -381,6 +387,9 @@ export function getLocalModelWorkflowActions(
         "Switch the active OpenShell local-model route without changing the saved onboarding default.",
       supportsAllowOutsideCatalog: true,
       allowOutsideCatalogFlag: "--allow-outside-catalog",
+      enabled: true,
+      reason: null,
+      reasonCode: "live-route-mutation-available",
       stateScope: "openshell-active-route",
       mutatesSavedDefault: false,
       targetProvider: provider,
@@ -405,6 +414,32 @@ export function getLocalModelWorkflowActions(
       targetProviderLabel: providerLabel,
       targetEndpoint,
       targetEndpointType,
+    },
+  };
+}
+
+export function withLocalModelWorkflowMutationAvailability(
+  workflow: LocalModelWorkflow,
+  availability:
+    | { enabled: true }
+    | {
+        enabled: false;
+        reason: string;
+        reasonCode: "inside-sandbox" | "openshell-cli-unavailable";
+      },
+): LocalModelWorkflow {
+  return {
+    ...workflow,
+    actions: {
+      ...workflow.actions,
+      setActiveModel: {
+        ...workflow.actions.setActiveModel,
+        enabled: availability.enabled,
+        reason: availability.enabled ? null : availability.reason,
+        reasonCode: availability.enabled
+          ? "live-route-mutation-available"
+          : availability.reasonCode,
+      },
     },
   };
 }

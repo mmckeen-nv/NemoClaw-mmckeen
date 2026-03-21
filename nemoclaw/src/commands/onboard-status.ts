@@ -13,6 +13,7 @@ import {
   getLocalModelWorkflow,
   getLocalModelWorkflowRecommendedActions,
   getSetupConfigureAction,
+  withLocalModelWorkflowMutationAvailability,
   isLocalEndpointType,
   loadOnboardConfig,
 } from "../onboard/config.js";
@@ -203,13 +204,33 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
   const insideSandbox = inference.query.code === "inside-sandbox";
   const configureAction = getSetupConfigureAction(!!onboard);
   const generatedAt = new Date().toISOString();
-  const localModelWorkflow = onboard
+  const localModelWorkflowBase = onboard
     ? getLocalModelWorkflow(onboard, {
         configured: inference.configured,
         provider: inference.provider,
         model: inference.model,
         endpoint: inference.endpoint,
       })
+    : null;
+  const localModelWorkflow = localModelWorkflowBase
+    ? withLocalModelWorkflowMutationAvailability(
+        localModelWorkflowBase,
+        insideSandbox
+          ? {
+              enabled: false,
+              reason:
+                "Live OpenShell route changes must run on the host because this command is inside the sandbox.",
+              reasonCode: "inside-sandbox",
+            }
+          : inference.query.code === "openshell-unavailable"
+            ? {
+                enabled: false,
+                reason:
+                  "OpenShell CLI is unavailable, so NemoClaw cannot retarget the live local-model route from this context.",
+                reasonCode: "openshell-cli-unavailable",
+              }
+            : { enabled: true },
+      )
     : null;
 
   return {
