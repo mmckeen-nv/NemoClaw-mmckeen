@@ -152,7 +152,9 @@ describe("/nemoclaw slash command", () => {
     expect(result.text).toContain("Provider: Local vLLM (vllm-local)");
     expect(result.text).toContain("Endpoint: http://host.openshell.internal:8000/v1");
     expect(result.text).toContain("Source: inference");
-    expect(result.text).toContain("Drift: active route differs from saved default");
+    expect(result.text).toContain(
+      "Drift: active model differs from saved default; provider differs from saved onboarding provider; endpoint differs from saved onboarding endpoint",
+    );
   });
 
   it("routes slash set-local-model through the local model command", async () => {

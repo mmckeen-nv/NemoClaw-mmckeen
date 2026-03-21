@@ -455,7 +455,9 @@ describe("cliStatus", () => {
       expect(output).toContain("Default:   qwen3:32b");
       expect(output).toContain("Active:    nemotron-3-super-120b");
       expect(output).toContain("Source:    inference");
-      expect(output).toContain("Drift:     active route differs from saved default");
+      expect(output).toContain(
+        "Drift:     active model differs from saved default; active model is outside saved catalog",
+      );
       expect(output).toContain("Catalog:   active route is outside saved catalog");
       expect(output).toContain("            qwen3:32b, nemotron-3-nano:30b");
     });

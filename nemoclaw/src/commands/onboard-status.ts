@@ -6,6 +6,7 @@ import { promisify } from "node:util";
 import type { PluginLogger } from "../index.js";
 import {
   buildLocalModelChoices,
+  describeLocalModelWorkflowDrift,
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
@@ -96,6 +97,13 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
     activeModelSource: "inference" | "onboarding";
     activeModelMatchesDefault: boolean;
     activeModelInCatalog: boolean;
+    drift: {
+      any: boolean;
+      activeModelDiffersFromDefault: boolean;
+      activeModelOutsideCatalog: boolean;
+      providerDiffersFromOnboarding: boolean;
+      endpointDiffersFromOnboarding: boolean;
+    };
     catalog: string[];
     choices: ReturnType<typeof buildLocalModelChoices>;
     defaultChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
@@ -186,9 +194,7 @@ export async function cliOnboardStatus(opts: OnboardStatusOptions): Promise<void
     logger.info(`Default:    ${data.localModelWorkflow.defaultModel}`);
     logger.info(`Active:     ${data.localModelWorkflow.activeModel}`);
     logger.info(`Source:     ${data.localModelWorkflow.activeModelSource}`);
-    logger.info(
-      `Drift:      ${data.localModelWorkflow.activeModelMatchesDefault ? "none" : "active route differs from saved default"}`,
-    );
+    logger.info(`Drift:      ${describeLocalModelWorkflowDrift(data.localModelWorkflow)}`);
     logger.info(
       `Catalog:    ${data.localModelWorkflow.activeModelInCatalog ? "active route is in saved catalog" : "active route is outside saved catalog"}`,
     );

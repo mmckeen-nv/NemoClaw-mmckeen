@@ -8,6 +8,7 @@ import type { PluginLogger, NemoClawConfig } from "../index.js";
 import { loadState } from "../blueprint/state.js";
 import {
   buildLocalModelChoices,
+  describeLocalModelWorkflowDrift,
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
@@ -151,9 +152,7 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     logger.info(`  Default:   ${localModelWorkflow.defaultModel ?? "unknown"}`);
     logger.info(`  Active:    ${localModelWorkflow.activeModel ?? "unknown"}`);
     logger.info(`  Source:    ${localModelWorkflow.activeModelSource ?? "unknown"}`);
-    logger.info(
-      `  Drift:     ${localModelWorkflow.activeModelMatchesDefault ? "none" : "active route differs from saved default"}`,
-    );
+    logger.info(`  Drift:     ${describeLocalModelWorkflowDrift(localModelWorkflow)}`);
     logger.info(
       `  Catalog:   ${localModelWorkflow.activeModelInCatalog ? "active route is in saved catalog" : "active route is outside saved catalog"}`,
     );

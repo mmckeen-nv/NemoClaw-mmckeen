@@ -4,6 +4,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildLocalModelChoices,
+  describeLocalModelWorkflowDrift,
   getConfiguredModelCatalog,
   getLocalModelWorkflow,
   getSavedLocalModelWorkflow,
@@ -49,6 +50,22 @@ describe("onboard config helpers", () => {
     expect(getConfiguredModelCatalog(config({ availableModels: undefined }))).toEqual([
       "nemotron-3-nano:30b",
     ]);
+  });
+
+  it("describes local workflow drift with all saved-vs-live reasons", () => {
+    expect(
+      describeLocalModelWorkflowDrift({
+        drift: {
+          any: true,
+          activeModelDiffersFromDefault: true,
+          activeModelOutsideCatalog: false,
+          providerDiffersFromOnboarding: true,
+          endpointDiffersFromOnboarding: true,
+        },
+      }),
+    ).toBe(
+      "active model differs from saved default; provider differs from saved onboarding provider; endpoint differs from saved onboarding endpoint",
+    );
   });
 
   it("builds saved local workflow metadata for dashboard consumers", () => {

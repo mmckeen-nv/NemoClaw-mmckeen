@@ -18,6 +18,7 @@ import type {
 } from "../index.js";
 import { loadState } from "../blueprint/state.js";
 import {
+  describeLocalModelWorkflowDrift,
   describeOnboardEndpoint,
   describeOnboardProvider,
   getConfiguredModelCatalog,
@@ -255,7 +256,7 @@ async function formatLocalModelWorkflow(
     `Provider: ${workflow.providerLabel}${workflow.provider ? ` (${workflow.provider})` : ""}`,
     `Endpoint: ${workflow.endpoint}`,
     `Source: ${workflow.activeModelSource}`,
-    `Drift: ${workflow.activeModelMatchesDefault ? "none" : "active route differs from saved default"}`,
+    `Drift: ${describeLocalModelWorkflowDrift(workflow)}`,
     `Catalog: ${workflow.activeModelInCatalog ? "active route is in saved catalog" : "active route is outside saved catalog"}`,
     ...(workflow.catalog.length > 0 ? [`Saved Models: ${workflow.catalog.join(", ")}`] : []),
   ];

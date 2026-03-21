@@ -127,6 +127,25 @@ export interface SavedLocalModelWorkflow extends LocalModelWorkflow {
   activeModelMatchesDefault: true;
 }
 
+export function describeLocalModelWorkflowDrift(
+  workflow: Pick<LocalModelWorkflow, "drift">,
+): string {
+  const reasons: string[] = [];
+  if (workflow.drift.activeModelDiffersFromDefault) {
+    reasons.push("active model differs from saved default");
+  }
+  if (workflow.drift.activeModelOutsideCatalog) {
+    reasons.push("active model is outside saved catalog");
+  }
+  if (workflow.drift.providerDiffersFromOnboarding) {
+    reasons.push("provider differs from saved onboarding provider");
+  }
+  if (workflow.drift.endpointDiffersFromOnboarding) {
+    reasons.push("endpoint differs from saved onboarding endpoint");
+  }
+  return reasons.length > 0 ? reasons.join("; ") : "none";
+}
+
 export function buildLocalModelChoices(
   defaultModel: string,
   activeModel: string,
@@ -240,7 +259,7 @@ export function getLocalModelWorkflowActions(
       description: "Restore the active OpenShell local-model route to the saved onboarding default.",
       enabled: restoreEnabled,
       reason: restoreEnabled
-        ? restoreReasonOverride
+        ? (restoreReasonOverride ?? null)
         : "active route already matches the saved onboarding default.",
       stateScope: "openshell-active-route",
       mutatesSavedDefault: false,
