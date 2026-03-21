@@ -331,6 +331,8 @@ describe("cliSetLocalModel", () => {
     const data = JSON.parse(lines.join(""));
     expect(data).toEqual({
       ok: true,
+      selectionScope: "sandbox-global",
+      selectionMode: "single-active-route",
       setup: {
         configure: {
           command: "openclaw nemoclaw onboard",

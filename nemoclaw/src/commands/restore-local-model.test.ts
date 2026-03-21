@@ -98,6 +98,8 @@ describe("cliRestoreLocalModel", () => {
     expect(JSON.parse(vi.mocked(logger.info).mock.calls[0]?.[0] as string)).toMatchObject({
       ok: true,
       noop: true,
+      selectionScope: "sandbox-global",
+      selectionMode: "single-active-route",
       provider: "ollama-local",
       providerLabel: "Local Ollama",
       endpointType: "ollama",

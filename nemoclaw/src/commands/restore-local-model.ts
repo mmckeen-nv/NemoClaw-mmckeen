@@ -26,6 +26,8 @@ interface RestoreLocalModelResult {
   setup: {
     configure: ReturnType<typeof getSetupConfigureAction>;
   };
+  selectionScope: "sandbox-global";
+  selectionMode: "single-active-route";
   provider: string;
   providerLabel: string;
   endpointType: string;
@@ -197,6 +199,8 @@ export function cliRestoreLocalModel(opts: RestoreLocalModelOptions): void {
       ok: true,
       noop: true,
       setup,
+      selectionScope: "sandbox-global",
+      selectionMode: "single-active-route",
       provider,
       providerLabel,
       endpointType: onboard.endpointType,

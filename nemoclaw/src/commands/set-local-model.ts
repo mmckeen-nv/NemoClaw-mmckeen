@@ -26,6 +26,8 @@ interface SetLocalModelResult {
   setup: {
     configure: ReturnType<typeof getSetupConfigureAction>;
   };
+  selectionScope: "sandbox-global";
+  selectionMode: "single-active-route";
   provider: string;
   providerLabel: string;
   endpointType: string;
@@ -263,6 +265,8 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
   const result: SetLocalModelResult = {
     ok: true,
     setup,
+    selectionScope: "sandbox-global",
+    selectionMode: "single-active-route",
     provider,
     providerLabel,
     endpointType: onboard.endpointType,
