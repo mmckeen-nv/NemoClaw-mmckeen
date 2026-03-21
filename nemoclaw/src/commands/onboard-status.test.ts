@@ -41,6 +41,14 @@ describe("cliOnboardStatus", () => {
       endpoint: null,
     })).resolves.toEqual({
       configured: false,
+      setup: {
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create the first saved inference configuration.",
+          mode: "initial-setup",
+        },
+      },
       onboarding: null,
       localModelWorkflow: null,
     });
@@ -77,6 +85,14 @@ describe("cliOnboardStatus", () => {
       endpoint: "http://host.openshell.internal:11434/v1",
     })).resolves.toEqual({
       configured: true,
+      setup: {
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+          mode: "reconfigure",
+        },
+      },
       onboarding: {
         endpoint: "ollama (http://host.openshell.internal:11434/v1)",
         provider: "Local Ollama",

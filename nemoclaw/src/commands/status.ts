@@ -52,6 +52,15 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     : [];
   const localModelWorkflow = getLocalModelWorkflowStatus(onboard, inference);
 
+  const configureAction = {
+    command: "openclaw nemoclaw onboard",
+    argv: ["openclaw", "nemoclaw", "onboard"],
+    description: onboard
+      ? "Launch NemoClaw onboarding to create or update the saved inference configuration."
+      : "Launch NemoClaw onboarding to create the first saved inference configuration.",
+    mode: onboard ? "reconfigure" as const : "initial-setup" as const,
+  };
+
   const statusData = {
     nemoclaw: {
       lastAction: state.lastAction,
@@ -63,6 +72,9 @@ export async function cliStatus(opts: StatusOptions): Promise<void> {
     },
     sandbox,
     inference,
+    setup: {
+      configure: configureAction,
+    },
     onboarding: onboard
       ? {
           endpoint: describeOnboardEndpoint(onboard),

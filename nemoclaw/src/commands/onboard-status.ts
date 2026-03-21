@@ -54,6 +54,14 @@ export async function getInferenceStatus(): Promise<InferenceStatus> {
 
 export async function getOnboardStatusData(inferenceOverride?: InferenceStatus): Promise<{
   configured: boolean;
+  setup: {
+    configure: {
+      command: string;
+      argv: string[];
+      description: string;
+      mode: "initial-setup" | "reconfigure";
+    };
+  };
   onboarding: {
     endpoint: string;
     provider: string;
@@ -100,6 +108,16 @@ export async function getOnboardStatusData(inferenceOverride?: InferenceStatus):
 
   return {
     configured: !!onboard,
+    setup: {
+      configure: {
+        command: "openclaw nemoclaw onboard",
+        argv: ["openclaw", "nemoclaw", "onboard"],
+        description: onboard
+          ? "Launch NemoClaw onboarding to create or update the saved inference configuration."
+          : "Launch NemoClaw onboarding to create the first saved inference configuration.",
+        mode: onboard ? "reconfigure" : "initial-setup",
+      },
+    },
     onboarding: onboard
       ? {
           endpoint: describeOnboardEndpoint(onboard),

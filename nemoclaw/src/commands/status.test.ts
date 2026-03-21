@@ -151,6 +151,14 @@ describe("cliStatus", () => {
       await cliStatus({ json: true, logger, pluginConfig: defaultConfig });
 
       const data = JSON.parse(lines.join(""));
+      expect(data.setup).toEqual({
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create the first saved inference configuration.",
+          mode: "initial-setup",
+        },
+      });
       expect(data.insideSandbox).toBe(false);
       expect(data.sandbox.insideSandbox).toBe(false);
       expect(data.sandbox.running).toBe(false);
@@ -228,6 +236,14 @@ describe("cliStatus", () => {
       await cliStatus({ json: true, logger, pluginConfig: defaultConfig });
 
       const data = JSON.parse(lines.join(""));
+      expect(data.setup).toEqual({
+        configure: {
+          command: "openclaw nemoclaw onboard",
+          argv: ["openclaw", "nemoclaw", "onboard"],
+          description: "Launch NemoClaw onboarding to create or update the saved inference configuration.",
+          mode: "reconfigure",
+        },
+      });
       expect(data.onboarding).toEqual({
         endpoint: "ollama (http://host.openshell.internal:11434/v1)",
         provider: "Local Ollama",
