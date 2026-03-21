@@ -8,10 +8,12 @@ import {
   describeOnboardProvider,
   getConfiguredModelCatalog,
   getLocalModelWorkflowActions,
+  getLocalModelWorkflowRecommendedActions,
   getSetupConfigureAction,
   isLocalEndpointType,
   loadOnboardConfig,
   type LocalModelWorkflowDrift,
+  type LocalModelWorkflowRecommendedAction,
 } from "../onboard/config.js";
 
 export interface SetLocalModelOptions {
@@ -49,6 +51,7 @@ interface SetLocalModelResult {
   defaultChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
   activeChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
   actions: ReturnType<typeof getLocalModelWorkflowActions>;
+  recommendedActions: LocalModelWorkflowRecommendedAction[];
 }
 
 interface SetLocalModelErrorResult {
@@ -70,6 +73,7 @@ interface SetLocalModelErrorResult {
   catalog?: string[];
   choices?: ReturnType<typeof buildLocalModelChoices>;
   actions?: ReturnType<typeof getLocalModelWorkflowActions>;
+  recommendedActions?: LocalModelWorkflowRecommendedAction[];
   hint?: string;
   details?: string;
   setup?: {
@@ -130,6 +134,72 @@ function setInferenceRoute(provider: string, model: string): void {
   execFileSync("openshell", ["inference", "set", "--provider", provider, "--model", model], {
     encoding: "utf-8",
     stdio: ["pipe", "pipe", "pipe"],
+  });
+}
+
+function getRecommendedActionsForChoices(
+  defaultModel: string,
+  activeModel: string,
+  catalog: string[],
+  provider: string,
+  providerLabel: string,
+  endpoint: string,
+  endpointType: NonNullable<ReturnType<typeof loadOnboardConfig>>["endpointType"],
+): LocalModelWorkflowRecommendedAction[] {
+  const choices = buildLocalModelChoices(
+    defaultModel,
+    activeModel,
+    catalog,
+    provider,
+    providerLabel,
+    endpoint,
+    endpointType,
+  );
+  const actions = getLocalModelWorkflowActions(
+    defaultModel,
+    activeModel,
+    provider,
+    providerLabel,
+    endpoint,
+    endpointType,
+  );
+  return getLocalModelWorkflowRecommendedActions({
+    enabled: true,
+    liveRouteStatus: "live-openshell",
+    selectionScope: "sandbox-global",
+    selectionMode: "single-active-route",
+    choiceCounts: {
+      total: choices.length,
+      selectable: choices.filter((choice) => choice.isSelectable).length,
+      nonSelectable: choices.filter((choice) => !choice.isSelectable).length,
+      inCatalog: choices.filter((choice) => choice.inCatalog).length,
+      outsideCatalog: choices.filter((choice) => !choice.inCatalog).length,
+    },
+    provider,
+    providerLabel,
+    savedProvider: provider,
+    savedProviderLabel: providerLabel,
+    endpointType,
+    endpoint,
+    savedEndpointType: endpointType,
+    savedEndpoint: endpoint,
+    defaultModel,
+    activeModel,
+    activeModelSource: "inference",
+    activeModelMatchesDefault: activeModel === defaultModel,
+    activeModelInCatalog: catalog.includes(activeModel),
+    drift: {
+      any: activeModel !== defaultModel,
+      activeModelDiffersFromDefault: activeModel !== defaultModel,
+      activeModelOutsideCatalog: !catalog.includes(activeModel),
+      providerDiffersFromOnboarding: false,
+      endpointDiffersFromOnboarding: false,
+    },
+    catalog,
+    choices,
+    defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
+    activeChoice: choices.find((choice) => choice.isActive) ?? null,
+    actions,
   });
 }
 
@@ -209,6 +279,15 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
         onboard.endpointUrl,
         onboard.endpointType,
       ),
+      recommendedActions: getRecommendedActionsForChoices(
+        defaultModel,
+        defaultModel,
+        catalog,
+        provider,
+        providerLabel,
+        onboard.endpointUrl,
+        onboard.endpointType,
+      ),
       setup,
       hint: catalog.length > 0
         ? `Saved catalog: ${catalog.join(", ")}\nUse --allow-outside-catalog to force a one-off route change.`
@@ -243,6 +322,15 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
       actions: getLocalModelWorkflowActions(
         defaultModel,
         defaultModel,
+        provider,
+        providerLabel,
+        onboard.endpointUrl,
+        onboard.endpointType,
+      ),
+      recommendedActions: getRecommendedActionsForChoices(
+        defaultModel,
+        defaultModel,
+        catalog,
         provider,
         providerLabel,
         onboard.endpointUrl,
@@ -299,6 +387,15 @@ export function cliSetLocalModel(opts: SetLocalModelOptions): void {
     actions: getLocalModelWorkflowActions(
       defaultModel,
       trimmedModel,
+      provider,
+      providerLabel,
+      onboard.endpointUrl,
+      onboard.endpointType,
+    ),
+    recommendedActions: getRecommendedActionsForChoices(
+      defaultModel,
+      trimmedModel,
+      catalog,
       provider,
       providerLabel,
       onboard.endpointUrl,

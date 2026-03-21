@@ -129,6 +129,20 @@ describe("cliRestoreLocalModel", () => {
           reasonCode: "active-route-already-matches-saved-default",
         },
       },
+      recommendedActions: [
+        {
+          kind: "read-state",
+          label: "Read workflow state",
+          command: "openclaw nemoclaw onboard-status --json",
+          argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
+        },
+        {
+          kind: "set-active-model",
+          label: "Switch active route to nemotron-3-nano:30b",
+          command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
+          argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
+        },
+      ],
     });
   });
 

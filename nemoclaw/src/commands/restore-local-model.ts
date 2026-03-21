@@ -8,10 +8,12 @@ import {
   describeOnboardProvider,
   getConfiguredModelCatalog,
   getLocalModelWorkflowActions,
+  getLocalModelWorkflowRecommendedActions,
   getSetupConfigureAction,
   isLocalEndpointType,
   loadOnboardConfig,
   type LocalModelWorkflowDrift,
+  type LocalModelWorkflowRecommendedAction,
 } from "../onboard/config.js";
 import { cliSetLocalModel } from "./set-local-model.js";
 
@@ -49,6 +51,7 @@ interface RestoreLocalModelResult {
   defaultChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
   activeChoice: ReturnType<typeof buildLocalModelChoices>[number] | null;
   actions: ReturnType<typeof getLocalModelWorkflowActions>;
+  recommendedActions: LocalModelWorkflowRecommendedAction[];
 }
 
 interface RestoreLocalModelErrorResult {
@@ -132,6 +135,72 @@ function getCurrentInferenceRoute(): { provider: string | null; model: string | 
   } catch {
     return null;
   }
+}
+
+function getRecommendedActionsForRestoreState(
+  defaultModel: string,
+  activeModel: string,
+  catalog: string[],
+  provider: string,
+  providerLabel: string,
+  endpoint: string,
+  endpointType: NonNullable<ReturnType<typeof loadOnboardConfig>>["endpointType"],
+): LocalModelWorkflowRecommendedAction[] {
+  const choices = buildLocalModelChoices(
+    defaultModel,
+    activeModel,
+    catalog,
+    provider,
+    providerLabel,
+    endpoint,
+    endpointType,
+  );
+  const actions = getLocalModelWorkflowActions(
+    defaultModel,
+    activeModel,
+    provider,
+    providerLabel,
+    endpoint,
+    endpointType,
+  );
+  return getLocalModelWorkflowRecommendedActions({
+    enabled: true,
+    liveRouteStatus: "live-openshell",
+    selectionScope: "sandbox-global",
+    selectionMode: "single-active-route",
+    choiceCounts: {
+      total: choices.length,
+      selectable: choices.filter((choice) => choice.isSelectable).length,
+      nonSelectable: choices.filter((choice) => !choice.isSelectable).length,
+      inCatalog: choices.filter((choice) => choice.inCatalog).length,
+      outsideCatalog: choices.filter((choice) => !choice.inCatalog).length,
+    },
+    provider,
+    providerLabel,
+    savedProvider: provider,
+    savedProviderLabel: providerLabel,
+    endpointType,
+    endpoint,
+    savedEndpointType: endpointType,
+    savedEndpoint: endpoint,
+    defaultModel,
+    activeModel,
+    activeModelSource: "inference",
+    activeModelMatchesDefault: activeModel === defaultModel,
+    activeModelInCatalog: catalog.includes(activeModel),
+    drift: {
+      any: activeModel !== defaultModel,
+      activeModelDiffersFromDefault: activeModel !== defaultModel,
+      activeModelOutsideCatalog: !catalog.includes(activeModel),
+      providerDiffersFromOnboarding: false,
+      endpointDiffersFromOnboarding: false,
+    },
+    catalog,
+    choices,
+    defaultChoice: choices.find((choice) => choice.isDefault) ?? null,
+    activeChoice: choices.find((choice) => choice.isActive) ?? null,
+    actions,
+  });
 }
 
 function emitSuccess(logger: PluginLogger, json: boolean, result: RestoreLocalModelResult): void {
@@ -238,6 +307,15 @@ export function cliRestoreLocalModel(opts: RestoreLocalModelOptions): void {
       actions: getLocalModelWorkflowActions(
         defaultModel,
         defaultModel,
+        provider,
+        providerLabel,
+        onboard.endpointUrl,
+        onboard.endpointType,
+      ),
+      recommendedActions: getRecommendedActionsForRestoreState(
+        defaultModel,
+        defaultModel,
+        catalog,
         provider,
         providerLabel,
         onboard.endpointUrl,

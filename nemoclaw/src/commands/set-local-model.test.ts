@@ -227,6 +227,20 @@ describe("cliSetLocalModel", () => {
           mutatesSavedDefault: true,
         },
       },
+      recommendedActions: [
+        {
+          kind: "read-state",
+          label: "Read workflow state",
+          command: "openclaw nemoclaw onboard-status --json",
+          argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
+        },
+        {
+          kind: "set-active-model",
+          label: "Switch active route to nemotron-3-nano:30b",
+          command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
+          argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
+        },
+      ],
       actions: {
         read: {
           command: "openclaw nemoclaw onboard-status --json",
@@ -387,6 +401,20 @@ describe("cliSetLocalModel", () => {
           targetProviderLabel: "Local Ollama",
           targetEndpoint: "http://host.openshell.internal:11434/v1",
           targetEndpointType: "ollama",
+        },
+      ],
+      recommendedActions: [
+        {
+          kind: "read-state",
+          label: "Read workflow state",
+          command: "openclaw nemoclaw onboard-status --json",
+          argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
+        },
+        {
+          kind: "set-active-model",
+          label: "Switch active route to nemotron-3-nano:30b",
+          command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
+          argv: ["openclaw", "nemoclaw", "set-local-model", "nemotron-3-nano:30b", "--json"],
         },
       ],
       actions: {
@@ -644,6 +672,26 @@ describe("cliSetLocalModel", () => {
           targetEndpointType: "ollama",
         },
       },
+      recommendedActions: [
+        {
+          kind: "read-state",
+          label: "Read workflow state",
+          command: "openclaw nemoclaw onboard-status --json",
+          argv: ["openclaw", "nemoclaw", "onboard-status", "--json"],
+        },
+        {
+          kind: "restore-default-model",
+          label: "Restore saved default (qwen3:32b)",
+          command: "openclaw nemoclaw restore-local-model --json",
+          argv: ["openclaw", "nemoclaw", "restore-local-model", "--json"],
+        },
+        {
+          kind: "set-active-model",
+          label: "Switch active route to qwen3:32b",
+          command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
+          argv: ["openclaw", "nemoclaw", "set-local-model", "qwen3:32b", "--json"],
+        },
+      ],
     });
   });
 });
