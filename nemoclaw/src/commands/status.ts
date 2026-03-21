@@ -236,6 +236,8 @@ interface LocalModelWorkflowStatus {
     isActive: boolean;
     inCatalog: boolean;
     source: "default" | "catalog" | "active-route";
+    command: string;
+    requiresAllowOutsideCatalog: boolean;
   }>;
 }
 

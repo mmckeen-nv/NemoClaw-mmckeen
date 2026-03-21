@@ -109,6 +109,8 @@ describe("cliOnboardStatus", () => {
             isActive: true,
             inCatalog: true,
             source: "default",
+            command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
+            requiresAllowOutsideCatalog: false,
           },
           {
             model: "nemotron-3-nano:30b",
@@ -117,6 +119,8 @@ describe("cliOnboardStatus", () => {
             isActive: false,
             inCatalog: true,
             source: "catalog",
+            command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
+            requiresAllowOutsideCatalog: false,
           },
         ],
         actions: {

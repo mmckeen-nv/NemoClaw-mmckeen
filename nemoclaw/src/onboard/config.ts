@@ -39,6 +39,8 @@ export interface LocalModelChoice {
   isActive: boolean;
   inCatalog: boolean;
   source: "default" | "catalog" | "active-route";
+  command: string;
+  requiresAllowOutsideCatalog: boolean;
 }
 
 export interface LocalModelWorkflowActions {
@@ -91,18 +93,24 @@ export function buildLocalModelChoices(
       seen.add(entry);
       return true;
     })
-    .map((model) => ({
-      model,
-      label: model,
-      isDefault: model === defaultModel,
-      isActive: model === activeModel,
-      inCatalog: catalog.includes(model),
-      source: model === activeModel && !catalog.includes(model)
-        ? "active-route"
-        : model === defaultModel
-          ? "default"
-          : "catalog",
-    }));
+    .map((model) => {
+      const inCatalog = catalog.includes(model);
+      const requiresAllowOutsideCatalog = !inCatalog;
+      return {
+        model,
+        label: model,
+        isDefault: model === defaultModel,
+        isActive: model === activeModel,
+        inCatalog,
+        source: model === activeModel && !inCatalog
+          ? "active-route"
+          : model === defaultModel
+            ? "default"
+            : "catalog",
+        command: `openclaw nemoclaw set-local-model ${JSON.stringify(model)} --json${requiresAllowOutsideCatalog ? " --allow-outside-catalog" : ""}`,
+        requiresAllowOutsideCatalog,
+      };
+    });
 }
 
 export function getLocalModelWorkflowActions(): LocalModelWorkflowActions {

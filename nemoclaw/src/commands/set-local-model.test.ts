@@ -171,6 +171,8 @@ describe("cliSetLocalModel", () => {
           isActive: true,
           inCatalog: true,
           source: "default",
+          command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
+          requiresAllowOutsideCatalog: false,
         },
         {
           model: "nemotron-3-nano:30b",
@@ -179,6 +181,8 @@ describe("cliSetLocalModel", () => {
           isActive: false,
           inCatalog: true,
           source: "catalog",
+          command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
+          requiresAllowOutsideCatalog: false,
         },
       ],
       actions: {
@@ -280,6 +284,8 @@ describe("cliSetLocalModel", () => {
           isActive: false,
           inCatalog: true,
           source: "default",
+          command: 'openclaw nemoclaw set-local-model "qwen3:32b" --json',
+          requiresAllowOutsideCatalog: false,
         },
         {
           model: "nemotron-3-nano:30b",
@@ -288,6 +294,8 @@ describe("cliSetLocalModel", () => {
           isActive: false,
           inCatalog: true,
           source: "catalog",
+          command: 'openclaw nemoclaw set-local-model "nemotron-3-nano:30b" --json',
+          requiresAllowOutsideCatalog: false,
         },
         {
           model: "llama3.3:70b",
@@ -296,6 +304,8 @@ describe("cliSetLocalModel", () => {
           isActive: true,
           inCatalog: false,
           source: "active-route",
+          command: 'openclaw nemoclaw set-local-model "llama3.3:70b" --json --allow-outside-catalog',
+          requiresAllowOutsideCatalog: true,
         },
       ],
       actions: {
